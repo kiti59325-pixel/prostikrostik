@@ -8,54 +8,61 @@
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f1f5f9; color: black; }
 
-  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
-  .dark header { background: #1e293b; }
-  .light header { background: #e2e8f0; }
+  /* Верхняя панель */
+  header {
+    padding: 15px;
+    font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: 0.3s;
+  }
+  .dark header { background: #1e293b; color: white; }
+  .light header { background: #e2e8f0; color: black; }
 
-  /* Панель с ником и кнопками всегда сверху */
-  #userPanel {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 10px;
+  /* Панель аккаунта */
+  #accountPanel {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    gap: 5px;
+    padding: 10px;
+    position: fixed;
+    top: 60px; /* под шапкой */
+    left: 0; right: 0;
+    z-index: 999;
+    background-color: inherit;
+  }
+  #accountPanel input { flex: 1; border-radius: 12px; padding: 8px; border: 1px solid #888; }
+  body.dark #accountPanel input { background: #334155; color: white; border-color: #555; }
+  body.light #accountPanel input { background: #e2e8f0; color: black; border-color: #ccc; }
+  #accountPanel button { border-radius: 12px; padding: 8px 12px; border: none; cursor: pointer; }
+  body.dark #accountPanel button { background: #3b82f6; color: white; }
+  body.light #accountPanel button { background: #3b82f6; color: white; }
+
+  /* Основной чат */
+  #chat {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    margin-top: 140px; /* место под шапку и аккаунт */
+    margin-bottom: 70px; /* место под ввод */
+    height: calc(100vh - 210px);
   }
 
-  /* Цвет панели по теме */
-  body.dark #userPanel { background-color: #1e293b; }
-  body.light #userPanel { background-color: #e2e8f0; }
-
-  /* Кнопки панели */
-  #userPanel button {
+  .message {
+    max-width: 60%;
+    width: fit-content;
+    padding: 10px;
+    margin: 5px;
     border-radius: 12px;
-    padding: 10px 15px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
+    position: relative;
+    word-wrap: break-word;
   }
-
-  /* Цвет кнопок по теме */
-  body.dark #userPanel button { background-color: #2563eb; color: white; }
-  body.light #userPanel button { background-color: #3b82f6; color: white; }
-
-  /* Ховер для кнопок */
-  #userPanel button:hover { opacity: 0.9; }
-
-  /* Адаптивность на мобильных */
-  @media (max-width: 600px) {
-    #userPanel { flex-direction: column; }
-    #userPanel button, #userPanel input { width: 100%; font-size: 16px; padding: 12px; }
-    #inputArea input, #inputArea button { font-size: 16px; padding: 12px; }
-  }
-
-  #chat { height: 70vh; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-
-  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
   .dark .other { background: #334155; color: white; }
   .light .other { background: #e2e8f0; color: black; }
@@ -63,30 +70,58 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea { display: flex; padding: 10px; }
-  .dark #inputArea { background: #1e293b; }
-  .light #inputArea { background: #f1f5f9; }
+  /* Панель ввода сообщения */
+  #inputArea {
+    display: flex;
+    padding: 10px;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background-color: inherit;
+    z-index: 1000;
+    gap: 5px;
+  }
+  #inputArea input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #888;
+    outline: none;
+    transition: 0.2s;
+  }
+  body.dark #inputArea input { background: #1e293b; color: white; border-color: #555; }
+  body.light #inputArea input { background: #fff; color: black; border-color: #ccc; }
 
-  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
-  button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
+  #inputArea button {
+    border-radius: 20px;
+    padding: 10px 16px;
+    border: none;
+    cursor: pointer;
+    background: #3b82f6;
+    color: white;
+  }
 
-  /* Кнопка смены темы */
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; }
+  /* Адаптив */
+  @media (max-width: 600px) {
+    header { font-size: 16px; padding: 10px; }
+    #accountPanel input, #accountPanel button { padding: 6px; font-size: 14px; }
+    #inputArea input { padding: 8px; font-size: 14px; }
+    #inputArea button { padding: 8px 12px; font-size: 14px; }
+  }
 </style>
 </head>
-<body class="dark">
 
+<body class="dark">
 <header>
   ПростикРостик
-  <button id="themeBtn" onclick="toggleTheme()">🌗</button>
+  <button onclick="toggleTheme()">🌗</button>
 </header>
 
-<div id="userPanel">
+<div id="accountPanel">
   <input id="nickname" placeholder="Придумай ник..." />
   <button onclick="setNickname()">Сохранить ник</button>
   <button onclick="login()">Войти через Google</button>
   <button onclick="logout()">Выйти</button>
-  <div id="userInfo"></div>
+  <div id="userInfo" style="margin-left:10px; align-self:center;"></div>
 </div>
 
 <div id="chat"></div>
@@ -138,10 +173,10 @@ onAuthStateChanged(auth, (user) => {
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  localStorage.setItem("nickname", nickname);
   document.getElementById("userInfo").innerText =
     currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
-  localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
 }
 window.setNickname = setNickname;
