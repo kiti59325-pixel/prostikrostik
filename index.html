@@ -2,233 +2,60 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ПростикРостик v2</title>
+<title>ПростикРостик</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    transition: 0.3s;
-  }
-
-  body.dark {
-    background: #0f172a;
-    color: #f1f5f9;
-  }
-
-  body.light {
-    background: #f1f5f9;
-    color: #0f172a;
-  }
-
-  header {
-    padding: 15px;
-    font-size: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  body.dark header {
-    background: #1e293b;
-  }
-
-  body.light header {
-    background: #e2e8f0;
-  }
-
-  button {
-    border: none;
-    border-radius: 15px;
-    padding: 8px 15px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-size: 14px;
-  }
-
-  body.dark button {
-    background: #334155;
-    color: #f1f5f9;
-  }
-
-  body.light button {
-    background: #cbd5e1;
-    color: #0f172a;
-  }
-
-  button:hover {
-    opacity: 0.8;
-  }
-
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid #888;
-  }
-
-  .tab {
-    padding: 10px 20px;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-  }
-
-  .tab.active {
-    border-bottom-color: #3b82f6;
-    font-weight: bold;
-  }
-
-  .tabContent {
-    display: none;
-    padding: 10px;
-  }
-
-  .tabContent.active {
-    display: block;
-  }
-
-  #chatList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .chatItem {
-    padding: 10px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  body.dark .chatItem {
-    background: #1e293b;
-    color: #f1f5f9;
-  }
-
-  body.light .chatItem {
-    background: #e2e8f0;
-    color: #0f172a;
-  }
-
-  .chatItem:hover {
-    opacity: 0.8;
-  }
-
-  #chatWindow {
-    border: 1px solid #888;
-    border-radius: 12px;
-    padding: 10px;
-    height: 400px;
-    overflow-y: auto;
-    margin-top: 10px;
-  }
-
-  .message {
-    max-width: 60%;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 12px;
-    position: relative;
-    word-wrap: break-word;
-    display: inline-block;
-    clear: both;
-  }
-
-  .me {
-    background: #3b82f6;
-    color: white;
-    align-self: flex-end;
-    float: right;
-  }
-
-  .other {
-    background: #64748b;
-    color: white;
-    align-self: flex-start;
-    float: left;
-  }
-
-  .name {
-    font-size: 11px;
-    opacity: 0.7;
-    margin-bottom: 2px;
-  }
-
-  .delete-btn {
-    position: absolute;
-    top: 2px;
-    right: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    opacity: 0.6;
-  }
-
-  #messageInputArea {
-    display: flex;
-    margin-top: 10px;
-    gap: 10px;
-  }
-
-  #messageInput {
-    flex: 1;
-    border-radius: 12px;
-    padding: 10px;
-    border: 1px solid #888;
-    outline: none;
-  }
-
-  #searchUser {
-    border-radius: 12px;
-    padding: 8px;
-    border: 1px solid #888;
-    outline: none;
-  }
-
+  body { margin: 0; font-family: Arial; transition: 0.3s; }
+  body.dark { background: #0f172a; color: white; }
+  body.light { background: #f1f5f9; color: black; }
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
+  .dark header { background: #1e293b; }
+  .light header { background: #e2e8f0; }
+  #chat { height: 70vh; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
+  .me { align-self: flex-end; background: #3b82f6; color: white; }
+  .dark .other { background: #334155; }
+  .light .other { background: #e2e8f0; }
+  .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+  #inputArea { display: flex; padding: 10px; }
+  .dark #inputArea { background: #1e293b; }
+  .light #inputArea { background: #e2e8f0; }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; }
+  button { margin-left: 10px; padding: 10px; border: none; border-radius: 10px; cursor: pointer; }
 </style>
 </head>
 <body class="dark">
 
 <header>
-  ПростикРостик v2
-  <div>
-    <button onclick="toggleTheme()">🌗</button>
-  </div>
+  ПростикРостик
+  <button onclick="toggleTheme()">🌗</button>
 </header>
 
-<div class="tabs">
-  <div class="tab active" onclick="openTab('chats')">Чаты</div>
-  <div class="tab" onclick="openTab('account')">Аккаунт</div>
+<div style="padding:10px;">
+  <input id="nickname" placeholder="Придумай ник..." />
+  <button onclick="setNickname()">Сохранить ник</button>
+  <br><br>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
+  <div id="userInfo"></div>
 </div>
 
-<div id="chats" class="tabContent active">
-  <div>
-    <input id="searchUser" placeholder="Искать по почте..." />
-    <button onclick="startPrivateChat()">Создать чат</button>
-    <button onclick="createGroupChat()">Создать групповой чат</button>
-  </div>
-  <div id="chatList"></div>
-  <div id="chatWindow"></div>
-  <div id="messageInputArea">
-    <input id="messageInput" placeholder="Сообщение..." />
-    <button onclick="sendMessage()">➤</button>
-  </div>
-</div>
+<div id="chat"></div>
 
-<div id="account" class="tabContent">
-  <div>
-    <input id="username" placeholder="Ник..." />
-    <button onclick="login()">Войти через Google</button>
-    <button onclick="logout()">Выйти</button>
-    <div id="userInfo"></div>
-  </div>
+<div id="inputArea">
+  <input id="messageInput" placeholder="Сообщение..." />
+  <button onclick="sendMessage()">➤</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "ВАШ_API_KEY",
-  authDomain: "ВАШ_PROJECT_ID.firebaseapp.com",
-  projectId: "ВАШ_PROJECT_ID"
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -236,25 +63,9 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let currentUser = null;
-let currentChatId = "group_chat"; // старый чат
+let nickname = "";
 
-// 🌗 Тема
-function toggleTheme() {
-  document.body.classList.toggle("dark");
-  document.body.classList.toggle("light");
-}
-window.toggleTheme = toggleTheme;
-
-// Вкладки
-function openTab(tabName) {
-  document.querySelectorAll(".tabContent").forEach(t => t.classList.remove("active"));
-  document.getElementById(tabName).classList.add("active");
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add("active");
-}
-window.openTab = openTab;
-
-// 🔐 Вход через Google
+// Вход через Google
 async function login() {
   const provider = new GoogleAuthProvider();
   await signInWithPopup(auth, provider);
@@ -266,93 +77,73 @@ function logout() {
 }
 window.logout = logout;
 
-// Проверка авторизации
+// Авторизация
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
-  document.getElementById("userInfo").innerText = user ? `Ты: ${user.displayName}` : "Не вошёл";
-  if(user) loadChatList();
+  if (!nickname && user) nickname = user.displayName;
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
 });
 
-// Отправка сообщений
-async function sendMessage() {
-  const input = document.getElementById("messageInput");
-  if (!input.value || !currentUser || !currentChatId) return;
+// Смена ника
+function setNickname() {
+  const input = document.getElementById("nickname");
+  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
+  input.value = "";
+  alert("Твой ник теперь: " + nickname);
+}
+window.setNickname = setNickname;
 
-  await addDoc(collection(db, "chats", currentChatId, "messages"), {
+// Отправка сообщений
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  if (!input.value || !currentUser) return;
+  addDoc(collection(db, "messages"), {
     text: input.value,
-    user: document.getElementById("username").value || currentUser.displayName,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
     uid: currentUser.uid,
     time: Date.now()
   });
-
   input.value = "";
 }
+window.sendMessage = sendMessage;
+
+// Чат
+const chat = document.getElementById("chat");
+const q = query(collection(db, "messages"), orderBy("time"));
+
+onSnapshot(q, (snapshot) => {
+  chat.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const isMe = currentUser && data.uid === currentUser.uid;
+    const div = document.createElement("div");
+    div.className = "message " + (isMe ? "me" : "other");
+    div.innerHTML = `
+      <div class="name">${data.user}</div>
+      ${data.text}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+    `;
+    chat.appendChild(div);
+  });
+  chat.scrollTop = chat.scrollHeight;
+});
 
 // Удаление сообщений
-async function deleteMessage(chatId, messageId) {
-  await deleteDoc(doc(db, "chats", chatId, "messages", messageId));
+async function deleteMessage(id) {
+  await deleteDoc(doc(db, "messages", id));
 }
+window.deleteMessage = deleteMessage;
 
-// Загрузка сообщений выбранного чата
-async function loadMessages(chatId) {
-  currentChatId = chatId;
-  const chatWindow = document.getElementById("chatWindow");
-  const q = query(collection(db, "chats", chatId, "messages"), orderBy("time"));
-
-  onSnapshot(q, snapshot => {
-    chatWindow.innerHTML = "";
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const isMe = currentUser && data.uid === currentUser.uid;
-      const div = document.createElement("div");
-      div.className = "message " + (isMe ? "me" : "other");
-      div.innerHTML = `<div class="name">${data.user}</div>${data.text}${isMe?`<span class="delete-btn" onclick="deleteMessage('${chatId}','${docSnap.id}')">❌</span>`:""}`;
-      chatWindow.appendChild(div);
-    });
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  });
+// Смена темы
+function toggleTheme() {
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
 }
-
-// Загрузка списка чатов
-async function loadChatList() {
-  const chatListDiv = document.getElementById("chatList");
-  chatListDiv.innerHTML = "";
-
-  const chatsSnap = await getDocs(collection(db, "chats"));
-  chatsSnap.forEach(chatDoc => {
-    const chatData = chatDoc.data();
-    const div = document.createElement("div");
-    div.className = "chatItem";
-    div.textContent = chatData.name || chatData.users?.filter(u => u!==currentUser.email)?.[0] || "Групповой чат";
-    div.onclick = () => loadMessages(chatDoc.id);
-    chatListDiv.appendChild(div);
-  });
-
-  // Если нет старого группового чата — создаем
-  const groupChatRef = doc(db, "chats", "group_chat");
-  setDoc(groupChatRef, {name: "Групповой чат", users: []}, {merge:true});
-  loadMessages("group_chat");
-}
-
-// Создать личный чат по почте
-async function startPrivateChat() {
-  const email = document.getElementById("searchUser").value.trim();
-  if(!email || email === currentUser.email) return;
-
-  // Создаем чат с id = uid1_uid2 сортированные
-  const chatId = [currentUser.email,email].sort().join("_");
-  const chatRef = doc(db,"chats",chatId);
-  await setDoc(chatRef, {users:[currentUser.email,email]}, {merge:true});
-  loadChatList();
-}
-
-// Создать групповой чат
-async function createGroupChat() {
-  const chatId = "group_" + Date.now();
-  const chatRef = doc(db,"chats",chatId);
-  await setDoc(chatRef, {name:"Новая группа", users:[]});
-  loadChatList();
-}
+window.toggleTheme = toggleTheme;
 
 </script>
 </body>
