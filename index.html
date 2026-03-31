@@ -17,13 +17,17 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background-color: inherit;
     padding: 10px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
+
+  /* Цвет панели по теме */
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #e2e8f0; }
 
   /* Кнопки панели */
   #userPanel button {
@@ -36,19 +40,11 @@
   }
 
   /* Цвет кнопок по теме */
-  body.dark #userPanel button {
-    background-color: #2563eb;
-    color: white;
-  }
-  body.light #userPanel button {
-    background-color: #3b82f6;
-    color: white;
-  }
+  body.dark #userPanel button { background-color: #2563eb; color: white; }
+  body.light #userPanel button { background-color: #3b82f6; color: white; }
 
   /* Ховер для кнопок */
-  #userPanel button:hover {
-    opacity: 0.9;
-  }
+  #userPanel button:hover { opacity: 0.9; }
 
   /* Адаптивность на мобильных */
   @media (max-width: 600px) {
@@ -61,15 +57,15 @@
 
   .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
-  .dark .other { background: #334155; }
-  .light .other { background: #e2e8f0; }
+  .dark .other { background: #334155; color: white; }
+  .light .other { background: #e2e8f0; color: black; }
 
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
   #inputArea { display: flex; padding: 10px; }
   .dark #inputArea { background: #1e293b; }
-  .light #inputArea { background: #e2e8f0; }
+  .light #inputArea { background: #f1f5f9; }
 
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
   button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
@@ -116,7 +112,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let currentUser = null;
-let nickname = "";
+let nickname = localStorage.getItem("nickname") || "";
 
 // Вход через Google
 async function login() {
@@ -145,6 +141,7 @@ function setNickname() {
   document.getElementById("userInfo").innerText =
     currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
+  localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
 }
 window.setNickname = setNickname;
