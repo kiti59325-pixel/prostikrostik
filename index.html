@@ -12,7 +12,6 @@
   .dark header { background: #1e293b; }
   .light header { background: #e2e8f0; }
 
-  /* Панель с ником и кнопками всегда сверху */
   #userPanel {
     position: sticky;
     top: 0;
@@ -25,11 +24,9 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 
-  /* Цвет панели по теме */
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #e2e8f0; }
 
-  /* Кнопки панели */
   #userPanel button {
     border-radius: 12px;
     padding: 10px 15px;
@@ -39,14 +36,11 @@
     transition: 0.2s;
   }
 
-  /* Цвет кнопок по теме */
   body.dark #userPanel button { background-color: #2563eb; color: white; }
   body.light #userPanel button { background-color: #3b82f6; color: white; }
 
-  /* Ховер для кнопок */
   #userPanel button:hover { opacity: 0.9; }
 
-  /* Адаптивность на мобильных */
   @media (max-width: 600px) {
     #userPanel { flex-direction: column; }
     #userPanel button, #userPanel input { width: 100%; font-size: 16px; padding: 12px; }
@@ -69,15 +63,15 @@
 
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
 
-  /* 🔹 Исправленный цвет строки ввода сообщений для светлой темы */
+  /* 🔹 Обновлённая строка ввода (в стиле верхней панели + тень) */
   body.light #messageInput {
-    background-color: #e0e7ff; /* мягкий голубой */
+    background-color: #e2e8f0; /* как верхняя панель */
     color: black;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
 
   button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
 
-  /* Кнопка смены темы */
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; }
 </style>
 </head>
@@ -121,7 +115,6 @@ const auth = getAuth(app);
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
 
-// Вход через Google
 async function login() {
   const provider = new GoogleAuthProvider();
   await signInWithPopup(auth, provider);
@@ -133,7 +126,6 @@ function logout() {
 }
 window.logout = logout;
 
-// Авторизация
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
@@ -141,7 +133,6 @@ onAuthStateChanged(auth, (user) => {
     user ? "Ты: " + nickname : "Не вошёл";
 });
 
-// Смена ника
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
@@ -153,7 +144,6 @@ function setNickname() {
 }
 window.setNickname = setNickname;
 
-// Отправка сообщений
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
@@ -167,7 +157,6 @@ function sendMessage() {
 }
 window.sendMessage = sendMessage;
 
-// Чат
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 
@@ -188,13 +177,11 @@ onSnapshot(q, (snapshot) => {
   chat.scrollTop = chat.scrollHeight;
 });
 
-// Удаление сообщений
 async function deleteMessage(id) {
   await deleteDoc(doc(db, "messages", id));
 }
 window.deleteMessage = deleteMessage;
 
-// Смена темы
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle("dark");
