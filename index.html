@@ -67,25 +67,8 @@
   .dark #inputArea { background: #1e293b; }
   .light #inputArea { background: #f1f5f9; }
 
-  /* Строка ввода сообщения */
-  #messageInput {
-    flex: 1;
-    padding: 10px;
-    border-radius: 20px; /* закруглённая */
-    border: none;
-    outline: none;
-    font-size: 14px;
-    background-color: #2a2f45; /* для тёмной темы */
-    color: white;
-  }
-  body.light #messageInput { background-color: #e0e7ff; color: black; } /* светлая тема */
-  
-  #inputArea button {
-    margin-left: 10px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    cursor: pointer;
-  }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
 
   /* Кнопка смены темы */
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; }
