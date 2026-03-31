@@ -1,33 +1,26 @@
-<header>
-  ПростикРостик
-  <button class="theme-btn" onclick="toggleTheme()">🌗</button>
-</header>
+<!-- Панель с ником и кнопками -->
+<div id="userPanel">
+  <input id="nickname" placeholder="Придумай ник..." />
+  <button onclick="setNickname()">Сохранить ник</button>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
+  <div id="userInfo"></div>
+</div>
 
-<div class="container">
+<div id="chat"></div>
 
-  <div id="userPanel">
-    <input id="nickname" placeholder="Придумай ник..." />
-    <button onclick="setNickname()">Сохранить ник</button>
-    <button onclick="login()">Войти через Google</button>
-    <button onclick="logout()">Выйти</button>
-    <div id="userInfo"></div>
-  </div>
-
-  <div id="chat"></div>
-
-  <div id="inputArea">
-    <input id="messageInput" placeholder="Сообщение..." />
-    <button onclick="sendMessage()">➤</button>
-  </div>
+<div id="inputArea">
+  <input id="messageInput" placeholder="Сообщение..." />
+  <button onclick="sendMessage()">➤</button>
 </div>
 
 <style>
 /* Фиксируем панель с ником и кнопками сверху */
 #userPanel {
-  position: sticky;
+  position: sticky; /* фиксируется при прокрутке */
   top: 0;
   z-index: 100;
-  background-color: inherit;
+  background-color: inherit; /* сохраняет тему */
   padding: 10px;
   display: flex;
   flex-wrap: wrap;
@@ -35,32 +28,7 @@
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Тёмная тема — фон инпутов */
-body.dark input {
-  background-color: #1e293b;
-  color: white;
-}
-
-/* Светлая тема — фон инпутов */
-body.light input {
-  background-color: #e2e8f0;
-  color: black;
-}
-
-/* Кнопка смены темы */
-.theme-btn {
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 18px;
-}
-.theme-btn:hover {
-  background-color: rgba(255,255,255,0.1);
-}
-
-/* Адаптивность */
+/* Адаптивность на телефоне */
 @media (max-width: 600px) {
   #userPanel { flex-direction: column; }
   #userPanel button { width: 100%; }
