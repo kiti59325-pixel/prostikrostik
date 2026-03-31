@@ -60,7 +60,7 @@
   #inputArea { 
     display: flex; 
     padding: 10px; 
-    justify-content: center; /* центрируем */
+    justify-content: center;
   }
 
   .dark #inputArea { background: #1e293b; }
@@ -77,19 +77,19 @@
     font-size: 14px; 
   }
 
-  /* 🔹 Светлая тема (как сделали ранее) */
+  /* Светлая тема */
   body.light #messageInput {
     background-color: #e2e8f0;
     color: black;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
 
-  /* 🔥 ТЁМНАЯ ТЕМА — новая стильная строка ввода */
+  /* Тёмная тема */
   body.dark #messageInput {
-    max-width: 500px;            /* уже */
+    max-width: 500px;
     width: 100%;
-    background-color: #0f172a;   /* чуть темнее панели */
-    border-radius: 25px;         /* сильное скругление */
+    background-color: #0f172a;
+    border-radius: 25px;
     padding: 12px 16px;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05),
                 0 2px 6px rgba(0,0,0,0.4);
@@ -123,7 +123,96 @@
 </div>
 
 <script type="module">
-/* JS без изменений */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser = null;
+let nickname = localStorage.getItem("nickname") || "";
+
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
+window.login = login;
+
+function logout() {
+  signOut(auth);
+}
+window.logout = logout;
+
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  if (!nickname && user) nickname = user.displayName;
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
+});
+
+function setNickname() {
+  const input = document.getElementById("nickname");
+  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
+  input.value = "";
+  localStorage.setItem("nickname", nickname);
+  alert("Твой ник теперь: " + nickname);
+}
+window.setNickname = setNickname;
+
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  if (!input.value || !currentUser) return;
+  addDoc(collection(db, "messages"), {
+    text: input.value,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    uid: currentUser.uid,
+    time: Date.now()
+  });
+  input.value = "";
+}
+window.sendMessage = sendMessage;
+
+const chat = document.getElementById("chat");
+const q = query(collection(db, "messages"), orderBy("time"));
+
+onSnapshot(q, (snapshot) => {
+  chat.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const isMe = currentUser && data.uid === currentUser.uid;
+    const div = document.createElement("div");
+    div.className = "message " + (isMe ? "me" : "other");
+    div.innerHTML = `
+      <div class="name">${data.user}</div>
+      ${data.text}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+    `;
+    chat.appendChild(div);
+  });
+  chat.scrollTop = chat.scrollHeight;
+});
+
+async function deleteMessage(id) {
+  await deleteDoc(doc(db, "messages", id));
+}
+window.deleteMessage = deleteMessage;
+
+function toggleTheme() {
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
+}
+window.toggleTheme = toggleTheme;
 </script>
 </body>
 </html>
