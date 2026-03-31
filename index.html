@@ -2,214 +2,358 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ПростикРостик Chat</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ПростикРостик v2</title>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; }
-  body.dark { background: #0f172a; color: white; }
-  body.light { background: #f1f5f9; color: black; }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: 0.3s;
+  }
 
-  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
-  .dark header { background: #1e293b; }
-  .light header { background: #e2e8f0; }
+  body.dark {
+    background: #0f172a;
+    color: #f1f5f9;
+  }
 
-  #sidebar { width: 250px; border-right: 1px solid #ccc; display: flex; flex-direction: column; }
-  .dark #sidebar { border-color: #334155; background: #1e293b; }
-  .light #sidebar { background: #f8fafc; }
+  body.light {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
 
-  #chatList { flex: 1; overflow-y: auto; }
-  .chat-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd; }
-  .dark .chat-item { border-color: #334155; }
-  .chat-item.active { background: #3b82f6; color: #fff; }
+  header {
+    padding: 15px;
+    font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-  #main { flex: 1; display: flex; flex-direction: column; }
-  #chatHeader { padding: 10px; font-weight: bold; border-bottom: 1px solid #ccc; }
-  .dark #chatHeader { border-color: #334155; }
+  body.dark header {
+    background: #1e293b;
+  }
 
-  #chat { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; }
-  .message { max-width: 60%; margin: 5px 0; padding: 8px 12px; border-radius: 12px; word-wrap: break-word; position: relative; }
-  .message.me { background: #3b82f6; color: white; align-self: flex-end; }
-  .message.other { background: #e2e8f0; align-self: flex-start; }
-  .dark .message.other { background: #334155; color: #fff; }
+  body.light header {
+    background: #e2e8f0;
+  }
 
-  .message .name { font-size: 11px; opacity: 0.7; margin-bottom: 2px; }
-  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+  button {
+    border: none;
+    border-radius: 15px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+  }
 
-  #inputArea { display: flex; padding: 10px; border-top: 1px solid #ccc; background: #f8fafc; }
-  .dark #inputArea { background: #1e293b; border-color: #334155; }
-  #messageInput { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; }
-  #sendBtn { margin-left: 10px; padding: 10px 15px; border: none; border-radius: 10px; background: #3b82f6; color: white; cursor: pointer; }
+  body.dark button {
+    background: #334155;
+    color: #f1f5f9;
+  }
 
-  #userPanel { padding: 10px; border-bottom: 1px solid #ccc; }
-  .dark #userPanel { border-color: #334155; }
-  #username { padding: 5px; border-radius: 6px; border: 1px solid #ccc; }
-  .dark #username { background: #334155; color: #fff; border-color: #555; }
-  #setNick { margin-left: 5px; padding: 5px 10px; cursor: pointer; }
+  body.light button {
+    background: #cbd5e1;
+    color: #0f172a;
+  }
+
+  button:hover {
+    opacity: 0.8;
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #888;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+  }
+
+  .tab.active {
+    border-bottom-color: #3b82f6;
+    font-weight: bold;
+  }
+
+  .tabContent {
+    display: none;
+    padding: 10px;
+  }
+
+  .tabContent.active {
+    display: block;
+  }
+
+  #chatList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chatItem {
+    padding: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  body.dark .chatItem {
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+
+  body.light .chatItem {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .chatItem:hover {
+    opacity: 0.8;
+  }
+
+  #chatWindow {
+    border: 1px solid #888;
+    border-radius: 12px;
+    padding: 10px;
+    height: 400px;
+    overflow-y: auto;
+    margin-top: 10px;
+  }
+
+  .message {
+    max-width: 60%;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 12px;
+    position: relative;
+    word-wrap: break-word;
+    display: inline-block;
+    clear: both;
+  }
+
+  .me {
+    background: #3b82f6;
+    color: white;
+    align-self: flex-end;
+    float: right;
+  }
+
+  .other {
+    background: #64748b;
+    color: white;
+    align-self: flex-start;
+    float: left;
+  }
+
+  .name {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-bottom: 2px;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  #messageInputArea {
+    display: flex;
+    margin-top: 10px;
+    gap: 10px;
+  }
+
+  #messageInput {
+    flex: 1;
+    border-radius: 12px;
+    padding: 10px;
+    border: 1px solid #888;
+    outline: none;
+  }
+
+  #searchUser {
+    border-radius: 12px;
+    padding: 8px;
+    border: 1px solid #888;
+    outline: none;
+  }
+
 </style>
 </head>
 <body class="dark">
+
 <header>
-  ПростикРостик
-  <button onclick="toggleTheme()">🌗</button>
+  ПростикРостик v2
+  <div>
+    <button onclick="toggleTheme()">🌗</button>
+  </div>
 </header>
 
-<div style="display:flex; height:calc(100vh - 60px);">
-  <!-- Сайдбар -->
-  <div id="sidebar">
-    <div id="userPanel">
-      <input id="username" placeholder="Ник..." />
-      <button id="setNick">Установить</button>
-      <button onclick="login()">Войти через Google</button>
-      <button onclick="logout()">Выйти</button>
-      <div id="currentUser">Не вошёл</div>
-    </div>
+<div class="tabs">
+  <div class="tab active" onclick="openTab('chats')">Чаты</div>
+  <div class="tab" onclick="openTab('account')">Аккаунт</div>
+</div>
 
-    <h3>Чаты</h3>
-    <div id="chatList"></div>
-    <button id="createChat">Создать чат</button>
+<div id="chats" class="tabContent active">
+  <div>
+    <input id="searchUser" placeholder="Искать по почте..." />
+    <button onclick="startPrivateChat()">Создать чат</button>
+    <button onclick="createGroupChat()">Создать групповой чат</button>
   </div>
+  <div id="chatList"></div>
+  <div id="chatWindow"></div>
+  <div id="messageInputArea">
+    <input id="messageInput" placeholder="Сообщение..." />
+    <button onclick="sendMessage()">➤</button>
+  </div>
+</div>
 
-  <!-- Главное окно -->
-  <div id="main">
-    <div id="chatHeader">Выберите чат</div>
-    <div id="chat"></div>
-    <div id="inputArea">
-      <input id="messageInput" placeholder="Сообщение..." />
-      <button id="sendBtn">➤</button>
-    </div>
+<div id="account" class="tabContent">
+  <div>
+    <input id="username" placeholder="Ник..." />
+    <button onclick="login()">Войти через Google</button>
+    <button onclick="logout()">Выйти</button>
+    <div id="userInfo"></div>
   </div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
-    authDomain: "prostikrostik-90812.firebaseapp.com",
-    projectId: "prostikrostik-90812"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+const firebaseConfig = {
+  apiKey: "ВАШ_API_KEY",
+  authDomain: "ВАШ_PROJECT_ID.firebaseapp.com",
+  projectId: "ВАШ_PROJECT_ID"
+};
 
-  let currentUser = null;
-  let currentChatId = null;
-  let username = "";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-  const chatListEl = document.getElementById("chatList");
-  const chatHeaderEl = document.getElementById("chatHeader");
-  const chatEl = document.getElementById("chat");
-  const messageInput = document.getElementById("messageInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const usernameInput = document.getElementById("username");
-  const setNickBtn = document.getElementById("setNick");
-  const currentUserEl = document.getElementById("currentUser");
-  const createChatBtn = document.getElementById("createChat");
+let currentUser = null;
+let currentChatId = "group_chat"; // старый чат
 
-  // 🌗 Тёмная/светлая тема
-  function toggleTheme() {
-    document.body.classList.toggle("dark");
-    document.body.classList.toggle("light");
-  }
+// 🌗 Тема
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+  document.body.classList.toggle("light");
+}
+window.toggleTheme = toggleTheme;
 
-  // 🔐 Google вход
-  async function login() {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  }
+// Вкладки
+function openTab(tabName) {
+  document.querySelectorAll(".tabContent").forEach(t => t.classList.remove("active"));
+  document.getElementById(tabName).classList.add("active");
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add("active");
+}
+window.openTab = openTab;
 
-  function logout() { signOut(auth); }
+// 🔐 Вход через Google
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
+window.login = login;
 
-  onAuthStateChanged(auth, user => {
-    currentUser = user;
-    if(user) {
-      username = user.displayName;
-      currentUserEl.innerText = "Ты: " + username;
-      usernameInput.value = username;
-    } else {
-      username = "";
-      currentUserEl.innerText = "Не вошёл";
-      usernameInput.value = "";
-    }
+function logout() {
+  signOut(auth);
+}
+window.logout = logout;
+
+// Проверка авторизации
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  document.getElementById("userInfo").innerText = user ? `Ты: ${user.displayName}` : "Не вошёл";
+  if(user) loadChatList();
+});
+
+// Отправка сообщений
+async function sendMessage() {
+  const input = document.getElementById("messageInput");
+  if (!input.value || !currentUser || !currentChatId) return;
+
+  await addDoc(collection(db, "chats", currentChatId, "messages"), {
+    text: input.value,
+    user: document.getElementById("username").value || currentUser.displayName,
+    uid: currentUser.uid,
+    time: Date.now()
   });
 
-  setNickBtn.onclick = () => {
-    const val = usernameInput.value.trim();
-    if(val) {
-      username = val;
-      currentUserEl.innerText = "Ты: " + username;
-    }
-  };
+  input.value = "";
+}
 
-  sendBtn.onclick = async () => {
-    if(!messageInput.value || !username || !currentChatId) return;
-    await addDoc(collection(db, "chats", currentChatId, "messages"), {
-      text: messageInput.value,
-      user: username,
-      time: Date.now()
+// Удаление сообщений
+async function deleteMessage(chatId, messageId) {
+  await deleteDoc(doc(db, "chats", chatId, "messages", messageId));
+}
+
+// Загрузка сообщений выбранного чата
+async function loadMessages(chatId) {
+  currentChatId = chatId;
+  const chatWindow = document.getElementById("chatWindow");
+  const q = query(collection(db, "chats", chatId, "messages"), orderBy("time"));
+
+  onSnapshot(q, snapshot => {
+    chatWindow.innerHTML = "";
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const isMe = currentUser && data.uid === currentUser.uid;
+      const div = document.createElement("div");
+      div.className = "message " + (isMe ? "me" : "other");
+      div.innerHTML = `<div class="name">${data.user}</div>${data.text}${isMe?`<span class="delete-btn" onclick="deleteMessage('${chatId}','${docSnap.id}')">❌</span>`:""}`;
+      chatWindow.appendChild(div);
     });
-    messageInput.value = "";
-  };
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  });
+}
 
-  createChatBtn.onclick = async () => {
-    const isGroup = confirm("Создать групповой чат? Отмена = личный чат с одним пользователем");
-    let name = "";
-    if(isGroup) {
-      name = prompt("Название группы:");
-      if(!name) return;
-    } else {
-      name = prompt("Введите ник собеседника для личного чата:");
-      if(!name) return;
-    }
+// Загрузка списка чатов
+async function loadChatList() {
+  const chatListDiv = document.getElementById("chatList");
+  chatListDiv.innerHTML = "";
 
-    const chatRef = doc(collection(db, "chats"));
-    await setDoc(chatRef, { name, isGroup });
-    loadChats();
-  };
+  const chatsSnap = await getDocs(collection(db, "chats"));
+  chatsSnap.forEach(chatDoc => {
+    const chatData = chatDoc.data();
+    const div = document.createElement("div");
+    div.className = "chatItem";
+    div.textContent = chatData.name || chatData.users?.filter(u => u!==currentUser.email)?.[0] || "Групповой чат";
+    div.onclick = () => loadMessages(chatDoc.id);
+    chatListDiv.appendChild(div);
+  });
 
-  async function loadChats() {
-    chatListEl.innerHTML = "";
-    const q = query(collection(db, "chats"), orderBy("name"));
-    onSnapshot(q, snapshot => {
-      chatListEl.innerHTML = "";
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "chat-item" + (docSnap.id===currentChatId?" active":"");
-        div.innerText = data.isGroup ? data.name : data.name; // Личные = ник
-        div.onclick = () => selectChat(docSnap.id, data);
-        chatListEl.appendChild(div);
-      });
-    });
-  }
+  // Если нет старого группового чата — создаем
+  const groupChatRef = doc(db, "chats", "group_chat");
+  setDoc(groupChatRef, {name: "Групповой чат", users: []}, {merge:true});
+  loadMessages("group_chat");
+}
 
-  function selectChat(id, data){
-    currentChatId = id;
-    chatHeaderEl.innerText = data.isGroup ? data.name : data.name;
-    loadMessages(id);
-    document.querySelectorAll(".chat-item").forEach(el => el.classList.remove("active"));
-    event.currentTarget?.classList.add("active");
-  }
+// Создать личный чат по почте
+async function startPrivateChat() {
+  const email = document.getElementById("searchUser").value.trim();
+  if(!email || email === currentUser.email) return;
 
-  function loadMessages(chatId){
-    chatEl.innerHTML = "";
-    const q = query(collection(db, "chats", chatId, "messages"), orderBy("time"));
-    onSnapshot(q, snapshot => {
-      chatEl.innerHTML = "";
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "message " + (data.user===username ? "me":"other");
-        div.innerHTML = `<div class="name">${data.user}</div>${data.text}`;
-        chatEl.appendChild(div);
-        chatEl.scrollTop = chatEl.scrollHeight;
-      });
-    });
-  }
+  // Создаем чат с id = uid1_uid2 сортированные
+  const chatId = [currentUser.email,email].sort().join("_");
+  const chatRef = doc(db,"chats",chatId);
+  await setDoc(chatRef, {users:[currentUser.email,email]}, {merge:true});
+  loadChatList();
+}
 
-  loadChats();
+// Создать групповой чат
+async function createGroupChat() {
+  const chatId = "group_" + Date.now();
+  const chatRef = doc(db,"chats",chatId);
+  await setDoc(chatRef, {name:"Новая группа", users:[]});
+  loadChatList();
+}
+
 </script>
 </body>
 </html>
