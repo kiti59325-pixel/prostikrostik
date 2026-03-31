@@ -4,151 +4,72 @@
 <meta charset="UTF-8">
 <title>ПростикРостик Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-  /* 🌑 Общие стили */
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f1f5f9;
-    color: #111;
-    display: flex;
-    height: 100vh;
-  }
+  body { margin: 0; font-family: Arial; transition: 0.3s; }
+  body.dark { background: #0f172a; color: white; }
+  body.light { background: #f1f5f9; color: black; }
 
-  .dark { background: #0f172a; color: #fff; }
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
+  .dark header { background: #1e293b; }
+  .light header { background: #e2e8f0; }
 
-  /* 🌟 Сайдбар с чатами */
-  #sidebar {
-    width: 250px;
-    border-right: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    background: #f8fafc;
-  }
-  .dark #sidebar { background: #1e293b; border-color: #334155; }
+  #sidebar { width: 250px; border-right: 1px solid #ccc; display: flex; flex-direction: column; }
+  .dark #sidebar { border-color: #334155; background: #1e293b; }
+  .light #sidebar { background: #f8fafc; }
 
-  #sidebar h2 {
-    margin: 10px;
-    font-size: 18px;
-  }
-
-  #chatList {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  .chat-item {
-    padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #ddd;
-  }
+  #chatList { flex: 1; overflow-y: auto; }
+  .chat-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd; }
   .dark .chat-item { border-color: #334155; }
   .chat-item.active { background: #3b82f6; color: #fff; }
 
-  /* 🗨️ Окно сообщений */
-  #main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  #chatHeader {
-    padding: 10px;
-    font-weight: bold;
-    border-bottom: 1px solid #ccc;
-  }
+  #main { flex: 1; display: flex; flex-direction: column; }
+  #chatHeader { padding: 10px; font-weight: bold; border-bottom: 1px solid #ccc; }
   .dark #chatHeader { border-color: #334155; }
 
-  #chat {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .message {
-    max-width: 60%;
-    margin: 5px 0;
-    padding: 8px 12px;
-    border-radius: 12px;
-    word-wrap: break-word;
-    position: relative;
-  }
+  #chat { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; }
+  .message { max-width: 60%; margin: 5px 0; padding: 8px 12px; border-radius: 12px; word-wrap: break-word; position: relative; }
   .message.me { background: #3b82f6; color: white; align-self: flex-end; }
   .message.other { background: #e2e8f0; align-self: flex-start; }
   .dark .message.other { background: #334155; color: #fff; }
 
-  .message .name {
-    font-size: 11px;
-    opacity: 0.7;
-    margin-bottom: 2px;
-  }
+  .message .name { font-size: 11px; opacity: 0.7; margin-bottom: 2px; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  .delete-btn {
-    position: absolute;
-    top: 2px;
-    right: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    opacity: 0.6;
-  }
-
-  /* 📝 Ввод сообщения */
-  #inputArea {
-    display: flex;
-    padding: 10px;
-    border-top: 1px solid #ccc;
-    background: #f8fafc;
-  }
+  #inputArea { display: flex; padding: 10px; border-top: 1px solid #ccc; background: #f8fafc; }
   .dark #inputArea { background: #1e293b; border-color: #334155; }
+  #messageInput { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; }
+  #sendBtn { margin-left: 10px; padding: 10px 15px; border: none; border-radius: 10px; background: #3b82f6; color: white; cursor: pointer; }
 
-  #messageInput {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    outline: none;
-  }
-
-  #sendBtn {
-    margin-left: 10px;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 10px;
-    background: #3b82f6;
-    color: white;
-    cursor: pointer;
-  }
-
-  /* 👤 Панель пользователя */
-  #userPanel {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-  }
+  #userPanel { padding: 10px; border-bottom: 1px solid #ccc; }
   .dark #userPanel { border-color: #334155; }
   #username { padding: 5px; border-radius: 6px; border: 1px solid #ccc; }
   .dark #username { background: #334155; color: #fff; border-color: #555; }
   #setNick { margin-left: 5px; padding: 5px 10px; cursor: pointer; }
 </style>
 </head>
+<body class="dark">
+<header>
+  ПростикРостик
+  <button onclick="toggleTheme()">🌗</button>
+</header>
 
-<body class="light">
-  <!-- 🌟 Сайдбар с чатами -->
+<div style="display:flex; height:calc(100vh - 60px);">
+  <!-- Сайдбар -->
   <div id="sidebar">
     <div id="userPanel">
       <input id="username" placeholder="Ник..." />
       <button id="setNick">Установить</button>
+      <button onclick="login()">Войти через Google</button>
+      <button onclick="logout()">Выйти</button>
       <div id="currentUser">Не вошёл</div>
     </div>
 
-    <h2>Чаты</h2>
+    <h3>Чаты</h3>
     <div id="chatList"></div>
     <button id="createChat">Создать чат</button>
   </div>
 
-  <!-- 🗨️ Главное окно -->
+  <!-- Главное окно -->
   <div id="main">
     <div id="chatHeader">Выберите чат</div>
     <div id="chat"></div>
@@ -157,113 +78,138 @@
       <button id="sendBtn">➤</button>
     </div>
   </div>
+</div>
 
-  <!-- 🔥 Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
-      authDomain: "prostikrostik-90812.firebaseapp.com",
-      projectId: "prostikrostik-90812"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+    authDomain: "prostikrostik-90812.firebaseapp.com",
+    projectId: "prostikrostik-90812"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    // 🌟 Глобальные переменные
-    let currentUser = null;
-    let currentChatId = null;
-    let username = "";
+  let currentUser = null;
+  let currentChatId = null;
+  let username = "";
 
-    const chatListEl = document.getElementById("chatList");
-    const chatHeaderEl = document.getElementById("chatHeader");
-    const chatEl = document.getElementById("chat");
-    const messageInput = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const usernameInput = document.getElementById("username");
-    const setNickBtn = document.getElementById("setNick");
-    const currentUserEl = document.getElementById("currentUser");
-    const createChatBtn = document.getElementById("createChat");
+  const chatListEl = document.getElementById("chatList");
+  const chatHeaderEl = document.getElementById("chatHeader");
+  const chatEl = document.getElementById("chat");
+  const messageInput = document.getElementById("messageInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const usernameInput = document.getElementById("username");
+  const setNickBtn = document.getElementById("setNick");
+  const currentUserEl = document.getElementById("currentUser");
+  const createChatBtn = document.getElementById("createChat");
 
-    // 📝 Установить ник
-    setNickBtn.onclick = () => {
-      const val = usernameInput.value.trim();
-      if(val) {
-        username = val;
-        currentUserEl.innerText = "Ты: " + username;
-      }
+  // 🌗 Тёмная/светлая тема
+  function toggleTheme() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  // 🔐 Google вход
+  async function login() {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  }
+
+  function logout() { signOut(auth); }
+
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    if(user) {
+      username = user.displayName;
+      currentUserEl.innerText = "Ты: " + username;
+      usernameInput.value = username;
+    } else {
+      username = "";
+      currentUserEl.innerText = "Не вошёл";
+      usernameInput.value = "";
     }
+  });
 
-    // 💬 Отправка сообщения
-    sendBtn.onclick = async () => {
-      if(!messageInput.value || !username || !currentChatId) return;
-
-      await addDoc(collection(db, "chats", currentChatId, "messages"), {
-        text: messageInput.value,
-        user: username,
-        time: Date.now()
-      });
-
-      messageInput.value = "";
+  setNickBtn.onclick = () => {
+    const val = usernameInput.value.trim();
+    if(val) {
+      username = val;
+      currentUserEl.innerText = "Ты: " + username;
     }
+  };
 
-    // 🆕 Создание нового чата
-    createChatBtn.onclick = async () => {
-      const name = prompt("Название чата:");
+  sendBtn.onclick = async () => {
+    if(!messageInput.value || !username || !currentChatId) return;
+    await addDoc(collection(db, "chats", currentChatId, "messages"), {
+      text: messageInput.value,
+      user: username,
+      time: Date.now()
+    });
+    messageInput.value = "";
+  };
+
+  createChatBtn.onclick = async () => {
+    const isGroup = confirm("Создать групповой чат? Отмена = личный чат с одним пользователем");
+    let name = "";
+    if(isGroup) {
+      name = prompt("Название группы:");
       if(!name) return;
-
-      const chatRef = doc(collection(db, "chats"));
-      await setDoc(chatRef, { name });
-      loadChats();
+    } else {
+      name = prompt("Введите ник собеседника для личного чата:");
+      if(!name) return;
     }
 
-    // 📋 Загрузка чатов
-    async function loadChats() {
-      chatListEl.innerHTML = "";
-      const q = query(collection(db, "chats"), orderBy("name"));
-      onSnapshot(q, snapshot => {
-        chatListEl.innerHTML = "";
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const div = document.createElement("div");
-          div.className = "chat-item" + (docSnap.id===currentChatId?" active":"");
-          div.innerText = data.name;
-          div.onclick = () => selectChat(docSnap.id, data.name);
-          chatListEl.appendChild(div);
-        });
-      });
-    }
-
-    // 🔹 Выбор чата
-    function selectChat(id, name){
-      currentChatId = id;
-      chatHeaderEl.innerText = name;
-      loadMessages(id);
-      // обновляем подсветку
-      document.querySelectorAll(".chat-item").forEach(el => el.classList.remove("active"));
-      event.currentTarget?.classList.add("active");
-    }
-
-    // 🔄 Загрузка сообщений
-    function loadMessages(chatId){
-      chatEl.innerHTML = "";
-      const q = query(collection(db, "chats", chatId, "messages"), orderBy("time"));
-      onSnapshot(q, snapshot => {
-        chatEl.innerHTML = "";
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const div = document.createElement("div");
-          div.className = "message " + (data.user===username ? "me":"other");
-          div.innerHTML = `<div class="name">${data.user}</div>${data.text}`;
-          chatEl.appendChild(div);
-          chatEl.scrollTop = chatEl.scrollHeight;
-        });
-      });
-    }
-
-    // 🚀 Инициализация
+    const chatRef = doc(collection(db, "chats"));
+    await setDoc(chatRef, { name, isGroup });
     loadChats();
-  </script>
+  };
+
+  async function loadChats() {
+    chatListEl.innerHTML = "";
+    const q = query(collection(db, "chats"), orderBy("name"));
+    onSnapshot(q, snapshot => {
+      chatListEl.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "chat-item" + (docSnap.id===currentChatId?" active":"");
+        div.innerText = data.isGroup ? data.name : data.name; // Личные = ник
+        div.onclick = () => selectChat(docSnap.id, data);
+        chatListEl.appendChild(div);
+      });
+    });
+  }
+
+  function selectChat(id, data){
+    currentChatId = id;
+    chatHeaderEl.innerText = data.isGroup ? data.name : data.name;
+    loadMessages(id);
+    document.querySelectorAll(".chat-item").forEach(el => el.classList.remove("active"));
+    event.currentTarget?.classList.add("active");
+  }
+
+  function loadMessages(chatId){
+    chatEl.innerHTML = "";
+    const q = query(collection(db, "chats", chatId, "messages"), orderBy("time"));
+    onSnapshot(q, snapshot => {
+      chatEl.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "message " + (data.user===username ? "me":"other");
+        div.innerHTML = `<div class="name">${data.user}</div>${data.text}`;
+        chatEl.appendChild(div);
+        chatEl.scrollTop = chatEl.scrollHeight;
+      });
+    });
+  }
+
+  loadChats();
+</script>
 </body>
 </html>
