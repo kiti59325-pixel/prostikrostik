@@ -2,26 +2,154 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; }
-  body.dark { background: #0f172a; color: white; }
-  body.light { background: #f1f5f9; color: black; }
-  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
-  .dark header { background: #1e293b; }
-  .light header { background: #e2e8f0; }
-  #chat { height: 70vh; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
-  .me { align-self: flex-end; background: #3b82f6; color: white; }
-  .dark .other { background: #334155; }
-  .light .other { background: #e2e8f0; }
-  .name { font-size: 11px; opacity: 0.7; }
-  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
-  #inputArea { display: flex; padding: 10px; }
-  .dark #inputArea { background: #1e293b; }
-  .light #inputArea { background: #e2e8f0; }
-  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; }
-  button { margin-left: 10px; padding: 10px; border: none; border-radius: 10px; cursor: pointer; }
+  :root {
+    --dark-bg: #0f172a;
+    --dark-header: #1e293b;
+    --dark-input: #1e293b;
+    --dark-other-msg: #334155;
+    --dark-btn: #3b82f6;
+    
+    --light-bg: #f1f5f9;
+    --light-header: #e2e8f0;
+    --light-input: #e2e8f0;
+    --light-other-msg: #d1d5db;
+    --light-btn: #3b82f6;
+  }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  body.dark {
+    background: var(--dark-bg);
+    color: white;
+  }
+
+  body.light {
+    background: var(--light-bg);
+    color: black;
+  }
+
+  header {
+    padding: 15px;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  body.dark header { background: var(--dark-header); }
+  body.light header { background: var(--light-header); }
+
+  .container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  #userPanel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  #userPanel input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+  }
+
+  #userPanel button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  body.dark #userPanel button { background: var(--dark-btn); color: white; }
+  body.light #userPanel button { background: var(--light-btn); color: white; }
+
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message {
+    max-width: 70%;
+    width: fit-content;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 15px;
+    position: relative;
+    word-wrap: break-word;
+  }
+
+  .me { align-self: flex-end; background: var(--dark-btn); color: white; }
+  .other { border-radius: 15px; }
+
+  body.dark .other { background: var(--dark-other-msg); }
+  body.light .other { background: var(--light-other-msg); }
+
+  .name {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-bottom: 3px;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  #inputArea {
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  #inputArea input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+  }
+
+  #inputArea button {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+  }
+
+  body.dark #inputArea { background: var(--dark-header); }
+  body.light #inputArea { background: var(--light-header); }
+
+  /* Адаптивность */
+  @media (max-width: 600px) {
+    header { font-size: 18px; }
+    #userPanel { flex-direction: column; }
+    #userPanel button { width: 100%; }
+  }
 </style>
 </head>
 <body class="dark">
@@ -31,20 +159,22 @@
   <button onclick="toggleTheme()">🌗</button>
 </header>
 
-<div style="padding:10px;">
-  <input id="nickname" placeholder="Придумай ник..." />
-  <button onclick="setNickname()">Сохранить ник</button>
-  <br><br>
-  <button onclick="login()">Войти через Google</button>
-  <button onclick="logout()">Выйти</button>
-  <div id="userInfo"></div>
-</div>
+<div class="container">
 
-<div id="chat"></div>
+  <div id="userPanel">
+    <input id="nickname" placeholder="Придумай ник..." />
+    <button onclick="setNickname()">Сохранить ник</button>
+    <button onclick="login()">Войти через Google</button>
+    <button onclick="logout()">Выйти</button>
+    <div id="userInfo"></div>
+  </div>
 
-<div id="inputArea">
-  <input id="messageInput" placeholder="Сообщение..." />
-  <button onclick="sendMessage()">➤</button>
+  <div id="chat"></div>
+
+  <div id="inputArea">
+    <input id="messageInput" placeholder="Сообщение..." />
+    <button onclick="sendMessage()">➤</button>
+  </div>
 </div>
 
 <script type="module">
@@ -68,13 +198,12 @@ let nickname = "";
 // Вход через Google
 async function login() {
   const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
+  try { await signInWithPopup(auth, provider); }
+  catch(e) { alert("Ошибка входа: " + e.message); }
 }
 window.login = login;
 
-function logout() {
-  signOut(auth);
-}
+function logout() { signOut(auth); }
 window.logout = logout;
 
 // Авторизация
@@ -124,7 +253,7 @@ onSnapshot(q, (snapshot) => {
     div.innerHTML = `
       <div class="name">${data.user}</div>
       ${data.text}
-      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : "" }
     `;
     chat.appendChild(div);
   });
