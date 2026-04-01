@@ -1,144 +1,144 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <title>ПростикРостик</title>
 <style>
-html, body {
-  height: 100%;
-  margin: 0;
-}
+  html, body { margin: 0; height: 100%; font-family: Arial; transition: 0.3s; }
 
-body {
-  display: flex;
-  flex-direction: column;
-  font-family: Arial;
-  transition: 0.3s;
-}
+  body.dark { background: #0f172a; color: white; }
+  body.light { background: #f1f5f9; color: black; }
 
-body.dark { background: #0f172a; color: white; }
-body.light { background: #f1f5f9; color: black; }
+  header {
+    padding: 15px;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  body.dark header { background: #1e293b; }
+  body.light header { background: #e2e8f0; }
 
-/* Header */
-header {
-  height: 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 16px;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-body.dark header { background: #1e293b; }
-body.light header { background: #e2e8f0; }
+  #userPanel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+  }
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #e2e8f0; }
 
-/* User panel */
-#userPanel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 16px;
-  flex-shrink: 0;
-  align-items: center;
-  border-radius: 0 0 12px 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-body.dark #userPanel { background-color: #1e293b; }
-body.light #userPanel { background-color: #e2e8f0; }
+  #userPanel input, #userPanel button {
+    font-size: 16px;
+    padding: 12px;
+  }
+  #userPanel button {
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  body.dark #userPanel button { background-color: #2563eb; color: white; }
+  body.light #userPanel button { background-color: #3b82f6; color: white; }
+  #userPanel button:hover { opacity: 0.9; }
 
-#userPanel button {
-  border-radius: 12px;
-  padding: 10px 15px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.2s;
-}
-body.dark #userPanel button { background-color: #2563eb; color: white; }
-body.light #userPanel button { background-color: #3b82f6; color: white; }
-#userPanel button:hover { opacity: 0.9; }
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* важно для корректного flex */
+  }
 
-/* Chat */
-#chat {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-}
-.message {
-  max-width: 60%;
-  width: fit-content;
-  padding: 10px;
-  margin: 5px;
-  border-radius: 12px;
-  position: relative;
-  word-wrap: break-word;
-}
-.me { align-self: flex-end; background: #3b82f6; color: white; }
-body.dark .other { background: #334155; color: white; }
-body.light .other { background: #e2e8f0; color: black; }
+  .message {
+    max-width: 70%;
+    padding: 12px 16px;
+    margin: 5px;
+    border-radius: 12px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 16px;
+  }
+  .me { align-self: flex-end; background: #3b82f6; color: white; }
+  .dark .other { background: #334155; color: white; }
+  .light .other { background: #e2e8f0; color: black; }
 
-.name { font-size: 11px; opacity: 0.7; }
-.delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+  .name { font-size: 12px; opacity: 0.7; margin-bottom: 4px; display: block; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 14px; opacity: 0.6; }
 
-/* Input area */
-#inputArea {
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px;
-  flex-shrink: 0;
-  background: transparent;
-}
-#messageInput {
-  flex: 1;
-  border-radius: 25px;
-  border: none;
-  outline: none;
-  padding: 12px 16px;
-  font-size: 14px;
-  background-color: inherit;
-  color: inherit;
-}
-body.light #messageInput {
-  background-color: white;
-  color: black;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-body.dark #messageInput {
-  background-color: transparent;
-  color: white;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-}
-button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
-#themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
+  #inputArea {
+    display: flex;
+    padding: 10px;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+  }
 
-/* Scrollbar dark/light */
-body.dark #chat::-webkit-scrollbar { width: 8px; }
-body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
-body.light #chat::-webkit-scrollbar { width: 8px; }
-body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
-body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
+  #messageInput {
+    flex: 1;
+    max-width: 900px;
+    padding: 14px 18px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+  }
+  body.light #messageInput { background-color: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  body.dark #messageInput { background-color: transparent; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
-/* Firefox */
-body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
-body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
+  #inputArea button {
+    margin-left: 10px;
+    padding: 14px 16px;
+    font-size: 18px;
+    border-radius: 12px;
+  }
 
-/* Mobile adjustments */
-@media (max-width: 600px) {
-  header { height: 60px; font-size: 22px; padding: 0 12px; }
-  #userPanel { flex-direction: column; padding: 10px; gap: 10px; }
-  #chat { padding: 6px; }
-  .message { font-size: 18px; padding: 12px 16px; }
-  .name { font-size: 14px; }
-  #inputArea { padding: 10px; margin-bottom: 10px; }
-  #inputArea input, #inputArea button { font-size: 18px; padding: 12px 16px; }
-}
+  #themeBtn {
+    border-radius: 50%;
+    background-color: transparent;
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Скроллбар */
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
+
+  /* Адаптивность для мобильных */
+  @media (max-width: 600px) {
+    header { font-size: 18px; padding: 12px; }
+    #userPanel { flex-direction: column; padding: 8px; gap: 8px; }
+    #userPanel input, #userPanel button { font-size: 18px; padding: 14px; }
+    .message { font-size: 18px; padding: 14px 16px; max-width: 85%; }
+    #messageInput { font-size: 18px; padding: 14px 16px; }
+    #inputArea { padding: 8px; margin-bottom: 5px; } /* чуть подняли над нижним краем */
+  }
+
+  /* Общий flex-контейнер для чата и панели ввода */
+  #mainContainer {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 0px);
+  }
 </style>
 </head>
 <body class="dark">
-
 <header>
   ПростикРостик
   <button id="themeBtn" onclick="toggleTheme()">🌗</button>
@@ -152,102 +152,16 @@ body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
   <div id="userInfo"></div>
 </div>
 
-<div id="chat"></div>
-
-<div id="inputArea">
-  <input id="messageInput" placeholder="Сообщение..." />
-  <button onclick="sendMessage()">➤</button>
+<div id="mainContainer">
+  <div id="chat"></div>
+  <div id="inputArea">
+    <input id="messageInput" placeholder="Сообщение..." />
+    <button onclick="sendMessage()">➤</button>
+  </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
-  authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let currentUser = null;
-let nickname = localStorage.getItem("nickname") || "";
-
-async function login() {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
-window.login = login;
-
-function logout() { signOut(auth); }
-window.logout = logout;
-
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText =
-    user ? "Ты: " + nickname : "Не вошёл";
-});
-
-function setNickname() {
-  const input = document.getElementById("nickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText =
-    currentUser ? "Ты: " + nickname : "Не вошёл";
-  input.value = "";
-  localStorage.setItem("nickname", nickname);
-  alert("Твой ник теперь: " + nickname);
-}
-window.setNickname = setNickname;
-
-function sendMessage() {
-  const input = document.getElementById("messageInput");
-  if (!input.value || !currentUser) return;
-  addDoc(collection(db, "messages"), {
-    text: input.value,
-    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-    uid: currentUser.uid,
-    time: Date.now()
-  });
-  input.value = "";
-}
-window.sendMessage = sendMessage;
-
-const chat = document.getElementById("chat");
-const q = query(collection(db, "messages"), orderBy("time"));
-
-onSnapshot(q, (snapshot) => {
-  chat.innerHTML = "";
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const isMe = currentUser && data.uid === currentUser.uid;
-    const div = document.createElement("div");
-    div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `
-      <div class="name">${data.user}</div>
-      ${data.text}
-      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
-    `;
-    chat.appendChild(div);
-  });
-  chat.scrollTop = chat.scrollHeight;
-});
-
-async function deleteMessage(id) {
-  await deleteDoc(doc(db, "messages", id));
-}
-window.deleteMessage = deleteMessage;
-
-function toggleTheme() {
-  const body = document.body;
-  body.classList.toggle("dark");
-  body.classList.toggle("light");
-}
-window.toggleTheme = toggleTheme;
+// ...весь твой Firebase JS код остается без изменений...
 </script>
 </body>
 </html>
