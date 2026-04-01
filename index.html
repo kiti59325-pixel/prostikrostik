@@ -41,27 +41,25 @@
 
   #userPanel button:hover { opacity: 0.9; }
 
-  /* 🔥 ЧАТ ПО ЦЕНТРУ */
+  /* ЧАТ ВО ВЕСЬ ЭКРАН */
   #chat {
     height: 70vh;
     overflow-y: auto;
     padding: 10px;
     display: flex;
     flex-direction: column;
-    max-width: 900px;
-    margin: 0 auto;
+    width: 100%;
   }
 
-  /* 🔥 СООБЩЕНИЯ УДОБНЕЕ */
   .message {
-    max-width: 75%;
+    max-width: 60%;
     width: fit-content;
-    padding: 12px 14px;
-    margin: 6px;
-    border-radius: 14px;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 12px;
     position: relative;
     word-wrap: break-word;
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .me { align-self: flex-end; background: #3b82f6; color: white; }
@@ -115,12 +113,11 @@
 
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; }
 
-  /* 🔥 НОРМАЛЬНАЯ МОБИЛКА */
+  /* 🔥 МОБИЛКА — КРУПНО И УДОБНО */
   @media (max-width: 600px) {
 
     #userPanel {
       flex-direction: column;
-      gap: 8px;
     }
 
     #userPanel input,
@@ -136,8 +133,9 @@
     }
 
     .message {
-      max-width: 90%;
+      max-width: 85%;
       font-size: 16px;
+      padding: 12px;
     }
 
     #messageInput {
@@ -146,8 +144,8 @@
     }
 
     button {
-      padding: 12px;
       font-size: 16px;
+      padding: 12px;
     }
   }
 </style>
