@@ -51,23 +51,9 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea { 
-    display: flex; 
-    padding: 10px; 
-    justify-content: center;
-    background: transparent;
-  }
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
 
-  input { 
-    flex: 1; 
-    padding: 10px; 
-    border-radius: 10px; 
-    border: none; 
-    outline: none; 
-    background-color: inherit; 
-    color: inherit; 
-    font-size: 14px; 
-  }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
 
   #messageInput {
     width: 100%;
@@ -79,65 +65,35 @@
     font-size: 14px;
   }
 
-  body.light #messageInput {
-    background-color: white;
-    color: black;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  }
-
-  body.dark #messageInput {
-    background-color: transparent;
-    color: white;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-  }
+  body.light #messageInput { background-color: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  body.dark #messageInput { background-color: transparent; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
   button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
 
-  #themeBtn { 
-    border-radius: 50%; 
-    background-color: transparent; 
-    font-size: 18px; 
-    width: 36px; 
-    height: 36px; 
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
-  /* Адаптив для мобильных */
+  /* Скроллбар для тёмной темы */
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+
+  /* Скроллбар для светлой темы */
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
+
+  /* Firefox */
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
+
+  /* Адаптивность для мобильных */
   @media (max-width: 600px) {
-    #userPanel { 
-      flex-direction: column; 
-      gap: 8px; 
-      padding: 8px;
-    }
-
-    #userPanel input, #userPanel button { 
-      width: 100%; 
-      font-size: 16px; 
-      padding: 10px; 
-    }
-
-    #inputArea { 
-      flex-direction: column; 
-      gap: 8px; 
-      padding: 8px; 
-    }
-
-    #inputArea input, #inputArea button { 
-      width: 100%; 
-      font-size: 16px; 
-      padding: 12px; 
-    }
-
-    #themeBtn {
-      font-size: 16px;
-      width: 40px;
-      height: 40px;
-    }
-
-    .message { max-width: 80%; }
+    #userPanel { flex-direction: column; gap: 8px; padding: 8px; }
+    #userPanel button, #userPanel input { width: 100%; font-size: 16px; padding: 14px; }
+    #inputArea { flex-direction: column; gap: 8px; }
+    #inputArea input, #inputArea button { width: 100%; font-size: 16px; padding: 14px; }
+    .message { max-width: 90%; font-size: 16px; padding: 12px; }
+    header { font-size: 20px; padding: 12px; }
   }
 </style>
 </head>
@@ -168,11 +124,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
-  authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812"
-};
+const firebaseConfig = { apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08", authDomain: "prostikrostik-90812.firebaseapp.com", projectId: "prostikrostik-90812" };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -181,29 +133,22 @@ const auth = getAuth(app);
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
 
-async function login() {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
+async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
 
-function logout() {
-  signOut(auth);
-}
+function logout() { signOut(auth); }
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText =
-    user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText =
-    currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
@@ -213,12 +158,7 @@ window.setNickname = setNickname;
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
-  addDoc(collection(db, "messages"), {
-    text: input.value,
-    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-    uid: currentUser.uid,
-    time: Date.now()
-  });
+  addDoc(collection(db, "messages"), { text: input.value, user: nickname || (currentUser ? currentUser.displayName : "Гость"), uid: currentUser.uid, time: Date.now() });
   input.value = "";
 }
 window.sendMessage = sendMessage;
@@ -233,26 +173,16 @@ onSnapshot(q, (snapshot) => {
     const isMe = currentUser && data.uid === currentUser.uid;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `
-      <div class="name">${data.user}</div>
-      ${data.text}
-      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
-    `;
+    div.innerHTML = `<div class="name">${data.user}</div>${data.text}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}`;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
 });
 
-async function deleteMessage(id) {
-  await deleteDoc(doc(db, "messages", id));
-}
+async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
 
-function toggleTheme() {
-  const body = document.body;
-  body.classList.toggle("dark");
-  body.classList.toggle("light");
-}
+function toggleTheme() { document.body.classList.toggle("dark"); document.body.classList.toggle("light"); }
 window.toggleTheme = toggleTheme;
 </script>
 </body>
