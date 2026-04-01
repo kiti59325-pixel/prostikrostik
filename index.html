@@ -2,137 +2,126 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
-
 <style>
   body { margin: 0; font-family: Arial; transition: 0.3s; }
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f1f5f9; color: black; }
 
-  header {
-    padding: 10px;
-    font-size: 16px;
-    display: flex;
-    justify-content: space-between;
-  }
-
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
   .dark header { background: #1e293b; }
   .light header { background: #e2e8f0; }
 
   #userPanel {
-    padding: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 10px;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #e2e8f0; }
 
-  #userPanel input {
-    padding: 6px;
-    border-radius: 8px;
-    border: none;
-  }
-
   #userPanel button {
-    border-radius: 8px;
-    padding: 6px 10px;
+    border-radius: 12px;
+    padding: 10px 15px;
     border: none;
     cursor: pointer;
-    font-size: 13px;
+    font-weight: bold;
+    transition: 0.2s;
   }
 
   body.dark #userPanel button { background-color: #2563eb; color: white; }
   body.light #userPanel button { background-color: #3b82f6; color: white; }
 
-  /* 🔥 ВМЕЩАЕМ ВСЁ В ЭКРАН */
-  #chat {
-    height: 55vh;
-    overflow-y: auto;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
+  #userPanel button:hover { opacity: 0.9; }
+
+  #chat { 
+    height: calc(70vh - 20px); 
+    overflow-y: auto; 
+    padding: 10px; 
+    display: flex; 
+    flex-direction: column; 
   }
 
-  .message {
-    max-width: 60%;
-    padding: 8px;
-    margin: 4px;
-    border-radius: 10px;
-    font-size: 13px;
+  .message { 
+    max-width: 60%; 
+    width: fit-content; 
+    padding: 10px; 
+    margin: 5px; 
+    border-radius: 12px; 
+    position: relative; 
+    word-wrap: break-word; 
   }
-
   .me { align-self: flex-end; background: #3b82f6; color: white; }
-  .dark .other { background: #334155; }
+  .dark .other { background: #334155; color: white; }
   .light .other { background: #e2e8f0; color: black; }
 
-  #inputArea {
-    display: flex;
-    padding: 8px;
-    gap: 6px;
+  .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+
+  #inputArea { 
+    display: flex; 
+    padding: 10px; 
+    justify-content: center;
+    background: transparent;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   #messageInput {
     flex: 1;
-    padding: 8px;
-    border-radius: 20px;
+    max-width: 900px;
+    min-width: 200px;
+    padding: 12px 16px;
+    border-radius: 25px;
     border: none;
     outline: none;
-    font-size: 13px;
+    font-size: 14px;
+    background-color: inherit;
+    color: inherit;
   }
 
-  body.light #messageInput {
-    background: white;
+  body.light #messageInput { background-color: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  body.dark #messageInput { background-color: transparent; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+
+  #inputArea button { padding: 10px 16px; border-radius: 12px; cursor: pointer; font-size: 16px; }
+
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; }
+
+  /* Адаптивность */
+  @media (max-width: 900px) {
+    #chat { height: calc(65vh - 20px); }
+    #userPanel { flex-direction: column; }
+    #userPanel button, #userPanel input { width: 100%; font-size: 16px; padding: 12px; }
+    #inputArea { flex-direction: column; gap: 8px; }
+    #inputArea input, #inputArea button { width: 100%; font-size: 16px; padding: 12px; }
+    .message { max-width: 80%; }
   }
 
-  body.dark #messageInput {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-  }
-
-  button { cursor: pointer; }
-
-  /* 📱 МОБИЛКА */
-  @media (max-width: 600px) {
-
-    header {
-      font-size: 14px;
-      padding: 8px;
-    }
-
-    #userPanel {
-      flex-direction: column;
-    }
-
-    #chat {
-      height: 50vh;
-    }
-
-    .message {
-      max-width: 85%;
-      font-size: 15px;
-    }
-
-    #messageInput {
-      font-size: 15px;
-    }
+  @media (max-width: 500px) {
+    header { font-size: 16px; }
+    .message { font-size: 14px; }
+    #messageInput { font-size: 14px; padding: 10px 14px; }
   }
 </style>
 </head>
-
 <body class="dark">
 
 <header>
   ПростикРостик
-  <button onclick="toggleTheme()">🌗</button>
+  <button id="themeBtn" onclick="toggleTheme()">🌗</button>
 </header>
 
 <div id="userPanel">
-  <input id="nickname" placeholder="Ник..." />
-  <button onclick="setNickname()">Ок</button>
-  <button onclick="login()">Войти</button>
+  <input id="nickname" placeholder="Придумай ник..." />
+  <button onclick="setNickname()">Сохранить ник</button>
+  <button onclick="login()">Войти через Google</button>
   <button onclick="logout()">Выйти</button>
   <div id="userInfo"></div>
 </div>
@@ -185,22 +174,21 @@ function setNickname() {
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
   document.getElementById("userInfo").innerText =
     currentUser ? "Ты: " + nickname : "Не вошёл";
-  localStorage.setItem("nickname", nickname);
   input.value = "";
+  localStorage.setItem("nickname", nickname);
+  alert("Твой ник теперь: " + nickname);
 }
 window.setNickname = setNickname;
 
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
-
   addDoc(collection(db, "messages"), {
     text: input.value,
-    user: nickname || currentUser.displayName,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
     uid: currentUser.uid,
     time: Date.now()
   });
-
   input.value = "";
 }
 window.sendMessage = sendMessage;
@@ -213,18 +201,15 @@ onSnapshot(q, (snapshot) => {
   snapshot.forEach(docSnap => {
     const data = docSnap.data();
     const isMe = currentUser && data.uid === currentUser.uid;
-
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `
-      <div style="font-size:10px;opacity:0.6">${data.user}</div>
+      <div class="name">${data.user}</div>
       ${data.text}
-      ${isMe ? `<span style="font-size:10px;cursor:pointer" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
     `;
-
     chat.appendChild(div);
   });
-
   chat.scrollTop = chat.scrollHeight;
 });
 
@@ -234,11 +219,11 @@ async function deleteMessage(id) {
 window.deleteMessage = deleteMessage;
 
 function toggleTheme() {
-  document.body.classList.toggle("dark");
-  document.body.classList.toggle("light");
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
 }
 window.toggleTheme = toggleTheme;
 </script>
-
 </body>
 </html>
