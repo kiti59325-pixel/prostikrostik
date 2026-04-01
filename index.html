@@ -100,8 +100,9 @@ body.light #userPanel button { background: #3b82f6; color: white; }
 /* МОБИЛЬНАЯ ВЕРСИЯ */
 @media (max-width: 600px) {
 
+  /* верх компактнее */
   header {
-    font-size: 18px;
+    font-size: 17px;
     padding: 8px 12px;
   }
 
@@ -109,47 +110,49 @@ body.light #userPanel button { background: #3b82f6; color: white; }
     flex-direction: column;
     gap: 6px;
     padding: 8px;
-    max-height: 18vh;
+    max-height: 20vh;
     overflow-y: auto;
   }
 
   #userPanel input,
   #userPanel button {
-    font-size: 16px;
+    font-size: 15px;
     padding: 10px;
   }
 
+  /* ЧАТ */
   #chat {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
   }
 
+  /* сообщения — чуть меньше */
   .message {
-    font-size: 17px;
-    padding: 12px 14px;
-    max-width: 85%;
+    font-size: 16px; /* было 17-18 */
+    padding: 10px 12px;
+    max-width: 82%;
     border-radius: 14px;
   }
 
   .name {
-    font-size: 12px;
+    font-size: 11px;
   }
 
+  /* ВАЖНО: убрали sticky (он ломал кнопки) */
   #inputArea {
-    position: sticky;
-    bottom: 0;
+    display: flex;
     padding: 8px;
-    background: inherit;
+    background: transparent;
   }
 
   #messageInput {
-    font-size: 17px;
-    padding: 12px 16px;
+    font-size: 16px;
+    padding: 10px 14px;
   }
 
   #inputArea button {
-    font-size: 18px;
-    padding: 12px;
+    font-size: 16px;
+    padding: 10px;
   }
 }
 </style>
