@@ -64,14 +64,62 @@ body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
 
 /* Мобильная адаптация */
 @media (max-width: 600px) {
-  header { font-size: 20px; padding: 12px; }
-  #userPanel { flex-direction: column; gap: 8px; padding: 12px; height: 20vh; }
-  #userPanel input, #userPanel button { font-size: 18px; padding: 14px; }
-  #chat { height: 65vh; padding: 10px; }
-  .message { font-size: 18px; padding: 14px 16px; max-width: 85%; }
-  #inputArea { padding: 8px; height: 15vh; }
-  #messageInput { font-size: 18px; padding: 14px 16px; }
-  #inputArea button { font-size: 18px; padding: 14px 16px; }
+
+  /* УМЕНЬШАЕМ верх */
+  header {
+    font-size: 18px;
+    padding: 8px 12px;
+  }
+
+  #userPanel {
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    max-height: 18vh; /* ограничиваем */
+    overflow-y: auto;
+  }
+
+  #userPanel input,
+  #userPanel button {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  /* ЧАТ — ОСНОВНОЕ МЕСТО */
+  #chat {
+    flex: 1;
+    padding: 10px;
+  }
+
+  /* СООБЩЕНИЯ КРУПНЫЕ */
+  .message {
+    font-size: 17px;
+    padding: 12px 14px;
+    max-width: 85%;
+    border-radius: 14px;
+  }
+
+  .name {
+    font-size: 12px;
+  }
+
+  /* СТРОКА ВВОДА — КАК В МЕССЕНДЖЕРАХ */
+  #inputArea {
+    position: sticky;
+    bottom: 0;
+    padding: 8px;
+    background: inherit;
+  }
+
+  #messageInput {
+    font-size: 17px;
+    padding: 12px 16px;
+  }
+
+  #inputArea button {
+    font-size: 18px;
+    padding: 12px;
+  }
 }
 </style>
 </head>
