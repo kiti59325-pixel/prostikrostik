@@ -63,8 +63,12 @@
     justify-content: center;
   }
 
-  .dark #inputArea { background: #1e293b; }
-  .light #inputArea { background: #f1f5f9; }
+ #inputArea {
+  display: flex;
+  padding: 10px;
+  justify-content: center;
+  background: transparent; /* убрали фон полностью */
+}
 
   input { 
     flex: 1; 
