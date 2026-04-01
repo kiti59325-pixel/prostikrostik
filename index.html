@@ -1,121 +1,140 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <title>ПростикРостик</title>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; }
-  body.dark { background: #0f172a; color: white; }
-  body.light { background: #f1f5f9; color: black; }
+html, body {
+  height: 100%;
+  margin: 0;
+}
 
-  header { padding: 12px 20px; font-size: 20px; display: flex; justify-content: space-between; align-items: center; height: 50px; }
-  .dark header { background: #1e293b; }
-  .light header { background: #e2e8f0; }
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: Arial;
+  transition: 0.3s;
+}
 
-  #userPanel {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    height: 50px;
-    align-items: center;
-    overflow: hidden;
-  }
-  body.dark #userPanel { background-color: #1e293b; }
-  body.light #userPanel { background-color: #e2e8f0; }
+body.dark { background: #0f172a; color: white; }
+body.light { background: #f1f5f9; color: black; }
 
-  #userPanel button {
-    border-radius: 12px;
-    padding: 8px 12px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: 0.2s;
-  }
-  body.dark #userPanel button { background-color: #2563eb; color: white; }
-  body.light #userPanel button { background-color: #3b82f6; color: white; }
-  #userPanel button:hover { opacity: 0.9; }
+/* Header */
+header {
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+body.dark header { background: #1e293b; }
+body.light header { background: #e2e8f0; }
 
-  #chat {
-    overflow-y: auto;
-    padding: 8px 12px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    max-height: calc(100vh - 50px - 50px - 60px); /* header + userPanel + inputArea */
-  }
+/* User panel */
+#userPanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+body.dark #userPanel { background-color: #1e293b; }
+body.light #userPanel { background-color: #e2e8f0; }
 
-  .message {
-    max-width: 60%;
-    width: fit-content;
-    padding: 8px 12px;
-    margin: 4px 0;
-    border-radius: 12px;
-    position: relative;
-    word-wrap: break-word;
-    font-size: 14px;
-    line-height: 1.3;
-  }
-  .me { align-self: flex-end; background: #3b82f6; color: white; }
-  .dark .other { background: #334155; color: white; }
-  .light .other { background: #e2e8f0; color: black; }
+#userPanel button {
+  border-radius: 12px;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+body.dark #userPanel button { background-color: #2563eb; color: white; }
+body.light #userPanel button { background-color: #3b82f6; color: white; }
+#userPanel button:hover { opacity: 0.9; }
 
-  .name { font-size: 11px; opacity: 0.7; margin-bottom: 2px; }
-  .delete-btn { position: absolute; top: 2px; right: 4px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+/* Chat */
+#chat {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+.message {
+  max-width: 60%;
+  width: fit-content;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 12px;
+  position: relative;
+  word-wrap: break-word;
+}
+.me { align-self: flex-end; background: #3b82f6; color: white; }
+body.dark .other { background: #334155; color: white; }
+body.light .other { background: #e2e8f0; color: black; }
 
-  #inputArea {
-    display: flex;
-    padding: 8px 12px;
-    gap: 6px;
-    justify-content: center;
-    background: transparent;
-    height: 50px;
-  }
-  input { 
-    flex: 1; 
-    padding: 8px 12px; 
-    border-radius: 25px; 
-    border: none; 
-    outline: none; 
-    background-color: inherit; 
-    color: inherit; 
-    font-size: 14px; 
-  }
-  #messageInput { width: 100%; }
+.name { font-size: 11px; opacity: 0.7; }
+.delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  body.light #messageInput { background-color: white; color: black; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-  body.dark #messageInput { background-color: transparent; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+/* Input area */
+#inputArea {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+  background: transparent;
+}
+#messageInput {
+  flex: 1;
+  border-radius: 25px;
+  border: none;
+  outline: none;
+  padding: 12px 16px;
+  font-size: 14px;
+  background-color: inherit;
+  color: inherit;
+}
+body.light #messageInput {
+  background-color: white;
+  color: black;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+body.dark #messageInput {
+  background-color: transparent;
+  color: white;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
+#themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
-  button { font-size: 14px; }
+/* Scrollbar dark/light */
+body.dark #chat::-webkit-scrollbar { width: 8px; }
+body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+body.light #chat::-webkit-scrollbar { width: 8px; }
+body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
 
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+/* Firefox */
+body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
 
-  /* Скроллбар */
-  body.dark #chat::-webkit-scrollbar { width: 8px; }
-  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
-
-  body.light #chat::-webkit-scrollbar { width: 8px; }
-  body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
-  body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
-
-  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
-  body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
-
-  /* Мобильная адаптация */
-  @media (max-width: 600px) {
-    header { font-size: 22px; padding: 10px 16px; height: 60px; }
-    #userPanel { flex-direction: column; gap: 8px; padding: 10px 14px; height: auto; }
-    #userPanel input, #userPanel button { font-size: 18px; padding: 14px 16px; }
-    #chat { max-height: calc(100vh - 60px - 140px); } /* header + userPanel + inputArea */
-    .message { font-size: 18px; padding: 12px 16px; max-width: 90%; }
-    .name { font-size: 14px; }
-    #inputArea { flex-direction: row; padding: 10px 14px; height: 60px; gap: 8px; margin-bottom: 8px; } /* поднимаем чуть выше */
-    #inputArea input, #inputArea button { font-size: 18px; padding: 14px 16px; }
-  }
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  header { height: 60px; font-size: 22px; padding: 0 12px; }
+  #userPanel { flex-direction: column; padding: 10px; gap: 10px; }
+  #chat { padding: 6px; }
+  .message { font-size: 18px; padding: 12px 16px; }
+  .name { font-size: 14px; }
+  #inputArea { padding: 10px; margin-bottom: 10px; }
+  #inputArea input, #inputArea button { font-size: 18px; padding: 12px 16px; }
+}
 </style>
 </head>
 <body class="dark">
@@ -145,7 +164,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = { apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08", authDomain: "prostikrostik-90812.firebaseapp.com", projectId: "prostikrostik-90812" };
+const firebaseConfig = {
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -153,7 +177,10 @@ const auth = getAuth(app);
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
 
-async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
 window.login = login;
 
 function logout() { signOut(auth); }
@@ -162,13 +189,15 @@ window.logout = logout;
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
@@ -178,7 +207,12 @@ window.setNickname = setNickname;
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
-  addDoc(collection(db, "messages"), { text: input.value, user: nickname || (currentUser ? currentUser.displayName : "Гость"), uid: currentUser.uid, time: Date.now() });
+  addDoc(collection(db, "messages"), {
+    text: input.value,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    uid: currentUser.uid,
+    time: Date.now()
+  });
   input.value = "";
 }
 window.sendMessage = sendMessage;
@@ -193,16 +227,26 @@ onSnapshot(q, (snapshot) => {
     const isMe = currentUser && data.uid === currentUser.uid;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `<div class="name">${data.user}</div>${data.text}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}`;
+    div.innerHTML = `
+      <div class="name">${data.user}</div>
+      ${data.text}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+    `;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
 });
 
-async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
+async function deleteMessage(id) {
+  await deleteDoc(doc(db, "messages", id));
+}
 window.deleteMessage = deleteMessage;
 
-function toggleTheme() { document.body.classList.toggle("dark"); document.body.classList.toggle("light"); }
+function toggleTheme() {
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
+}
 window.toggleTheme = toggleTheme;
 </script>
 </body>
