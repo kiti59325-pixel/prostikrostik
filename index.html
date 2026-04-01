@@ -57,36 +57,40 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  /* НИЖНЯЯ ПАНЕЛЬ БЕЗ ФОНА */
   #inputArea { 
     display: flex; 
+    padding: 10px; 
     justify-content: center;
-    padding: 10px;
-    background: transparent;
   }
 
-  /* ЕДИНЫЙ СТИЛЬ ПОЛЯ ВВОДА */
-  #messageInput {
-    width: 100%;
-    max-width: 600px;
-    padding: 12px 16px;
-    border-radius: 25px;
-    border: none;
-    outline: none;
-    font-size: 14px;
+  .dark #inputArea { background: #1e293b; }
+  .light #inputArea { background: #f1f5f9; }
+
+  input { 
+    flex: 1; 
+    padding: 10px; 
+    border-radius: 10px; 
+    border: none; 
+    outline: none; 
+    background-color: inherit; 
+    color: inherit; 
+    font-size: 14px; 
   }
 
   /* Светлая тема */
   body.light #messageInput {
-    background-color: white;
+    background-color: #e2e8f0;
     color: black;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
 
   /* Тёмная тема */
   body.dark #messageInput {
+    max-width: 500px;
+    width: 100%;
     background-color: #0f172a;
-    color: white;
+    border-radius: 25px;
+    padding: 12px 16px;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05),
                 0 2px 6px rgba(0,0,0,0.4);
   }
@@ -96,7 +100,7 @@
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; }
 </style>
 </head>
-<body>
+<body class="dark">
 
 <header>
   ПростикРостик
@@ -135,10 +139,6 @@ const auth = getAuth(app);
 
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
-
-/* ТЕМА ИЗ LOCALSTORAGE */
-const savedTheme = localStorage.getItem("theme") || "dark";
-document.body.classList.add(savedTheme);
 
 async function login() {
   const provider = new GoogleAuthProvider();
@@ -207,14 +207,10 @@ async function deleteMessage(id) {
 }
 window.deleteMessage = deleteMessage;
 
-/* СОХРАНЕНИЕ ТЕМЫ */
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle("dark");
   body.classList.toggle("light");
-
-  const currentTheme = body.classList.contains("dark") ? "dark" : "light";
-  localStorage.setItem("theme", currentTheme);
 }
 window.toggleTheme = toggleTheme;
 </script>
