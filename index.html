@@ -35,13 +35,16 @@
     border: none;
     cursor: pointer;
     font-weight: bold;
+    transition: 0.2s;
   }
 
   body.dark #userPanel button { background-color: #2563eb; color: white; }
   body.light #userPanel button { background-color: #3b82f6; color: white; }
 
+  #userPanel button:hover { opacity: 0.9; }
+
   #chat {
-    height: 70vh; /* ВАЖНО — возвращаем */
+    height: 70vh;
     overflow-y: auto;
     padding: 10px;
     display: flex;
@@ -50,9 +53,12 @@
 
   .message {
     max-width: 60%;
+    width: fit-content;
     padding: 10px;
     margin: 5px;
     border-radius: 12px;
+    position: relative;
+    word-wrap: break-word;
   }
 
   .me { align-self: flex-end; background: #3b82f6; color: white; }
@@ -60,38 +66,67 @@
   .light .other { background: #e2e8f0; color: black; }
 
   .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea {
-    display: flex;
-    padding: 10px;
+  #inputArea { 
+    display: flex; 
+    padding: 10px; 
+    justify-content: center;
+    background: transparent;
+  }
+
+  input { 
+    flex: 1; 
+    padding: 10px; 
+    border-radius: 10px; 
+    border: none; 
+    outline: none; 
+    background-color: inherit; 
+    color: inherit; 
+    font-size: 14px; 
   }
 
   #messageInput {
-    flex: 1;
-    padding: 12px;
-    border-radius: 20px;
+    width: 100%;
+    max-width: 900px;
+    padding: 12px 16px;
+    border-radius: 25px;
     border: none;
+    outline: none;
     font-size: 14px;
   }
 
-  button {
-    margin-left: 10px;
-    padding: 10px;
-    border-radius: 12px;
+  body.light #messageInput {
+    background-color: white;
+    color: black;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
+
+  body.dark #messageInput {
+    background-color: transparent;
+    color: white;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+  }
+
+  button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
 
   #themeBtn {
     border-radius: 50%;
-    background: transparent;
+    background-color: transparent;
+    font-size: 18px;
     width: 36px;
     height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* 📱 МОБИЛКА */
+  /* 🔥 МОБИЛЬНАЯ ВЕРСИЯ — АККУРАТНО */
   @media (max-width: 600px) {
 
     #chat {
-      height: 60vh; /* чуть меньше чтобы всё влезло */
+      height: 60vh;
     }
 
     #userPanel {
@@ -124,6 +159,27 @@
     }
   }
 
+  /* Скроллбар */
+  body.dark #chat::-webkit-scrollbar {
+    width: 8px;
+  }
+  body.dark #chat::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+  body.dark #chat::-webkit-scrollbar-thumb {
+    background-color: #3b82f6;
+  }
+
+  body.light #chat::-webkit-scrollbar {
+    width: 8px;
+  }
+  body.light #chat::-webkit-scrollbar-track {
+    background: #e2e8f0;
+  }
+  body.light #chat::-webkit-scrollbar-thumb {
+    background-color: #3b82f6;
+  }
+
 </style>
 </head>
 
@@ -150,7 +206,7 @@
 </div>
 
 <script type="module">
-// ВСТАВЬ СЮДА СВОЙ JS БЕЗ ИЗМЕНЕНИЙ
+// ТВОЙ JS БЕЗ ИЗМЕНЕНИЙ
 </script>
 
 </body>
