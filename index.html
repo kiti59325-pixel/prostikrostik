@@ -13,44 +13,17 @@
   body.dark header { background: #1e293b; color: white; }
   body.light header { background: #f1f5f9; color: black; }
 
-  #userPanel {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
+  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #f1f5f9; }
 
-  #userPanel button {
-    border-radius: 12px;
-    padding: 10px 15px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    letter-spacing: 0.2px;
-    color: inherit;
-    transition: 0.2s;
-  }
+  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
   body.dark #userPanel button { background-color: #2563eb; color: white; }
   body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
   body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
   body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
 
-  #nickname {
-    background-color: inherit;
-    color: inherit;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 14px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-  }
+  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
   body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
   body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
 
@@ -60,53 +33,23 @@
   body.dark .other { background: #334155; color: white; }
   body.light .other { background: #e5e7eb; color: black; }
   body.light .me { background: #bfdbfe; color: black; }
-  
+
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
-  #messageInput, #inputArea button {
-    border-radius: 25px;
-    border: none;
-    outline: none;
-    padding: 12px 16px;
-    font-size: 14px;
-    transition: 0.2s;
-  }
+  #messageInput, #inputArea button { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
 
   /* Единая рамка для поля ввода и кнопки отправки */
   body.light #messageInput,
-  body.light #inputArea button {
-    background-color: white;
-    color: black;
-    border: 1px solid #cbd5e1; /* лёгкая серо-голубая рамка */
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
-  }
+  body.light #inputArea button { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
   body.dark #messageInput,
-  body.dark #inputArea button {
-    background-color: #1e293b;
-    color: white;
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-  }
+  body.dark #inputArea button { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
-  #themeBtn {
-    border-radius: 50%;
-    background-color: transparent;
-    font-size: 18px;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    outline: none;
-    box-shadow: none;
-  }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; }
 
   /* Скроллбар */
   body.dark #chat::-webkit-scrollbar { width: 8px; }
@@ -197,6 +140,7 @@ function setNickname() {
   input.value = "";
   localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
+  renderMessages(); // обновляем чат с новым ником
 }
 window.setNickname = setNickname;
 
@@ -215,23 +159,30 @@ window.sendMessage = sendMessage;
 
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
+let messagesCache = [];
 
 onSnapshot(q, (snapshot) => {
+  messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
+  renderMessages();
+});
+
+function renderMessages() {
   chat.innerHTML = "";
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
+  messagesCache.forEach(docObj => {
+    const data = docObj.data;
     const isMe = currentUser && data.uid === currentUser.uid;
+    const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `
-      <div class="name">${data.user}</div>
+      <div class="name">${displayName}</div>
       ${data.text}
-      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
     `;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
-});
+}
 
 async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
