@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>ПростикРостик</title>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
+  html, body { margin: 0; padding: 0; height: 100%; font-family: Arial; transition: 0.3s; }
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f1f5f9; color: black; }
 
@@ -22,10 +22,8 @@
     gap: 10px;
     border-radius: 0 0 12px 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background-color: inherit;
   }
-
-  body.dark #userPanel { background-color: #1e293b; }
-  body.light #userPanel { background-color: #e2e8f0; }
 
   #userPanel button {
     border-radius: 12px;
@@ -35,11 +33,15 @@
     font-weight: bold;
     transition: 0.2s;
   }
-
   body.dark #userPanel button { background-color: #2563eb; color: white; }
   body.light #userPanel button { background-color: #3b82f6; color: white; }
-
   #userPanel button:hover { opacity: 0.9; }
+
+  #chatContainer {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 100px);
+  }
 
   #chat {
     flex: 1;
@@ -49,41 +51,21 @@
     flex-direction: column;
   }
 
-  .message {
-    max-width: 60%;
-    width: fit-content;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 12px;
-    position: relative;
-    word-wrap: break-word;
-  }
+  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
   .dark .other { background: #334155; color: white; }
   .light .other { background: #e2e8f0; color: black; }
-
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea { 
-    display: flex; 
-    padding: 10px; 
+  #inputArea {
+    display: flex;
+    padding: 10px;
     justify-content: center;
     background: transparent;
   }
 
-  input { 
-    flex: 1; 
-    padding: 10px; 
-    border-radius: 10px; 
-    border: none; 
-    outline: none; 
-    background-color: inherit; 
-    color: inherit; 
-    font-size: 14px; 
-  }
-
-  #messageInput {
+  #messageInput { 
     width: 100%;
     max-width: 900px;
     padding: 12px 16px;
@@ -91,15 +73,16 @@
     border: none;
     outline: none;
     font-size: 14px;
+    background-color: inherit;
+    color: inherit;
   }
-
   body.light #messageInput { background-color: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
   body.dark #messageInput { background-color: transparent; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
   button { margin-left: 10px; padding: 10px; border-radius: 12px; cursor: pointer; }
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
-  /* Скроллбар */
+  /* Скроллбары */
   body.dark #chat::-webkit-scrollbar { width: 8px; }
   body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
   body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
@@ -109,15 +92,12 @@
   body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
 
-  /* Мобильная версия */
   @media (max-width: 600px) {
-    body { flex-direction: column; }
-    #userPanel { flex-direction: column; padding: 8px; gap: 8px; }
+    #userPanel { flex-direction: column; }
     #userPanel button, #userPanel input { width: 100%; font-size: 16px; padding: 12px; }
-    #inputArea { flex-direction: column; gap: 8px; padding: 8px; }
-    #inputArea input, #inputArea button { width: 100%; font-size: 16px; padding: 12px; margin: 0; }
-    #chat { height: calc(100vh - 240px); padding: 6px; }
-    .message { max-width: 85%; font-size: 15px; padding: 10px; }
+    #inputArea { flex-direction: row; gap: 8px; padding: 8px; }
+    #messageInput { font-size: 16px; padding: 12px 16px; border-radius: 20px; }
+    #chat .message { max-width: 85%; font-size: 14px; }
   }
 </style>
 </head>
@@ -136,11 +116,12 @@
   <div id="userInfo"></div>
 </div>
 
-<div id="chat"></div>
-
-<div id="inputArea">
-  <input id="messageInput" placeholder="Сообщение..." />
-  <button onclick="sendMessage()">➤</button>
+<div id="chatContainer">
+  <div id="chat"></div>
+  <div id="inputArea">
+    <input id="messageInput" placeholder="Сообщение..." />
+    <button onclick="sendMessage()">➤</button>
+  </div>
 </div>
 
 <script type="module">
@@ -167,7 +148,9 @@ async function login() {
 }
 window.login = login;
 
-function logout() { signOut(auth); }
+function logout() {
+  signOut(auth);
+}
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
@@ -221,7 +204,9 @@ onSnapshot(q, (snapshot) => {
   chat.scrollTop = chat.scrollHeight;
 });
 
-async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
+async function deleteMessage(id) {
+  await deleteDoc(doc(db, "messages", id));
+}
 window.deleteMessage = deleteMessage;
 
 function toggleTheme() {
