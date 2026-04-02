@@ -4,27 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
-
-<!-- Скрипт для мгновенной установки темы -->
-<script>
-  const savedTheme = localStorage.getItem("theme");
-  if(savedTheme) {
-    document.documentElement.classList.add(savedTheme);
-  } else {
-    document.documentElement.classList.add("dark");
-  }
-</script>
-
 <style>
-  html { font-family: Arial; transition: 0.3s; height: 100%; }
-  html.dark { background: #0f172a; color: white; }
-  html.light { background: #f1f5f9; color: black; }
-
-  body { margin: 0; display: flex; flex-direction: column; height: 100vh; }
+  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
+  body.dark { background: #0f172a; color: white; }
+  body.light { background: #f1f5f9; color: black; }
 
   header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
-  html.dark header { background: #1e293b; }
-  html.light header { background: #e2e8f0; }
+  .dark header { background: #1e293b; }
+  .light header { background: #e2e8f0; }
 
   #userPanel {
     position: sticky;
@@ -37,8 +24,8 @@
     border-radius: 0 0 12px 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
-  html.dark #userPanel { background-color: #1e293b; }
-  html.light #userPanel { background-color: #e2e8f0; }
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #e2e8f0; }
 
   #userPanel button {
     border-radius: 12px;
@@ -48,58 +35,75 @@
     font-weight: bold;
     transition: 0.2s;
   }
-  html.dark #userPanel button { background-color: #2563eb; color: white; }
-  html.light #userPanel button { background-color: #3b82f6; color: white; }
+  body.dark #userPanel button { background-color: #2563eb; color: white; }
+  body.light #userPanel button { background-color: #3b82f6; color: white; }
   #userPanel button:hover { opacity: 0.9; }
 
+  #nickname {
+    background-color: inherit;
+    color: inherit;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  body.dark #nickname {
+    background-color: #1e293b;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+  }
+
   #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
+  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 25px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
-  html.dark .other { background: #334155; color: white; }
-  html.light .other { background: #e2e8f0; color: black; }
+  #messageInput, #inputArea button {
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: 0.2s;
+  }
+  body.light #messageInput, body.light #inputArea button {
+    background-color: white;
+    color: black;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  body.dark #messageInput, body.dark #inputArea button {
+    background-color: #1e293b;
+    color: white;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+  }
+
+  .dark .other { background: #334155; color: white; }
+  .light .other { background: #e2e8f0; color: black; }
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
-  #messageInput { flex: 1; padding: 12px 16px; border-radius: 25px; border: none; outline: none; font-size: 14px; }
-  html.light #messageInput { background-color: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-  html.dark #messageInput { background-color: #1e293b; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-
-  #inputArea button {
-    padding: 12px 16px;
-    border-radius: 25px;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    flex: 0 0 auto;
-    transition: 0.2s;
-  }
-  html.light #inputArea button { background: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  html.dark #inputArea button { background: #1e293b; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-
-  button { margin-left: 10px; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: none; }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
   /* Скроллбар */
-  html.dark #chat::-webkit-scrollbar { width: 8px; }
-  html.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  html.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
-  html.light #chat::-webkit-scrollbar { width: 8px; }
-  html.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
-  html.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
-  html.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
-  html.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
 
   /* Мобильная версия */
   @media (max-width: 600px) {
     body { flex-direction: column; }
-
     #userPanel { flex-direction: column; padding: 8px; gap: 8px; }
     #userPanel input, #userPanel button { font-size: 16px; padding: 10px; }
-
     #chat { height: calc(100vh - 220px); padding: 8px; }
     .message { max-width: 90%; font-size: 15px; padding: 12px; }
-
     #inputArea { flex-direction: row; gap: 6px; padding: 8px; }
     #inputArea input { flex: 1; font-size: 16px; padding: 12px; }
     #inputArea button { flex: 0 0 auto; font-size: 16px; padding: 12px 16px; margin: 0; }
@@ -145,31 +149,36 @@ const auth = getAuth(app);
 
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
+let theme = localStorage.getItem("theme") || "dark";
+document.body.classList.add(theme);
 
-// Функции авторизации
-async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
 window.login = login;
+
 function logout() { signOut(auth); }
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
 });
 
-// Никнейм
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
 }
 window.setNickname = setNickname;
 
-// Отправка сообщений
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
@@ -183,9 +192,9 @@ function sendMessage() {
 }
 window.sendMessage = sendMessage;
 
-// Отображение чата
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
+
 onSnapshot(q, (snapshot) => {
   chat.innerHTML = "";
   snapshot.forEach(docSnap => {
@@ -193,26 +202,24 @@ onSnapshot(q, (snapshot) => {
     const isMe = currentUser && data.uid === currentUser.uid;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `<div class="name">${data.user}</div>${data.text}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}`;
+    div.innerHTML = `
+      <div class="name">${data.user}</div>
+      ${data.text}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docSnap.id}')">❌</span>` : ""}
+    `;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
 });
+
 async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
 
-// Переключение темы
 function toggleTheme() {
-  const htmlEl = document.documentElement;
-  if (htmlEl.classList.contains("dark")) {
-    htmlEl.classList.remove("dark");
-    htmlEl.classList.add("light");
-    localStorage.setItem("theme", "light");
-  } else {
-    htmlEl.classList.remove("light");
-    htmlEl.classList.add("dark");
-    localStorage.setItem("theme", "dark");
-  }
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
+  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
 }
 window.toggleTheme = toggleTheme;
 </script>
