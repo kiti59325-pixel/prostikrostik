@@ -32,7 +32,8 @@
     padding: 10px 15px;
     border: none;
     cursor: pointer;
-    font-weight: normal;
+    font-weight: 500;
+    letter-spacing: 0.2px;
     color: inherit;
     transition: 0.2s;
   }
@@ -56,7 +57,7 @@
   .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
   body.dark .other { background: #334155; color: white; }
-  body.light .other { background: #dbeafe; color: black; }
+  body.light .other { background: #e5e7eb; color: black; }
   body.light .me { background: #bfdbfe; color: black; }
   
   .name { font-size: 11px; opacity: 0.7; }
@@ -84,7 +85,21 @@
   }
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
+
+  #themeBtn {
+    border-radius: 50%;
+    background-color: transparent;
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
 
   /* Скроллбар */
   body.dark #chat::-webkit-scrollbar { width: 8px; }
