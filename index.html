@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
 <style>
   body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
@@ -68,12 +69,12 @@
   /* Мобильная версия */
   @media (max-width: 600px) {
     body { flex-direction: column; }
-    #userPanel { flex-direction: column; padding: 10px; gap: 10px; }
-    #userPanel input, #userPanel button { font-size: 18px; padding: 14px; }
-    #chat { height: calc(100vh - 260px); padding: 8px; }
-    .message { max-width: 90%; font-size: 16px; padding: 14px; }
-    #inputArea { flex-direction: column; gap: 8px; padding: 10px; }
-    #inputArea input, #inputArea button { width: 100%; font-size: 18px; padding: 14px; margin: 0; }
+    #userPanel { flex-direction: column; padding: 12px; gap: 12px; }
+    #userPanel input, #userPanel button { font-size: 20px; padding: 16px; }
+    #chat { height: calc(100vh - 320px); padding: 10px; }
+    .message { max-width: 95%; font-size: 18px; padding: 16px; }
+    #inputArea { flex-direction: column; gap: 10px; padding: 12px; }
+    #inputArea input, #inputArea button { width: 100%; font-size: 20px; padding: 16px; margin: 0; }
   }
 </style>
 </head>
