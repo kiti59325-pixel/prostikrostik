@@ -1,29 +1,26 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <title>ПростикРостик</title>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; }
+  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f1f5f9; color: black; }
 
-  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; }
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; flex-shrink: 0; }
   .dark header { background: #1e293b; }
   .light header { background: #e2e8f0; }
 
   #userPanel {
-    position: sticky;
-    top: 0;
-    z-index: 100;
     padding: 10px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     border-radius: 0 0 12px 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
   }
-
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #e2e8f0; }
 
@@ -35,15 +32,13 @@
     font-weight: bold;
     transition: 0.2s;
   }
-
   body.dark #userPanel button { background-color: #2563eb; color: white; }
   body.light #userPanel button { background-color: #3b82f6; color: white; }
-
   #userPanel button:hover { opacity: 0.9; }
 
-  #chat { height: 70vh; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
 
-  .message { max-width: 75%; padding: 12px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; font-size: 14px; line-height: 1.4; }
+  .message { max-width: 60%; padding: 12px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; font-size: 14px; line-height: 1.4; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
   .dark .other { background: #334155; color: white; }
   .light .other { background: #e2e8f0; color: black; }
@@ -51,7 +46,7 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
+  #inputArea { display: flex; padding: 10px; justify-content: center; flex-shrink: 0; background: transparent; }
 
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
 
@@ -64,7 +59,6 @@
     outline: none;
     font-size: 14px;
   }
-
   body.light #messageInput { background-color: white; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
   body.dark #messageInput { background-color: transparent; color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
@@ -74,25 +68,22 @@
   body.dark #chat::-webkit-scrollbar { width: 8px; }
   body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
   body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
-
   body.light #chat::-webkit-scrollbar { width: 8px; }
   body.light #chat::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
   body.light #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #e2e8f0; }
-
   body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #e2e8f0; }
 
-  /* Мобильная адаптация */
+  /* Мобильная версия */
   @media (max-width: 600px) {
-    #userPanel { flex-direction: column; align-items: stretch; }
+    #userPanel { flex-direction: column; }
     #userPanel input, #userPanel button { width: 100%; font-size: 16px; padding: 12px; }
-    
+
     #inputArea { flex-direction: column; gap: 8px; padding: 10px; }
     #messageInput { order: 1; }
     #inputArea button { order: 0; padding: 14px; font-size: 16px; width: 100%; border-radius: 12px; }
 
-    #chat { height: calc(100vh - 180px); padding: 8px; } /* подгоняем под экран */
-    
+    #chat { flex: 1; overflow-y: auto; padding: 8px; }
     .message { max-width: 80%; font-size: 15px; padding: 10px 14px; }
   }
 </style>
