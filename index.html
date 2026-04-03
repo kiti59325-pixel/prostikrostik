@@ -1,200 +1,286 @@
-<!DOCTYPE html>
+что то вообще всё поломалось. давай заново сделаем исправные голосовые. вот код
+ 
+
+<!DOCTYPE html> 
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
-
 <style>
-body { margin:0; font-family:Arial; display:flex; flex-direction:column; height:100vh; }
-body.dark { background:#0f172a; color:white; }
-body.light { background:#f8fafc; color:black; }
+  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
+  body.dark { background: #0f172a; color: white; }
+  body.light { background: #f8fafc; color: black; }
 
-header { padding:15px; display:flex; justify-content:space-between; }
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+  body.dark header { background: #1e293b; color: white; }
+  body.light header { background: #f1f5f9; color: black; }
 
-#chat { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; }
+  #headerButtons { display: flex; gap: 10px; align-items: center; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
+  #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
-.message { max-width:60%; padding:10px; margin:5px; border-radius:12px; }
-.me { align-self:flex-end; background:#3b82f6; color:white; }
-.other { align-self:flex-start; background:#e5e7eb; color:black; }
+  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #f1f5f9; }
+  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
+  body.dark #userPanel button { background-color: #2563eb; color: white; }
+  body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
+  body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
 
-#inputArea { display:flex; padding:10px; }
-#messageInput { flex:1; padding:10px; border-radius:10px; border:none; }
-button { margin-left:10px; padding:10px; border-radius:10px; border:none; cursor:pointer; }
+  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+
+  #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
+  #mobileMenu input, #mobileMenu button { width: 100%; }
+
+  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
+  .me { align-self: flex-end; background: #3b82f6; color: white; }
+  body.dark .other { background: #334155; color: white; }
+  body.light .other { background: #e5e7eb; color: black; }
+  body.light .me { background: #bfdbfe; color: black; }
+
+  .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  #messageInput, #inputArea button { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
+
+  body.light #messageInput,
+  body.light #inputArea button { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  body.dark #messageInput,
+  body.dark #inputArea button { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+
+  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
+
+  @media (max-width: 600px) {
+    #userPanel { display: none; }
+    #mobileMenuBtn { display: flex; }
+    #chat { height: calc(100vh - 110px); }
+
+    #mobileMenu { 
+      position: fixed;
+      top: 50px;
+      right: 10px;
+      z-index: 300;
+      border-radius: 12px;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    body.dark #mobileMenuBtn { color: white; }
+    body.light #mobileMenuBtn { color: black; }
+
+    body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    #mobileMenu input {
+      box-sizing: border-box;
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: inherit;
+      color: inherit;
+      border: 1px solid #ccc;
+    }
+    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
+    body.light #mobileMenu input { border: 1px solid #d1d5db; }
+
+    #mobileMenu button {
+      display: block;
+      margin: 0 auto 8px auto;
+      width: 90%;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      transition: 0.2s;
+      border: none;
+    }
+    body.dark #mobileMenu button { background-color: #2563eb; color: white; }
+    body.dark #mobileMenu button:hover { background-color: #1e40af; }
+    body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
+  }
 </style>
 </head>
-
-<body class="dark">
+<body>
 
 <header>
   ПростикРостик
+  <div id="headerButtons">
+    <button id="themeBtn" onclick="toggleTheme()">🌗</button>
+    <button id="mobileMenuBtn" onclick="toggleMobileMenu()">⋮</button>
+  </div>
 </header>
+
+<div id="userPanel">
+  <input id="nickname" placeholder="Придумай ник..." />
+  <button onclick="setNickname()">Сохранить ник</button>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
+  <div id="userInfo"></div>
+</div>
+
+<div id="mobileMenu">
+  <input id="mobileNickname" placeholder="Придумай ник..." />
+  <button onclick="setNicknameMobile()">Сохранить ник</button>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
+</div>
 
 <div id="chat"></div>
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button id="sendBtn">➤</button>
+  <button onclick="sendMessage()">➤</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// 🔥 Firebase config (твои данные)
 const firebaseConfig = {
-  apiKey: "AIzaSy...",
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
   authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812",
-  storageBucket: "prostikrostik-90812.appspot.com"
+  projectId: "prostikrostik-90812"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const storage = getStorage(app);
 
-// ===== АВТОРИЗАЦИЯ =====
 let currentUser = null;
-let nickname = "Гость";
+let nickname = localStorage.getItem("nickname") || "";
+let theme = localStorage.getItem("theme") || "dark";
+document.body.classList.add(theme);
 
-const provider = new GoogleAuthProvider();
-signInWithPopup(auth, provider);
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
+window.login = login;
+
+function logout() { signOut(auth); }
+window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
-  if (user) nickname = user.displayName;
+  if (!nickname && user) nickname = user.displayName;
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
 });
 
-// ===== ЧАТ =====
-const chat = document.getElementById("chat");
+function setNickname() {
+  const input = document.getElementById("nickname");
+  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
+  input.value = "";
+  localStorage.setItem("nickname", nickname);
+  alert("Твой ник теперь: " + nickname);
+  renderMessages();
+}
+window.setNickname = setNickname;
 
-const q = query(collection(db, "messages"), orderBy("time"));
-
-onSnapshot(q, (snapshot) => {
-  chat.innerHTML = "";
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const div = document.createElement("div");
-
-    const isMe = currentUser && data.uid === currentUser.uid;
-    div.className = "message " + (isMe ? "me" : "other");
-
-    let content = data.text || "";
-    if (data.fileType === "audio") {
-      content = `<audio controls src="${data.fileUrl}"></audio>`;
-    }
-
-    div.innerHTML = `<b>${data.user}</b><br>${content}`;
-    chat.appendChild(div);
-  });
-
-  chat.scrollTop = chat.scrollHeight;
-});
-
-// ===== ТЕКСТ =====
-const messageInput = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendBtn");
+function setNicknameMobile() {
+  const input = document.getElementById("mobileNickname");
+  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
+  input.value = "";
+  localStorage.setItem("nickname", nickname);
+  renderMessages();
+  document.getElementById("mobileMenu").style.display = "none";
+}
+window.setNicknameMobile = setNicknameMobile;
 
 function sendMessage() {
-  if (!messageInput.value || !currentUser) return;
-
+  const input = document.getElementById("messageInput");
+  if (!input.value || !currentUser) return;
   addDoc(collection(db, "messages"), {
-    text: messageInput.value,
-    user: nickname,
+    text: input.value,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
     uid: currentUser.uid,
     time: Date.now()
   });
+  input.value = "";
+}
+window.sendMessage = sendMessage;
 
-  messageInput.value = "";
-  updateButton();
+const chat = document.getElementById("chat");
+const q = query(collection(db, "messages"), orderBy("time"));
+let messagesCache = [];
+
+onSnapshot(q, (snapshot) => {
+  messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
+  renderMessages();
+});
+
+function renderMessages() {
+  chat.innerHTML = "";
+  messagesCache.forEach(docObj => {
+    const data = docObj.data;
+    const isMe = currentUser && data.uid === currentUser.uid;
+    const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
+    const div = document.createElement("div");
+    div.className = "message " + (isMe ? "me" : "other");
+    div.innerHTML = `
+      <div class="name">${displayName}</div>
+      ${data.text}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
+    `;
+    chat.appendChild(div);
+  });
+  chat.scrollTop = chat.scrollHeight;
 }
 
-// ===== ГОЛОСОВЫЕ =====
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
+async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
+window.deleteMessage = deleteMessage;
 
-function updateButton() {
-  if (messageInput.value.trim() === "") {
-    sendButton.textContent = isRecording ? "⏹" : "🎤";
-    sendButton.onclick = isRecording ? stopRecording : startRecording;
-  } else {
-    sendButton.textContent = "➤";
-    sendButton.onclick = sendMessage;
-  }
+function toggleTheme() {
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
+  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+
+  const mobileBtn = document.getElementById("mobileMenuBtn");
+  mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
 }
+window.toggleTheme = toggleTheme;
 
-messageInput.addEventListener("input", updateButton);
-updateButton();
-
-async function startRecording() {
-  if (!currentUser) {
-    alert("Войди в аккаунт!");
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream);
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) audioChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = async () => {
-      isRecording = false;
-      updateButton();
-
-      if (!audioChunks.length) {
-        alert("Запись пустая");
-        return;
-      }
-
-      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-      const fileName = `audio_${Date.now()}.webm`;
-
-      const storageRef = ref(storage, `audioMessages/${fileName}`);
-
-      try {
-        await uploadBytes(storageRef, audioBlob);
-        const url = await getDownloadURL(storageRef);
-
-        await addDoc(collection(db, "messages"), {
-          user: nickname,
-          uid: currentUser.uid,
-          fileUrl: url,
-          fileType: "audio",
-          time: Date.now()
-        });
-
-        console.log("✅ Отправлено");
-      } catch (err) {
-        console.error("❌ Ошибка:", err);
-        alert("Ошибка отправки");
-      }
-    };
-
-    mediaRecorder.start();
-    isRecording = true;
-    updateButton();
-
-  } catch (err) {
-    console.error(err);
-    alert("Нет доступа к микрофону");
-  }
+function toggleMobileMenu() {
+  const menu = document.getElementById("mobileMenu");
+  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
+window.toggleMobileMenu = toggleMobileMenu;
 
-function stopRecording() {
-  if (mediaRecorder && isRecording) {
-    mediaRecorder.stop();
+// Закрытие мобильного меню при клике вне панели
+document.addEventListener('click', function(event) {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('mobileMenuBtn');
+
+  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
+    menu.style.display = 'none';
   }
-}
+});
 </script>
-
 </body>
 </html>
