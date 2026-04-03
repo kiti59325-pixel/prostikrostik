@@ -14,7 +14,7 @@
   body.light header { background: #f1f5f9; color: black; }
 
   #headerButtons { display: flex; gap: 10px; align-items: center; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; cursor: pointer; }
   #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
   #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -30,9 +30,6 @@
   body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
   body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
 
-  #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
-  #mobileMenu input, #mobileMenu button { width: 100%; }
-
   #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
   .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #3b82f6; color: white; }
@@ -43,18 +40,52 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
-  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
-  #messageInput, #inputArea button { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
+  #inputArea {
+    display: flex;
+    padding: 10px;
+    align-items: center;
+    background: transparent;
+  }
+  #messageInput {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background-color: inherit;
+    color: inherit;
+  }
+  #sendRecordBtn {
+    width: 36px;
+    height: 36px;
+    margin-left: 10px;
+    border-radius: 50%;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+  }
+  body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; }
+  body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
 
-  #sendBtn, #recordBtn { width: 36px; height: 36px; font-size: 18px; border-radius: 50%; border: none; cursor: pointer; margin-left: 5px; }
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
 
-  body.light #messageInput { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
-  body.dark #messageInput { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-  body.light #sendBtn, body.light #recordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; }
-  body.dark #sendBtn, body.dark #recordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
-
-  @media (max-width: 600px) { #userPanel { display: none; } #mobileMenuBtn { display: flex; } }
+  @media (max-width: 600px) {
+    #userPanel { display: none; }
+    #mobileMenuBtn { display: flex; }
+    #chat { height: calc(100vh - 110px); }
+  }
 </style>
 </head>
 <body>
@@ -86,8 +117,7 @@
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button id="sendBtn" onclick="sendMessage()">➤</button>
-  <button id="recordBtn">🎤</button>
+  <button id="sendRecordBtn">🎤</button>
 </div>
 
 <script type="module">
@@ -95,11 +125,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
-  authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812"
-};
+const firebaseConfig = { apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08", authDomain: "prostikrostik-90812.firebaseapp.com", projectId: "prostikrostik-90812" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -108,22 +134,6 @@ let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
-
-const messageInput = document.getElementById("messageInput");
-const recordBtn = document.getElementById("recordBtn");
-const sendBtn = document.getElementById("sendBtn");
-
-function updateInputButtons() {
-  if (messageInput.value.trim().length > 0) {
-    sendBtn.style.display = "inline-block";
-    recordBtn.style.display = "none";
-  } else {
-    sendBtn.style.display = "none";
-    recordBtn.style.display = "inline-block";
-  }
-}
-messageInput.addEventListener("input", updateInputButtons);
-updateInputButtons();
 
 async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
@@ -136,37 +146,23 @@ onAuthStateChanged(auth, (user) => {
   document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
 });
 
-function setNickname() {
-  const input = document.getElementById("nickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
-  input.value = "";
-  localStorage.setItem("nickname", nickname);
-  renderMessages();
-}
+function setNickname() { const input = document.getElementById("nickname"); nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость"); document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"; input.value=""; localStorage.setItem("nickname", nickname); renderMessages(); }
 window.setNickname = setNickname;
 
-function setNicknameMobile() {
-  const input = document.getElementById("mobileNickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
-  input.value = "";
-  localStorage.setItem("nickname", nickname);
-  renderMessages();
-  document.getElementById("mobileMenu").style.display = "none";
-}
+function setNicknameMobile() { const input = document.getElementById("mobileNickname"); nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость"); document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"; input.value=""; localStorage.setItem("nickname", nickname); renderMessages(); document.getElementById("mobileMenu").style.display = "none"; }
 window.setNicknameMobile = setNicknameMobile;
 
 function sendMessage() {
-  if (!messageInput.value.trim() || !currentUser) return;
+  const input = document.getElementById("messageInput");
+  if (!input.value.trim() || !currentUser) return;
   addDoc(collection(db, "messages"), {
-    text: messageInput.value,
+    text: input.value.trim(),
     user: nickname || (currentUser ? currentUser.displayName : "Гость"),
     uid: currentUser.uid,
     time: Date.now()
   });
-  messageInput.value = "";
-  updateInputButtons();
+  input.value = "";
+  updateButtonIcon();
 }
 window.sendMessage = sendMessage;
 
@@ -175,7 +171,7 @@ const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
 
 onSnapshot(q, snapshot => {
-  messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
+  messagesCache = snapshot.docs.map(docSnap => ({id: docSnap.id, data: docSnap.data()}));
   renderMessages();
 });
 
@@ -188,21 +184,9 @@ function renderMessages() {
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `<div class="name">${displayName}</div>`;
-    if (data.isAudio) {
-      const audioEl = document.createElement("audio");
-      audioEl.controls = true;
-      audioEl.src = data.text;
-      div.appendChild(audioEl);
-    } else {
-      div.insertAdjacentHTML('beforeend', data.text);
-    }
-    if (isMe) {
-      const delBtn = document.createElement("span");
-      delBtn.className = "delete-btn";
-      delBtn.textContent = "❌";
-      delBtn.onclick = () => deleteMessage(docObj.id);
-      div.appendChild(delBtn);
-    }
+    if (data.isAudio) { const audioEl = document.createElement("audio"); audioEl.controls = true; audioEl.src = data.text; div.appendChild(audioEl); }
+    else div.insertAdjacentHTML('beforeend', data.text);
+    if (isMe) { const delBtn = document.createElement("span"); delBtn.className = "delete-btn"; delBtn.textContent="❌"; delBtn.onclick = () => deleteMessage(docObj.id); div.appendChild(delBtn); }
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
@@ -211,55 +195,57 @@ function renderMessages() {
 async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
 
-function toggleTheme() {
-  const body = document.body;
-  body.classList.toggle("dark");
-  body.classList.toggle("light");
-  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
-}
+function toggleTheme() { const body = document.body; body.classList.toggle("dark"); body.classList.toggle("light"); localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light"); }
 window.toggleTheme = toggleTheme;
 
-function toggleMobileMenu() {
-  const menu = document.getElementById("mobileMenu");
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-}
+function toggleMobileMenu() { const menu = document.getElementById("mobileMenu"); menu.style.display = menu.style.display === "flex" ? "none" : "flex"; }
 window.toggleMobileMenu = toggleMobileMenu;
 
-// ========== AUDIO RECORD ==========
+document.addEventListener('click', function(e){ const menu=document.getElementById('mobileMenu'); const btn=document.getElementById('mobileMenuBtn'); if(menu.style.display==='flex'&&!menu.contains(e.target)&&e.target!==btn){menu.style.display='none';}});
+
+// ==================== Аудио + кнопка ====================
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 
-recordBtn.addEventListener('click', async () => {
-  if (!isRecording) {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+const messageInput = document.getElementById("messageInput");
+const sendRecordBtn = document.getElementById("sendRecordBtn");
+
+function updateButtonIcon() {
+  if(messageInput.value.trim().length>0) sendRecordBtn.textContent="➤";
+  else sendRecordBtn.textContent=isRecording?"⏹️":"🎤";
+}
+
+messageInput.addEventListener("input", updateButtonIcon);
+
+sendRecordBtn.addEventListener("click", async () => {
+  if(messageInput.value.trim().length>0){ sendMessage(); return; }
+  if(!isRecording){
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
-    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        if (!currentUser) return;
-        await addDoc(collection(db, "messages"), {
+    audioChunks=[];
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=async ()=>{
+      const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+      const reader=new FileReader();
+      reader.onloadend=async ()=>{
+        if(!currentUser) return;
+        await addDoc(collection(db,"messages"),{
           text: reader.result,
-          isAudio: true,
-          user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-          uid: currentUser.uid,
-          time: Date.now()
+          isAudio:true,
+          user:nickname||(currentUser?currentUser.displayName:"Гость"),
+          uid:currentUser.uid,
+          time:Date.now()
         });
       };
       reader.readAsDataURL(audioBlob);
     };
     mediaRecorder.start();
-    isRecording = true;
-    recordBtn.textContent = "⏹️";
-  } else {
-    mediaRecorder.stop();
-    isRecording = false;
-    recordBtn.textContent = "🎤";
-  }
+    isRecording=true;
+  } else { mediaRecorder.stop(); isRecording=false; }
+  updateButtonIcon();
 });
+updateButtonIcon();
 </script>
 </body>
 </html>
