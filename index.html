@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -172,7 +172,10 @@ let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
-async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
 window.login = login;
 
 function logout() { signOut(auth); }
@@ -192,7 +195,6 @@ function setNickname() {
     currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
-  alert("Твой ник теперь: " + nickname);
   renderMessages();
 }
 window.setNickname = setNickname;
@@ -209,72 +211,12 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// --- Чат ---
+// ===================== Чат =====================
 const chat = document.getElementById("chat");
-const messageInput = document.getElementById("messageInput");
-const sendBtn = document.querySelector('#inputArea button');
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
 
-// --- Отправка текстового сообщения ---
-function sendMessage() {
-  if (!messageInput.value.trim() || !currentUser) return;
-  addDoc(collection(db, "messages"), {
-    text: messageInput.value,
-    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-    uid: currentUser.uid,
-    time: Date.now()
-  });
-  messageInput.value = "";
-  updateSendButton();
-}
-window.sendMessage = sendMessage;
-
-// --- Голосовые сообщения ---
-let mediaRecorder;
-let audioChunks = [];
-
-function updateSendButton() {
-  if (messageInput.value.trim() === '') {
-    sendBtn.textContent = '🎤';
-    sendBtn.onclick = startRecording;
-  } else {
-    sendBtn.textContent = '➤';
-    sendBtn.onclick = sendMessage;
-  }
-}
-messageInput.addEventListener('input', updateSendButton);
-updateSendButton();
-
-async function startRecording() {
-  if (!navigator.mediaDevices?.getUserMedia) return alert('Микрофон не поддерживается!');
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
-  audioChunks = [];
-  mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-  mediaRecorder.onstop = async () => {
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-    const fileName = 'voice_' + Date.now() + '.webm';
-    const storageRef = ref(storage, 'voiceMessages/' + fileName);
-    await uploadBytes(storageRef, audioBlob);
-    const url = await getDownloadURL(storageRef);
-
-    await addDoc(collection(db, "messages"), {
-      user: nickname,
-      uid: currentUser.uid,
-      fileUrl: url,
-      fileType: 'audio',
-      time: Date.now()
-    });
-    updateSendButton();
-  };
-  mediaRecorder.start();
-  sendBtn.textContent = '⏹';
-  sendBtn.onclick = () => mediaRecorder.stop();
-}
-
-// --- Рендер сообщений ---
-onSnapshot(q, snapshot => {
+onSnapshot(q, (snapshot) => {
   messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
   renderMessages();
 });
@@ -288,12 +230,16 @@ function renderMessages() {
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
 
-    let content = data.text || '';
-    if (data.fileType === 'audio' && data.fileUrl) {
-      content += `<audio controls src="${data.fileUrl}" style="width:200px; margin-top:5px;"></audio>`;
+    let content = data.text || "";
+    if(data.fileType === "audio" && data.fileUrl) {
+      content = `<audio controls src="${data.fileUrl}"></audio>`;
     }
 
-    div.innerHTML = `<div class="name">${displayName}</div>${content}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}`;
+    div.innerHTML = `
+      <div class="name">${displayName}</div>
+      ${content}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
+    `;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
@@ -302,12 +248,86 @@ function renderMessages() {
 async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
 
-// --- Тема и мобильное меню ---
+// ===================== Отправка текста =====================
+const inputArea = document.getElementById("inputArea");
+const messageInput = document.getElementById("messageInput");
+const sendButton = inputArea.querySelector("button");
+
+function sendMessage() {
+  if (!messageInput.value || !currentUser) return;
+  addDoc(collection(db, "messages"), {
+    text: messageInput.value,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    uid: currentUser.uid,
+    time: Date.now()
+  });
+  messageInput.value = "";
+  updateButton();
+}
+window.sendMessage = sendMessage;
+
+// ===================== Голосовые сообщения =====================
+let mediaRecorder;
+let audioChunks = [];
+
+function updateButton() {
+  if (messageInput.value.trim() === "") {
+    sendButton.textContent = "🎤";
+    sendButton.onclick = startRecording;
+  } else {
+    sendButton.textContent = "➤";
+    sendButton.onclick = sendMessage;
+  }
+}
+messageInput.addEventListener("input", updateButton);
+updateButton();
+
+async function startRecording() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Микрофон не поддерживается!");
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const fileName = `audio_${Date.now()}.webm`;
+      const storageRef = ref(storage, `audioMessages/${fileName}`);
+      await uploadBytes(storageRef, audioBlob);
+      const url = await getDownloadURL(storageRef);
+
+      await addDoc(collection(db, "messages"), {
+        user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+        uid: currentUser.uid,
+        fileUrl: url,
+        fileType: "audio",
+        time: Date.now()
+      });
+      updateButton();
+    };
+
+    mediaRecorder.start();
+    sendButton.textContent = "⏹";
+    sendButton.onclick = () => mediaRecorder.stop();
+  } catch(err) {
+    console.error(err);
+    alert("Ошибка доступа к микрофону");
+  }
+}
+window.startRecording = startRecording;
+
+// ===================== Тема и меню =====================
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle("dark");
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+
   const mobileBtn = document.getElementById("mobileMenuBtn");
   mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
 }
@@ -319,14 +339,14 @@ function toggleMobileMenu() {
 }
 window.toggleMobileMenu = toggleMobileMenu;
 
-// Закрытие мобильного меню при клике вне
-document.addEventListener('click', e => {
+document.addEventListener('click', function(event) {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('mobileMenuBtn');
-  if (menu.style.display === 'flex' && !menu.contains(e.target) && e.target !== btn) {
+  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
     menu.style.display = 'none';
   }
 });
 </script>
+
 </body>
 </html>
