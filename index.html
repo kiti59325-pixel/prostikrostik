@@ -17,7 +17,6 @@
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
   #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
-  /* ПК панель пользователя */
   #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #f1f5f9; }
@@ -30,6 +29,9 @@
   #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
   body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
   body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+
+  #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
+  #mobileMenu input, #mobileMenu button { width: 100%; }
 
   #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
   .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
@@ -61,56 +63,60 @@
   body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
 
-  /* Мобильное меню */
+  /* Мобильная версия */
   @media (max-width: 600px) {
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
     #chat { height: calc(100vh - 110px); }
 
-    #mobileMenu {
-      display: none;
+    #mobileMenu { 
       position: fixed;
       top: 50px;
       right: 10px;
       z-index: 300;
       border-radius: 12px;
       padding: 12px;
+      display: none;
       flex-direction: column;
-      gap: 8px;
-      background-color: #1f2a44;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-
-    #mobileMenu.open { display: flex; }
-
-    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    body.dark #mobileMenu { background-color: #1e2a3a; } /* чуть светлее фона чата */
+    body.light #mobileMenu { background-color: #f1f5f9; }
 
     #mobileMenu input {
       width: 100%;
-      margin-bottom: 10px;
+      box-sizing: border-box;
       border-radius: 10px;
       padding: 10px;
+      margin: 0;
+      border: 1px solid #ccc;
       background-color: inherit;
       color: inherit;
-      border: 1px solid rgba(255,255,255,0.2);
-      box-sizing: border-box;
     }
+    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
+    body.light #mobileMenu input { border: 1px solid #d1d5db; }
 
     #mobileMenu button {
-      width: 90%;
-      margin: 0 auto 8px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 10px 0;
       border-radius: 12px;
-      padding: 10px 15px;
       font-weight: 500;
       letter-spacing: 0.2px;
       border: none;
       transition: 0.2s;
+      cursor: pointer;
     }
-
     body.dark #mobileMenu button { background-color: #2563eb; color: white; }
     body.dark #mobileMenu button:hover { background-color: #1e40af; }
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
+
+    body.dark #mobileMenuBtn { color: white; }
+    body.light #mobileMenuBtn { color: black; }
   }
 </style>
 </head>
@@ -151,7 +157,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = { apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08", authDomain: "prostikrostik-90812.firebaseapp.com", projectId: "prostikrostik-90812" };
+const firebaseConfig = {
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -163,6 +174,7 @@ document.body.classList.add(theme);
 
 async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
+
 function logout() { signOut(auth); }
 window.logout = logout;
 
@@ -190,7 +202,7 @@ function setNicknameMobile() {
   input.value = "";
   localStorage.setItem("nickname", nickname);
   renderMessages();
-  document.getElementById("mobileMenu").classList.remove("open");
+  document.getElementById("mobileMenu").style.display = "none";
 }
 window.setNicknameMobile = setNicknameMobile;
 
@@ -237,18 +249,17 @@ function toggleTheme() {
 window.toggleTheme = toggleTheme;
 
 function toggleMobileMenu() {
-  if (window.innerWidth > 600) return;
   const menu = document.getElementById("mobileMenu");
-  menu.classList.toggle("open");
+  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
 window.toggleMobileMenu = toggleMobileMenu;
 
+// Закрытие мобильного меню при клике вне панели
 document.addEventListener('click', function(event) {
-  if (window.innerWidth > 600) return;
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('mobileMenuBtn');
-  if (menu.classList.contains('open') && !menu.contains(event.target) && event.target !== btn) {
-    menu.classList.remove('open');
+  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
+    menu.style.display = 'none';
   }
 });
 </script>
