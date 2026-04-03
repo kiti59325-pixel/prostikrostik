@@ -146,33 +146,33 @@
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button onclick="sendMessage()">➤</button>
+  <button>➤</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
   authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812"
+  projectId: "prostikrostik-90812",
+  storageBucket: "prostikrostik-90812.appspot.com"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
-async function login() {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
+async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
 
 function logout() { signOut(auth); }
@@ -209,24 +209,72 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
+// --- Чат ---
+const chat = document.getElementById("chat");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.querySelector('#inputArea button');
+const q = query(collection(db, "messages"), orderBy("time"));
+let messagesCache = [];
+
+// --- Отправка текстового сообщения ---
 function sendMessage() {
-  const input = document.getElementById("messageInput");
-  if (!input.value || !currentUser) return;
+  if (!messageInput.value.trim() || !currentUser) return;
   addDoc(collection(db, "messages"), {
-    text: input.value,
+    text: messageInput.value,
     user: nickname || (currentUser ? currentUser.displayName : "Гость"),
     uid: currentUser.uid,
     time: Date.now()
   });
-  input.value = "";
+  messageInput.value = "";
+  updateSendButton();
 }
 window.sendMessage = sendMessage;
 
-const chat = document.getElementById("chat");
-const q = query(collection(db, "messages"), orderBy("time"));
-let messagesCache = [];
+// --- Голосовые сообщения ---
+let mediaRecorder;
+let audioChunks = [];
 
-onSnapshot(q, (snapshot) => {
+function updateSendButton() {
+  if (messageInput.value.trim() === '') {
+    sendBtn.textContent = '🎤';
+    sendBtn.onclick = startRecording;
+  } else {
+    sendBtn.textContent = '➤';
+    sendBtn.onclick = sendMessage;
+  }
+}
+messageInput.addEventListener('input', updateSendButton);
+updateSendButton();
+
+async function startRecording() {
+  if (!navigator.mediaDevices?.getUserMedia) return alert('Микрофон не поддерживается!');
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream);
+  audioChunks = [];
+  mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+  mediaRecorder.onstop = async () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const fileName = 'voice_' + Date.now() + '.webm';
+    const storageRef = ref(storage, 'voiceMessages/' + fileName);
+    await uploadBytes(storageRef, audioBlob);
+    const url = await getDownloadURL(storageRef);
+
+    await addDoc(collection(db, "messages"), {
+      user: nickname,
+      uid: currentUser.uid,
+      fileUrl: url,
+      fileType: 'audio',
+      time: Date.now()
+    });
+    updateSendButton();
+  };
+  mediaRecorder.start();
+  sendBtn.textContent = '⏹';
+  sendBtn.onclick = () => mediaRecorder.stop();
+}
+
+// --- Рендер сообщений ---
+onSnapshot(q, snapshot => {
   messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
   renderMessages();
 });
@@ -239,11 +287,13 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `
-      <div class="name">${displayName}</div>
-      ${data.text}
-      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
-    `;
+
+    let content = data.text || '';
+    if (data.fileType === 'audio' && data.fileUrl) {
+      content += `<audio controls src="${data.fileUrl}" style="width:200px; margin-top:5px;"></audio>`;
+    }
+
+    div.innerHTML = `<div class="name">${displayName}</div>${content}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}`;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
@@ -252,12 +302,12 @@ function renderMessages() {
 async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
 
+// --- Тема и мобильное меню ---
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle("dark");
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
-
   const mobileBtn = document.getElementById("mobileMenuBtn");
   mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
 }
@@ -269,12 +319,11 @@ function toggleMobileMenu() {
 }
 window.toggleMobileMenu = toggleMobileMenu;
 
-// Закрытие мобильного меню при клике вне панели
-document.addEventListener('click', function(event) {
+// Закрытие мобильного меню при клике вне
+document.addEventListener('click', e => {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('mobileMenuBtn');
-
-  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
+  if (menu.style.display === 'flex' && !menu.contains(e.target) && e.target !== btn) {
     menu.style.display = 'none';
   }
 });
