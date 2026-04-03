@@ -45,12 +45,9 @@
 
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
-  #messageInput, #inputArea button { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
-
-  body.light #messageInput,
-  body.light #inputArea button { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
-  body.dark #messageInput,
-  body.dark #inputArea button { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
+  body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
@@ -146,7 +143,7 @@
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button id="sendRecordBtn">➤</button>
+  <button id="sendRecordBtn">🎤</button>
 </div>
 
 <script type="module">
@@ -192,6 +189,7 @@ function setNickname() {
     currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
+  alert("Твой ник теперь: " + nickname);
   renderMessages();
 }
 window.setNickname = setNickname;
@@ -273,25 +271,35 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// ==================== Объединённая кнопка ====================
+// ==================== Кнопка отправки/аудио ====================
+const sendRecordBtn = document.getElementById('sendRecordBtn');
+const messageInput = document.getElementById('messageInput');
+
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 
-const sendRecordBtn = document.getElementById('sendRecordBtn');
-sendRecordBtn.addEventListener('click', async () => {
-  const input = document.getElementById("messageInput");
+// Обновляем иконку кнопки при вводе
+messageInput.addEventListener('input', () => {
+  if (messageInput.value.trim() === "" && !isRecording) {
+    sendRecordBtn.textContent = "🎤";
+  } else if (!isRecording) {
+    sendRecordBtn.textContent = "➤";
+  }
+});
 
-  if (input.value.trim() !== "") {
+sendRecordBtn.addEventListener('click', async () => {
+  if (messageInput.value.trim() !== "") {
     // Отправка текста
     if (!currentUser) return;
     await addDoc(collection(db, "messages"), {
-      text: input.value,
+      text: messageInput.value,
       user: nickname || (currentUser ? currentUser.displayName : "Гость"),
       uid: currentUser.uid,
       time: Date.now()
     });
-    input.value = "";
+    messageInput.value = "";
+    sendRecordBtn.textContent = "🎤";
   } else {
     // Аудио
     if (!isRecording) {
@@ -323,7 +331,7 @@ sendRecordBtn.addEventListener('click', async () => {
     } else {
       mediaRecorder.stop();
       isRecording = false;
-      sendRecordBtn.textContent = "➤";
+      sendRecordBtn.textContent = "🎤";
     }
   }
 });
