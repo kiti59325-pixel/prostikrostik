@@ -17,6 +17,7 @@
   #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
   #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
+  /* ПК панель пользователя */
   #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #f1f5f9; }
@@ -60,13 +61,14 @@
   body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
 
-  /* Только мобильная версия */
+  /* Мобильное меню */
   @media (max-width: 600px) {
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
     #chat { height: calc(100vh - 110px); }
 
     #mobileMenu {
+      display: none;
       position: fixed;
       top: 50px;
       right: 10px;
@@ -75,21 +77,11 @@
       padding: 12px;
       flex-direction: column;
       gap: 8px;
-
-      opacity: 0;
-      transform: translateY(-10px);
-      pointer-events: none;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-
-      background-color: #1f2a44; 
+      background-color: #1f2a44;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 
-    #mobileMenu.open {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
+    #mobileMenu.open { display: flex; }
 
     body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
@@ -101,18 +93,18 @@
       background-color: inherit;
       color: inherit;
       border: 1px solid rgba(255,255,255,0.2);
+      box-sizing: border-box;
     }
 
     #mobileMenu button {
-      display: block;
-      margin: 0 auto 8px auto;
       width: 90%;
+      margin: 0 auto 8px auto;
       border-radius: 12px;
       padding: 10px 15px;
       font-weight: 500;
       letter-spacing: 0.2px;
-      transition: 0.2s;
       border: none;
+      transition: 0.2s;
     }
 
     body.dark #mobileMenu button { background-color: #2563eb; color: white; }
@@ -177,15 +169,13 @@ window.logout = logout;
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText =
-    user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText =
-    currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
@@ -196,8 +186,7 @@ window.setNickname = setNickname;
 function setNicknameMobile() {
   const input = document.getElementById("mobileNickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText =
-    currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   renderMessages();
@@ -208,12 +197,7 @@ window.setNicknameMobile = setNicknameMobile;
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
-  addDoc(collection(db, "messages"), {
-    text: input.value,
-    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-    uid: currentUser.uid,
-    time: Date.now()
-  });
+  addDoc(collection(db, "messages"), { text: input.value, user: nickname || (currentUser ? currentUser.displayName : "Гость"), uid: currentUser.uid, time: Date.now() });
   input.value = "";
 }
 window.sendMessage = sendMessage;
@@ -235,11 +219,7 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `
-      <div class="name">${displayName}</div>
-      ${data.text}
-      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
-    `;
+    div.innerHTML = `<div class="name">${displayName}</div>${data.text}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}`;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
@@ -257,12 +237,14 @@ function toggleTheme() {
 window.toggleTheme = toggleTheme;
 
 function toggleMobileMenu() {
+  if (window.innerWidth > 600) return;
   const menu = document.getElementById("mobileMenu");
   menu.classList.toggle("open");
 }
 window.toggleMobileMenu = toggleMobileMenu;
 
 document.addEventListener('click', function(event) {
+  if (window.innerWidth > 600) return;
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('mobileMenuBtn');
   if (menu.classList.contains('open') && !menu.contains(event.target) && event.target !== btn) {
