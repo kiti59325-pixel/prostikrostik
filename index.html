@@ -63,7 +63,6 @@
   body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
 
-  /* Мобильная версия */
   @media (max-width: 600px) {
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
@@ -78,45 +77,43 @@
       padding: 12px;
       display: none;
       flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      gap: 8px;
     }
-    body.dark #mobileMenu { background-color: #1e2a3a; } /* чуть светлее фона чата */
-    body.light #mobileMenu { background-color: #f1f5f9; }
+
+    body.dark #mobileMenuBtn { color: white; }
+    body.light #mobileMenuBtn { color: black; }
+
+    body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
     #mobileMenu input {
-      width: 100%;
       box-sizing: border-box;
+      width: 100%;
+      margin-bottom: 10px;
       border-radius: 10px;
       padding: 10px;
-      margin: 0;
-      border: 1px solid #ccc;
       background-color: inherit;
       color: inherit;
+      border: 1px solid #ccc;
     }
     body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
     body.light #mobileMenu input { border: 1px solid #d1d5db; }
 
     #mobileMenu button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      padding: 10px 0;
+      display: block;
+      margin: 0 auto 8px auto;
+      width: 90%;
       border-radius: 12px;
+      padding: 10px 15px;
       font-weight: 500;
       letter-spacing: 0.2px;
-      border: none;
       transition: 0.2s;
-      cursor: pointer;
+      border: none;
     }
     body.dark #mobileMenu button { background-color: #2563eb; color: white; }
     body.dark #mobileMenu button:hover { background-color: #1e40af; }
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
-
-    body.dark #mobileMenuBtn { color: white; }
-    body.light #mobileMenuBtn { color: black; }
   }
 </style>
 </head>
@@ -172,7 +169,10 @@ let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
-async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
+async function login() {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
 window.login = login;
 
 function logout() { signOut(auth); }
@@ -181,13 +181,15 @@ window.logout = logout;
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   alert("Твой ник теперь: " + nickname);
@@ -198,7 +200,8 @@ window.setNickname = setNickname;
 function setNicknameMobile() {
   const input = document.getElementById("mobileNickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   renderMessages();
@@ -209,7 +212,12 @@ window.setNicknameMobile = setNicknameMobile;
 function sendMessage() {
   const input = document.getElementById("messageInput");
   if (!input.value || !currentUser) return;
-  addDoc(collection(db, "messages"), { text: input.value, user: nickname || (currentUser ? currentUser.displayName : "Гость"), uid: currentUser.uid, time: Date.now() });
+  addDoc(collection(db, "messages"), {
+    text: input.value,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    uid: currentUser.uid,
+    time: Date.now()
+  });
   input.value = "";
 }
 window.sendMessage = sendMessage;
@@ -231,7 +239,11 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `<div class="name">${displayName}</div>${data.text}${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}`;
+    div.innerHTML = `
+      <div class="name">${displayName}</div>
+      ${data.text}
+      ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
+    `;
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
@@ -245,6 +257,9 @@ function toggleTheme() {
   body.classList.toggle("dark");
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+
+  const mobileBtn = document.getElementById("mobileMenuBtn");
+  mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
 }
 window.toggleTheme = toggleTheme;
 
@@ -258,6 +273,7 @@ window.toggleMobileMenu = toggleMobileMenu;
 document.addEventListener('click', function(event) {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('mobileMenuBtn');
+
   if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
     menu.style.display = 'none';
   }
