@@ -45,6 +45,7 @@
     padding: 10px;
     align-items: center;
     background: transparent;
+    gap: 8px;
   }
   #messageInput {
     flex: 1;
@@ -56,18 +57,19 @@
     background-color: inherit;
     color: inherit;
   }
+
   #sendRecordBtn {
-    width: 36px;
-    height: 36px;
-    margin-left: 10px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     border: none;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: 0.2s;
+    flex-shrink: 0;
   }
   body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; }
   body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
