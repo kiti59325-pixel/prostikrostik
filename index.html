@@ -112,6 +112,13 @@
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
   }
+  /* Ограничиваем ширину аудио под контейнер сообщения */
+.message audio {
+  max-width: 100%; /* не шире сообщения */
+  width: 100%;     /* растягивается по ширине сообщения */
+  height: auto;    /* автоматическая высота */
+  border-radius: 8px;
+}
   
 </style>
 </head>
