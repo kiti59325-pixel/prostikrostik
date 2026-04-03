@@ -80,15 +80,12 @@
       gap: 8px;
     }
 
-    /* Цвет кнопки "⋮" */
     body.dark #mobileMenuBtn { color: white; }
     body.light #mobileMenuBtn { color: black; }
 
-    /* Фон панели */
     body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-    /* Поле ввода ника */
     #mobileMenu input {
       box-sizing: border-box;
       width: 100%;
@@ -102,7 +99,6 @@
     body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
     body.light #mobileMenu input { border: 1px solid #d1d5db; }
 
-    /* Кнопки по центру панели */
     #mobileMenu button {
       display: block;
       margin: 0 auto 8px auto;
@@ -272,6 +268,16 @@ function toggleMobileMenu() {
   menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
 window.toggleMobileMenu = toggleMobileMenu;
+
+// Закрытие мобильного меню при клике вне панели
+document.addEventListener('click', function(event) {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('mobileMenuBtn');
+
+  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
+    menu.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
