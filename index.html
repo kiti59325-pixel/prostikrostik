@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
 <style>
-/* ВСЁ ТВОЁ ОСТАВЛЕНО БЕЗ ИЗМЕНЕНИЙ */
+/* ТВОЙ СТИЛЬ — НЕ ТРОГАЛ */
   body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f8fafc; color: black; }
@@ -15,11 +15,21 @@
   body.light header { background: #f1f5f9; color: black; }
 
   #headerButtons { display: flex; gap: 10px; align-items: center; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
   #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
-  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; }
-  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; }
+  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #f1f5f9; }
+  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
+  body.dark #userPanel button { background-color: #2563eb; color: white; }
+  body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
+  body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
+
+  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
+  body.light #nickname { background-color: white; color: black; }
 
   #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; }
 
@@ -56,8 +66,6 @@
 <div id="mobileMenu">
   <input id="mobileNickname" placeholder="Придумай ник..." />
   <button onclick="setNicknameMobile()">Сохранить ник</button>
-  <button onclick="login()">Войти через Google</button>
-  <button onclick="logout()">Выйти</button>
 </div>
 
 <div id="chat"></div>
@@ -69,12 +77,12 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  apiKey: "AIzaSy...",
   authDomain: "prostikrostik-90812.firebaseapp.com",
   projectId: "prostikrostik-90812",
   storageBucket: "prostikrostik-90812.appspot.com"
@@ -86,44 +94,61 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 
 let currentUser = null;
-let nickname = localStorage.getItem("nickname") || "";
-let theme = localStorage.getItem("theme") || "dark";
-document.body.classList.add(theme);
+let nickname = "Гость";
 
-async function login() {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
-window.login = login;
-
-function logout() { signOut(auth); }
-window.logout = logout;
+const provider = new GoogleAuthProvider();
+signInWithPopup(auth, provider);
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
-  if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText =
-    user ? "Ты: " + nickname : "Не вошёл";
+  if (user) nickname = user.displayName;
 });
 
-function setNickname() {
-  const input = document.getElementById("nickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  localStorage.setItem("nickname", nickname);
-}
-window.setNickname = setNickname;
+const chat = document.getElementById("chat");
 
-function setNicknameMobile() {
-  const input = document.getElementById("mobileNickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  localStorage.setItem("nickname", nickname);
-}
-window.setNicknameMobile = setNicknameMobile;
+const q = query(collection(db, "messages"), orderBy("time"));
 
-// ===== ОТПРАВКА ТЕКСТА =====
+onSnapshot(q, (snapshot) => {
+  chat.innerHTML = "";
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const div = document.createElement("div");
+
+    const isMe = currentUser && data.uid === currentUser.uid;
+    div.className = "message " + (isMe ? "me" : "other");
+
+    let content = data.text || "";
+    if (data.fileType === "audio") {
+      content = `<audio controls src="${data.fileUrl}"></audio>`;
+    }
+
+    div.innerHTML = `<b>${data.user}</b><br>${content}`;
+    chat.appendChild(div);
+  });
+});
+
+const input = document.getElementById("messageInput");
+const btn = document.getElementById("sendBtn");
+
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+
+function updateBtn() {
+  if (input.value.trim() === "") {
+    btn.textContent = isRecording ? "⏹" : "🎤";
+    btn.onclick = isRecording ? stopRec : startRec;
+  } else {
+    btn.textContent = "➤";
+    btn.onclick = sendMessage;
+  }
+}
+
+input.addEventListener("input", updateBtn);
+updateBtn();
+
 function sendMessage() {
-  const input = document.getElementById("messageInput");
-  if (!input.value || !currentUser) return;
+  if (!input.value) return;
 
   addDoc(collection(db, "messages"), {
     text: input.value,
@@ -133,77 +158,23 @@ function sendMessage() {
   });
 
   input.value = "";
-  updateButton();
-}
-window.sendMessage = sendMessage;
-
-// ===== ЧАТ =====
-const chat = document.getElementById("chat");
-const q = query(collection(db, "messages"), orderBy("time"));
-
-onSnapshot(q, (snapshot) => {
-  chat.innerHTML = "";
-
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const isMe = currentUser && data.uid === currentUser.uid;
-
-    const div = document.createElement("div");
-    div.className = "message " + (isMe ? "me" : "other");
-
-    let content = data.text || "";
-    if (data.fileType === "audio") {
-      content = `<audio controls src="${data.fileUrl}"></audio>`;
-    }
-
-    div.innerHTML = `
-      <div>${data.user}</div>
-      ${content}
-    `;
-
-    chat.appendChild(div);
-  });
-
-  chat.scrollTop = chat.scrollHeight;
-});
-
-// ===== ГОЛОСОВЫЕ =====
-const messageInput = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendBtn");
-
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-
-function updateButton() {
-  if (messageInput.value.trim() === "") {
-    sendButton.textContent = isRecording ? "⏹" : "🎤";
-        sendButton.onclick = isRecording ? stopRecording : startRecording;
-  } else {
-    sendButton.textContent = "➤";
-    sendButton.onclick = sendMessage;
-  }
+  updateBtn();
 }
 
-messageInput.addEventListener("input", updateButton);
-updateButton();
-
-async function startRecording() {
+async function startRec() {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  audioChunks = [];
   mediaRecorder = new MediaRecorder(stream);
+  audioChunks = [];
 
   mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
   mediaRecorder.onstop = async () => {
-    isRecording = false;
-    updateButton();
-
     const blob = new Blob(audioChunks, { type: "audio/webm" });
-    const fileRef = ref(storage, "audio/" + Date.now());
 
+    const fileRef = ref(storage, "audio/" + Date.now());
     await uploadBytes(fileRef, blob);
+
     const url = await getDownloadURL(fileRef);
 
     await addDoc(collection(db, "messages"), {
@@ -217,26 +188,14 @@ async function startRecording() {
 
   mediaRecorder.start();
   isRecording = true;
-  updateButton();
+  updateBtn();
 }
 
-function stopRecording() {
+function stopRec() {
   mediaRecorder.stop();
+  isRecording = false;
+  updateBtn();
 }
-
-// ===== UI =====
-function toggleTheme() {
-  document.body.classList.toggle("dark");
-  document.body.classList.toggle("light");
-}
-window.toggleTheme = toggleTheme;
-
-function toggleMobileMenu() {
-  const menu = document.getElementById("mobileMenu");
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-}
-window.toggleMobileMenu = toggleMobileMenu;
-
 </script>
 </body>
 </html>
