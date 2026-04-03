@@ -11,6 +11,7 @@ body.dark { background:#0f172a; color:white; }
 body.light { background:#f8fafc; color:black; }
 
 header { padding:15px; display:flex; justify-content:space-between; }
+
 #chat { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; }
 
 .message { max-width:60%; padding:10px; margin:5px; border-radius:12px; }
@@ -26,14 +27,14 @@ button { margin-left:10px; padding:10px; border-radius:10px; border:none; cursor
 <body class="dark">
 
 <header>
-  Чат
+  ПростикРостик
 </header>
 
 <div id="chat"></div>
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button>➤</button>
+  <button id="sendBtn">➤</button>
 </div>
 
 <script type="module">
@@ -42,12 +43,12 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "ht
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// Firebase
+// 🔥 Firebase config (твои данные)
 const firebaseConfig = {
   apiKey: "AIzaSy...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "..."
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812",
+  storageBucket: "prostikrostik-90812.appspot.com"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -55,10 +56,10 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+// ===== АВТОРИЗАЦИЯ =====
 let currentUser = null;
 let nickname = "Гость";
 
-// ===== Авторизация =====
 const provider = new GoogleAuthProvider();
 signInWithPopup(auth, provider);
 
@@ -69,6 +70,7 @@ onAuthStateChanged(auth, (user) => {
 
 // ===== ЧАТ =====
 const chat = document.getElementById("chat");
+
 const q = query(collection(db, "messages"), orderBy("time"));
 
 onSnapshot(q, (snapshot) => {
@@ -88,11 +90,13 @@ onSnapshot(q, (snapshot) => {
     div.innerHTML = `<b>${data.user}</b><br>${content}`;
     chat.appendChild(div);
   });
+
+  chat.scrollTop = chat.scrollHeight;
 });
 
 // ===== ТЕКСТ =====
 const messageInput = document.getElementById("messageInput");
-const sendButton = document.querySelector("#inputArea button");
+const sendButton = document.getElementById("sendBtn");
 
 function sendMessage() {
   if (!messageInput.value || !currentUser) return;
@@ -136,12 +140,7 @@ async function startRecording() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     audioChunks = [];
-
-    const mimeType = MediaRecorder.isTypeSupported("audio/webm")
-      ? "audio/webm"
-      : "audio/mp4";
-
-    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    mediaRecorder = new MediaRecorder(stream);
 
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) audioChunks.push(e.data);
@@ -151,10 +150,13 @@ async function startRecording() {
       isRecording = false;
       updateButton();
 
-      if (!audioChunks.length) return;
+      if (!audioChunks.length) {
+        alert("Запись пустая");
+        return;
+      }
 
-      const audioBlob = new Blob(audioChunks, { type: mimeType });
-      const fileName = `audio_${Date.now()}.${mimeType.split("/")[1]}`;
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const fileName = `audio_${Date.now()}.webm`;
 
       const storageRef = ref(storage, `audioMessages/${fileName}`);
 
@@ -170,9 +172,9 @@ async function startRecording() {
           time: Date.now()
         });
 
-        console.log("Голосовое отправлено");
+        console.log("✅ Отправлено");
       } catch (err) {
-        console.error("Ошибка:", err);
+        console.error("❌ Ошибка:", err);
         alert("Ошибка отправки");
       }
     };
