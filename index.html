@@ -14,7 +14,7 @@
   body.light header { background: #f1f5f9; color: black; }
 
   #headerButtons { display: flex; gap: 10px; align-items: center; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
   #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
   #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -40,93 +40,21 @@
   body.light .other { background: #e5e7eb; color: black; }
   body.light .me { background: #bfdbfe; color: black; }
 
-  .name { font-size: 11px; opacity: 0.7; margin-bottom: 4px; }
-
-  /* Исправленный крестик */
-  .delete-btn {
-    position: absolute;
-    top: 50%;
-    right: 8px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 12px;
-    opacity: 0.6;
-  }
+  .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
   #messageInput, #inputArea button { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
-  
-  #recordBtn { border-radius: 50%; width: 36px; height: 36px; font-size: 18px; margin-left: 5px; }
 
-  body.light #messageInput,
-  body.light #inputArea button { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
-  body.dark #messageInput,
-  body.dark #inputArea button { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  #sendBtn, #recordBtn { width: 36px; height: 36px; font-size: 18px; border-radius: 50%; border: none; cursor: pointer; margin-left: 5px; }
 
-  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+  body.light #messageInput { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  body.dark #messageInput { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  body.light #sendBtn, body.light #recordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; }
+  body.dark #sendBtn, body.dark #recordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
 
-  body.dark #chat::-webkit-scrollbar { width: 8px; }
-  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
-  body.light #chat::-webkit-scrollbar { width: 8px; }
-  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
-  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
-  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
-
-  @media (max-width: 600px) {
-    #userPanel { display: none; }
-    #mobileMenuBtn { display: flex; }
-    #chat { height: calc(100vh - 110px); }
-
-    #mobileMenu { 
-      position: fixed;
-      top: 50px;
-      right: 10px;
-      z-index: 300;
-      border-radius: 12px;
-      padding: 12px;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    body.dark #mobileMenuBtn { color: white; }
-    body.light #mobileMenuBtn { color: black; }
-
-    body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-
-    #mobileMenu input {
-      box-sizing: border-box;
-      width: 100%;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      padding: 10px;
-      background-color: inherit;
-      color: inherit;
-      border: 1px solid #ccc;
-    }
-    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
-    body.light #mobileMenu input { border: 1px solid #d1d5db; }
-
-    #mobileMenu button {
-      display: block;
-      margin: 0 auto 8px auto;
-      width: 90%;
-      border-radius: 12px;
-      padding: 10px 15px;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-      transition: 0.2s;
-      border: none;
-    }
-    body.dark #mobileMenu button { background-color: #2563eb; color: white; }
-    body.dark #mobileMenu button:hover { background-color: #1e40af; }
-    body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
-  }
+  @media (max-width: 600px) { #userPanel { display: none; } #mobileMenuBtn { display: flex; } }
 </style>
 </head>
 <body>
@@ -158,7 +86,7 @@
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button onclick="sendMessage()">➤</button>
+  <button id="sendBtn" onclick="sendMessage()">➤</button>
   <button id="recordBtn">🎤</button>
 </div>
 
@@ -172,7 +100,6 @@ const firebaseConfig = {
   authDomain: "prostikrostik-90812.firebaseapp.com",
   projectId: "prostikrostik-90812"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -182,30 +109,39 @@ let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
-async function login() {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
-window.login = login;
+const messageInput = document.getElementById("messageInput");
+const recordBtn = document.getElementById("recordBtn");
+const sendBtn = document.getElementById("sendBtn");
 
+function updateInputButtons() {
+  if (messageInput.value.trim().length > 0) {
+    sendBtn.style.display = "inline-block";
+    recordBtn.style.display = "none";
+  } else {
+    sendBtn.style.display = "none";
+    recordBtn.style.display = "inline-block";
+  }
+}
+messageInput.addEventListener("input", updateInputButtons);
+updateInputButtons();
+
+async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
+window.login = login;
 function logout() { signOut(auth); }
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText =
-    user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText =
-    currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
-  alert("Твой ник теперь: " + nickname);
   renderMessages();
 }
 window.setNickname = setNickname;
@@ -213,8 +149,7 @@ window.setNickname = setNickname;
 function setNicknameMobile() {
   const input = document.getElementById("mobileNickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText =
-    currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   renderMessages();
@@ -223,15 +158,15 @@ function setNicknameMobile() {
 window.setNicknameMobile = setNicknameMobile;
 
 function sendMessage() {
-  const input = document.getElementById("messageInput");
-  if (!input.value || !currentUser) return;
+  if (!messageInput.value.trim() || !currentUser) return;
   addDoc(collection(db, "messages"), {
-    text: input.value,
+    text: messageInput.value,
     user: nickname || (currentUser ? currentUser.displayName : "Гость"),
     uid: currentUser.uid,
     time: Date.now()
   });
-  input.value = "";
+  messageInput.value = "";
+  updateInputButtons();
 }
 window.sendMessage = sendMessage;
 
@@ -239,7 +174,7 @@ const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
 
-onSnapshot(q, (snapshot) => {
+onSnapshot(q, snapshot => {
   messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
   renderMessages();
 });
@@ -281,8 +216,6 @@ function toggleTheme() {
   body.classList.toggle("dark");
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
-  const mobileBtn = document.getElementById("mobileMenuBtn");
-  mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
 }
 window.toggleTheme = toggleTheme;
 
@@ -292,35 +225,24 @@ function toggleMobileMenu() {
 }
 window.toggleMobileMenu = toggleMobileMenu;
 
-document.addEventListener('click', function(event) {
-  const menu = document.getElementById('mobileMenu');
-  const btn = document.getElementById('mobileMenuBtn');
-  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
-    menu.style.display = 'none';
-  }
-});
-
-// ==================== Аудио ====================
+// ========== AUDIO RECORD ==========
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 
-const recordBtn = document.getElementById('recordBtn');
 recordBtn.addEventListener('click', async () => {
   if (!isRecording) {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
     audioChunks = [];
-
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
     mediaRecorder.onstop = async () => {
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64Audio = reader.result;
         if (!currentUser) return;
         await addDoc(collection(db, "messages"), {
-          text: base64Audio,
+          text: reader.result,
           isAudio: true,
           user: nickname || (currentUser ? currentUser.displayName : "Гость"),
           uid: currentUser.uid,
@@ -329,7 +251,6 @@ recordBtn.addEventListener('click', async () => {
       };
       reader.readAsDataURL(audioBlob);
     };
-
     mediaRecorder.start();
     isRecording = true;
     recordBtn.textContent = "⏹️";
