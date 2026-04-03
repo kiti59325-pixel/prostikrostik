@@ -98,6 +98,54 @@
       display: none;
       flex-direction: column;
     }
+
+    /* Мобильная кнопка "три точки" */
+    body.dark #mobileMenuBtn { color: white; }
+    body.light #mobileMenuBtn { color: black; }
+
+    /* Мобильное меню кнопок под стиль ПК */
+    #mobileMenu button {
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      transition: 0.2s;
+      border: none;
+      width: 100%;
+    }
+    body.dark #mobileMenu button {
+      background-color: #2563eb;
+      color: white;
+    }
+    body.dark #mobileMenu button:hover {
+      background-color: #1e40af;
+    }
+    body.light #mobileMenu button {
+      background-color: #c7e0ff;
+      color: #1f2937;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    body.light #mobileMenu button:hover {
+      background-color: #a5d0ff;
+      color: #1f2937;
+    }
+
+    /* Input под мобильное меню */
+    #mobileMenu input {
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #ccc;
+      width: 100%;
+      background-color: inherit;
+      color: inherit;
+    }
+    body.dark #mobileMenu input { 
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    body.light #mobileMenu input {
+      border: 1px solid #d1d5db;
+    }
   }
 </style>
 </head>
@@ -243,6 +291,14 @@ function toggleTheme() {
   body.classList.toggle("dark");
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+
+  // Обновляем цвет мобильной кнопки
+  const mobileBtn = document.getElementById("mobileMenuBtn");
+  if (body.classList.contains("dark")) {
+    mobileBtn.style.color = "white";
+  } else {
+    mobileBtn.style.color = "black";
+  }
 }
 window.toggleTheme = toggleTheme;
 
