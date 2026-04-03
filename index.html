@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+давай, вот код
+
+<!DOCTYPE html> 
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -146,26 +148,23 @@
 
 <div id="inputArea">
   <input id="messageInput" placeholder="Сообщение..." />
-  <button>➤</button>
+  <button onclick="sendMessage()">➤</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
   authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812",
-  storageBucket: "prostikrostik-90812.appspot.com"
+  projectId: "prostikrostik-90812"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const storage = getStorage(app);
 
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
@@ -195,6 +194,7 @@ function setNickname() {
     currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
+  alert("Твой ник теперь: " + nickname);
   renderMessages();
 }
 window.setNickname = setNickname;
@@ -211,7 +211,19 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// ===================== Чат =====================
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  if (!input.value || !currentUser) return;
+  addDoc(collection(db, "messages"), {
+    text: input.value,
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    uid: currentUser.uid,
+    time: Date.now()
+  });
+  input.value = "";
+}
+window.sendMessage = sendMessage;
+
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
@@ -229,15 +241,9 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-
-    let content = data.text || "";
-    if(data.fileType === "audio" && data.fileUrl) {
-      content = `<audio controls src="${data.fileUrl}"></audio>`;
-    }
-
     div.innerHTML = `
       <div class="name">${displayName}</div>
-      ${content}
+      ${data.text}
       ${isMe ? `<span class="delete-btn" onclick="deleteMessage('${docObj.id}')">❌</span>` : ""}
     `;
     chat.appendChild(div);
@@ -248,80 +254,6 @@ function renderMessages() {
 async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
 window.deleteMessage = deleteMessage;
 
-// ===================== Отправка текста =====================
-const inputArea = document.getElementById("inputArea");
-const messageInput = document.getElementById("messageInput");
-const sendButton = inputArea.querySelector("button");
-
-function sendMessage() {
-  if (!messageInput.value || !currentUser) return;
-  addDoc(collection(db, "messages"), {
-    text: messageInput.value,
-    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-    uid: currentUser.uid,
-    time: Date.now()
-  });
-  messageInput.value = "";
-  updateButton();
-}
-window.sendMessage = sendMessage;
-
-// ===================== Голосовые сообщения =====================
-let mediaRecorder;
-let audioChunks = [];
-
-function updateButton() {
-  if (messageInput.value.trim() === "") {
-    sendButton.textContent = "🎤";
-    sendButton.onclick = startRecording;
-  } else {
-    sendButton.textContent = "➤";
-    sendButton.onclick = sendMessage;
-  }
-}
-messageInput.addEventListener("input", updateButton);
-updateButton();
-
-async function startRecording() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert("Микрофон не поддерживается!");
-    return;
-  }
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-
-    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-      const fileName = `audio_${Date.now()}.webm`;
-      const storageRef = ref(storage, `audioMessages/${fileName}`);
-      await uploadBytes(storageRef, audioBlob);
-      const url = await getDownloadURL(storageRef);
-
-      await addDoc(collection(db, "messages"), {
-        user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-        uid: currentUser.uid,
-        fileUrl: url,
-        fileType: "audio",
-        time: Date.now()
-      });
-      updateButton();
-    };
-
-    mediaRecorder.start();
-    sendButton.textContent = "⏹";
-    sendButton.onclick = () => mediaRecorder.stop();
-  } catch(err) {
-    console.error(err);
-    alert("Ошибка доступа к микрофону");
-  }
-}
-window.startRecording = startRecording;
-
-// ===================== Тема и меню =====================
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle("dark");
@@ -339,14 +271,15 @@ function toggleMobileMenu() {
 }
 window.toggleMobileMenu = toggleMobileMenu;
 
+// Закрытие мобильного меню при клике вне панели
 document.addEventListener('click', function(event) {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('mobileMenuBtn');
+
   if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
     menu.style.display = 'none';
   }
 });
 </script>
-
 </body>
 </html>
