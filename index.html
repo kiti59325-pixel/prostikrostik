@@ -217,31 +217,31 @@ function renderMessages() {
       const isDark = document.body.classList.contains("dark");
       let playBg, playColor, progressBg, progressFill;
 
-     if (isMe) {
+   if (isMe) {
   // ===== МОИ СООБЩЕНИЯ =====
   if (isDark) {
-    playBg = "#60a5fa";       // светлее → не сливается с bubble
-    playColor = "#0f172a";    // тёмная иконка (контраст)
-    progressBg = "#334155";   // был слишком тёмный → сделали светлее
-    progressFill = "#93c5fd"; // мягкий голубой
-  } else {
-    playBg = "#3b82f6";       // нормальный синий (не кислотный)
+    playBg = "#2563eb";       // насыщенный синий (контраст к bubble)
     playColor = "#ffffff";
-    progressBg = "#e0f2fe";   // мягкий светлый фон
-    progressFill = "#3b82f6";
+    progressBg = "#1e293b";   // фон бара (чуть светлее фона сообщения)
+    progressFill = "#60a5fa"; // яркий голубой → видно движение
+  } else {
+    playBg = "#1d4ed8";       // более глубокий синий (не яркий)
+    playColor = "#ffffff";
+    progressBg = "#dbeafe";   // светло-голубой
+    progressFill = "#2563eb"; // основной цвет
   }
 } else {
   // ===== ЧУЖИЕ СООБЩЕНИЯ =====
   if (isDark) {
-    playBg = "#94a3b8";       // чуть светлее → не сливается
-    playColor = "#0f172a";
-    progressBg = "#475569";
-    progressFill = "#cbd5f5";
+    playBg = "#475569";       // серо-синий (не сливается)
+    playColor = "#e2e8f0";
+    progressBg = "#1e293b";
+    progressFill = "#94a3b8"; // спокойный светлый
   } else {
-    playBg = "#f1f5f9";       // в стиле твоего UI
-    playColor = "#1e293b";
-    progressBg = "#e5e7eb";
-    progressFill = "#64748b"; // спокойный серый
+    playBg = "#e5e7eb";       // светло-серый (как iMessage/Telegram)
+    playColor = "#111827";
+    progressBg = "#f1f5f9";
+    progressFill = "#6b7280"; // нейтральный серый
   }
 }
 
