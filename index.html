@@ -217,38 +217,17 @@ function renderMessages() {
       const isDark = document.body.classList.contains("dark");
       let playBg, playColor, progressBg, progressFill;
 
-const isDark = document.body.classList.contains("dark");
-let playBg, playColor, progressBg, progressFill;
+      if (isMe) {
+        if (isDark) { playBg="#3b82f6"; playColor="#fff"; progressBg="#1e40af"; progressFill="#93c5fd"; }
+        else { playBg="#2563eb"; playColor="#fff"; progressBg="#dbeafe"; progressFill="#2563eb"; }
+      } else {
+        if (isDark) { playBg="#64748b"; playColor="#fff"; progressBg="#475569"; progressFill="#94a3b8"; }
+        else { playBg="#e2e8f0"; playColor="#1f2937"; progressBg="#e5e7eb"; progressFill="#6b7280"; }
+      }
 
-if (isMe) {
-  if (isDark) {
-    playBg = "#3b82f6";        // яркий синий, хорошо видно на тёмном фоне
-    playColor = "#fff";         // белый текст ▶
-    progressBg = "#1e293b";     // тёмно-синий фон прогресса
-    progressFill = "#60a5fa";   // светло-голубой прогресс, контрастный
-  } else {
-    playBg = "#2563eb";         // синий на светлом фоне
-    playColor = "#fff";         // белый текст ▶
-    progressBg = "#e0f2fe";     // очень светлый голубой фон
-    progressFill = "#3b82f6";   // яркий синий прогресс
-  }
-} else {
-  if (isDark) {
-    playBg = "#475569";         // серо-синий для чужих
-    playColor = "#fff";         // белый ▶
-    progressBg = "#1e293b";     // тёмно-синий фон
-    progressFill = "#94a3b8";   // светлый серо-голубой
-  } else {
-    playBg = "#64748b";         // серо-синий для чужих
-    playColor = "#1f2937";      // тёмный текст на светлом фоне
-    progressBg = "#f1f5f9";     // светлый фон
-    progressFill = "#475569";   // серо-синий прогресс
-  }
-}
-
-playBtn.style.background = playBg;
-playBtn.style.color = playColor;
- playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
+      playBtn.style.background = playBg;
+      playBtn.style.color = playColor;
+      playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
       playBtn.textContent = "▶";
 
       const progressWrap = document.createElement("div");
@@ -256,14 +235,14 @@ playBtn.style.color = playColor;
       progressWrap.style.minWidth = "180px";
       progressWrap.style.height = "5px";
       progressWrap.style.borderRadius = "4px";
-    progressWrap.style.background = progressBg;
+      progressWrap.style.background = progressBg;
       progressWrap.style.cursor = "pointer";
       progressWrap.style.position = "relative";
 
       const progressBar = document.createElement("div");
       progressBar.style.height = "100%";
       progressBar.style.width = "0%";
-     progressBar.style.background = progressFill;
+      progressBar.style.background = progressFill;
       progressBar.style.borderRadius = "4px";
 
       progressWrap.appendChild(progressBar);
