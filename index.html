@@ -5,81 +5,91 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
 <style>
-body { margin:0; font-family: Arial; display:flex; flex-direction:column; height:100vh; transition:0.3s; }
-body.dark { background:#0f172a; color:white; }
-body.light { background:#f8fafc; color:black; }
+  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
+  body.dark { background: #0f172a; color: white; }
+  body.light { background: #f8fafc; color: black; }
 
-header { padding:15px; font-size:18px; display:flex; justify-content:space-between; align-items:center; }
-body.dark header { background:#1e293b; color:white; }
-body.light header { background:#f1f5f9; color:black; }
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+  body.dark header { background: #1e293b; color: white; }
+  body.light header { background: #f1f5f9; color: black; }
 
-#headerButtons { display:flex; gap:10px; }
-#themeBtn { border-radius:50%; background:transparent; font-size:18px; width:36px; height:36px; border:none; cursor:pointer; }
-#mobileMenuBtn { display:none; border:none; background:transparent; font-size:24px; cursor:pointer; }
+  #headerButtons { display: flex; gap: 10px; align-items: center; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
+  #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
 
-#userPanel { position:sticky; top:0; z-index:100; padding:10px; display:flex; flex-wrap:wrap; gap:10px; border-radius:0 0 12px 12px; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
-body.dark #userPanel { background:#1e293b; }
-body.light #userPanel { background:#f1f5f9; }
-#userPanel button { border-radius:12px; padding:10px 15px; border:none; cursor:pointer; font-weight:500; transition:0.2s; }
-body.dark #userPanel button { background:#2563eb; color:white; }
-body.light #userPanel button { background:#c7e0ff; color:#1f2937; box-shadow:0 1px 3px rgba(0,0,0,0.12); }
-body.light #userPanel button:hover { background:#a5d0ff; }
+  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #f1f5f9; }
+  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
+  body.dark #userPanel button { background-color: #2563eb; color: white; }
+  body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
+  body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
 
-#nickname { border-radius:10px; padding:10px; border:1px solid #ccc; }
-body.dark #nickname { background:#1e293b; color:white; border:1px solid rgba(255,255,255,0.2); }
-body.light #nickname { background:white; color:black; border:1px solid #d1d5db; }
+  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
 
-#chat { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; }
-.message { max-width:60%; padding:10px; margin:5px; border-radius:12px; position:relative; word-wrap:break-word; }
-.me { align-self:flex-end; background:#3b82f6; color:white; }
-body.dark .other { background:#334155; color:white; }
-body.light .other { background:#e5e7eb; color:black; }
-body.light .me { background:#bfdbfe; color:black; }
-.name { font-size:11px; opacity:0.7; }
-.delete-btn { position:absolute; top:2px; right:6px; cursor:pointer; font-size:12px; opacity:0.6; }
+  #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
+  #mobileMenu input, #mobileMenu button { width: 100%; }
 
-#audio-player { display:flex; align-items:center; gap:5px; margin-top:5px; }
-.audio-btn { border:none; background:#2563eb; color:white; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
-.audio-progress-container { flex:1; background:#cbd5e1; height:5px; border-radius:3px; cursor:pointer; position:relative; }
-.audio-progress { height:100%; background:#3b82f6; width:0%; border-radius:3px; }
-.audio-time { font-size:12px; min-width:50px; text-align:center; }
-.speed-btn { border:none; background:#93c5fd; color:black; border-radius:4px; padding:2px 6px; cursor:pointer; font-size:12px; }
+  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
 
-#inputArea { display:flex; padding:10px; justify-content:center; }
-#messageInput { flex:1; padding:10px; border-radius:25px; border:1px solid #cbd5e1; outline:none; }
-#sendRecordBtn { margin-left:10px; border-radius:25px; padding:10px 16px; cursor:pointer; }
+  .me { align-self: flex-end; background: #3b82f6; color: white; }
+  body.dark .other { background: #334155; color: white; }
+  body.light .other { background: #e5e7eb; color: black; }
+  body.light .me { background: #bfdbfe; color: black; }
 
-@media(max-width:600px){
-#userPanel{display:none;} 
-#mobileMenuBtn{display:flex;}
-#chat{height:calc(100vh-110px);}
-}
+  .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
+  body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+
+  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+
+  .audio-player { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+  .audio-player button { border: none; background: transparent; cursor: pointer; font-size: 16px; }
+  .audio-progress { flex: 1; height: 4px; background: #ccc; border-radius: 2px; position: relative; cursor: pointer; }
+  .audio-progress .fill { height: 100%; background: #3b82f6; border-radius: 2px; width: 0%; }
+  .audio-duration { font-size: 12px; min-width: 35px; text-align: right; }
+  .audio-speed { margin-left: 5px; font-size: 12px; cursor: pointer; }
+  .audio-download { margin-left: 5px; font-size: 16px; cursor: pointer; }
 </style>
 </head>
 <body>
-
 <header>
-ПростикРостик
-<div id="headerButtons">
-<button id="themeBtn" onclick="toggleTheme()">🌗</button>
-<button id="mobileMenuBtn" onclick="toggleMobileMenu()">⋮</button>
-</div>
+  ПростикРостик
+  <div id="headerButtons">
+    <button id="themeBtn" onclick="toggleTheme()">🌗</button>
+    <button id="mobileMenuBtn" onclick="toggleMobileMenu()">⋮</button>
+  </div>
 </header>
 
 <div id="userPanel">
-<input id="nickname" placeholder="Придумай ник..." />
-<button onclick="setNickname()">Сохранить ник</button>
-<button onclick="login()">Войти через Google</button>
-<button onclick="logout()">Выйти</button>
-<div id="userInfo"></div>
+  <input id="nickname" placeholder="Придумай ник..." />
+  <button onclick="setNickname()">Сохранить ник</button>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
+  <div id="userInfo"></div>
+</div>
+
+<div id="mobileMenu">
+  <input id="mobileNickname" placeholder="Придумай ник..." />
+  <button onclick="setNicknameMobile()">Сохранить ник</button>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
 </div>
 
 <div id="chat"></div>
 
 <div id="inputArea">
-<input id="messageInput" placeholder="Сообщение..." />
-<button id="sendRecordBtn">🎤</button>
+  <input id="messageInput" placeholder="Сообщение..." />
+  <button id="sendRecordBtn">🎤</button>
 </div>
 
 <script type="module">
@@ -92,6 +102,7 @@ const firebaseConfig = {
   authDomain: "prostikrostik-90812.firebaseapp.com",
   projectId: "prostikrostik-90812"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -100,171 +111,133 @@ let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
+let globalSpeed = parseFloat(localStorage.getItem('audioSpeed')) || 1;
 
+// --- auth & nickname functions ---
 async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
 function logout() { signOut(auth); }
 window.logout = logout;
+onAuthStateChanged(auth, (user) => { currentUser = user; if (!nickname && user) nickname = user.displayName; document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл"; });
+function setNickname() { const input = document.getElementById("nickname"); nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость"); document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"; input.value = ""; localStorage.setItem("nickname", nickname); alert("Твой ник теперь: " + nickname); renderMessages(); }
+window.setNickname = setNickname;
+function setNicknameMobile() { const input = document.getElementById("mobileNickname"); nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость"); document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"; input.value = ""; localStorage.setItem("nickname", nickname); renderMessages(); document.getElementById("mobileMenu").style.display = "none"; }
+window.setNicknameMobile = setNicknameMobile;
 
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  if(!nickname && user) nickname=user.displayName;
-  document.getElementById("userInfo").innerText = user?"Ты: "+nickname:"Не вошёл";
-});
+// --- chat & messages ---
+const chat = document.getElementById("chat");
+const q = query(collection(db, "messages"), orderBy("time"));
+let messagesCache = [];
 
-function setNickname(){ 
-  const input=document.getElementById("nickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser?"Ты: "+nickname:"Не вошёл";
-  input.value="";
-  localStorage.setItem("nickname",nickname);
-  renderMessages();
-}
-window.setNickname=setNickname;
+onSnapshot(q, (snapshot) => { messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() })); renderMessages(); });
 
-const chat=document.getElementById("chat");
-const q=query(collection(db,"messages"),orderBy("time"));
-let messagesCache=[];
-
-onSnapshot(q,(snapshot)=>{ messagesCache=snapshot.docs.map(d=>({id:d.id,data:d.data()})); renderMessages(); });
-
-async function deleteMessage(id){ await deleteDoc(doc(db,"messages",id)); }
-window.deleteMessage=deleteMessage;
-
-function toggleTheme(){ const b=document.body; b.classList.toggle("dark"); b.classList.toggle("light"); localStorage.setItem("theme",b.classList.contains("dark")?"dark":"light"); }
-window.toggleTheme=toggleTheme;
-
-function renderMessages(){
-  chat.innerHTML="";
-  messagesCache.forEach(docObj=>{
-    const data=docObj.data;
-    const isMe=currentUser && data.uid===currentUser.uid;
-    const displayName=isMe?nickname||(currentUser?currentUser.displayName:"Гость"):data.user;
-    const div=document.createElement("div");
-    div.className="message "+(isMe?"me":"other");
-    div.innerHTML=`<div class="name">${displayName}</div>`;
+function renderMessages() {
+  chat.innerHTML = "";
+  messagesCache.forEach(docObj => {
+    const data = docObj.data;
+    const isMe = currentUser && data.uid === currentUser.uid;
+    const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
+    const div = document.createElement("div");
+    div.className = "message " + (isMe ? "me" : "other");
+    div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if(data.isAudio){
-      const container=document.createElement("div"); container.className="audio-player";
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'audio-player';
+      const audio = new Audio(data.text);
+      audio.preload = 'metadata';
 
-      const playBtn=document.createElement("button");
-      playBtn.className="audio-btn"; playBtn.textContent="▶";
+      const playBtn = document.createElement('button');
+      playBtn.textContent = '▶';
+      const durationSpan = document.createElement('span');
+      durationSpan.className = 'audio-duration';
+      durationSpan.textContent = '...';
+      const speedBtn = document.createElement('button');
+      speedBtn.className = 'audio-speed';
+      speedBtn.textContent = globalSpeed + 'x';
+      const downloadBtn = document.createElement('a');
+      downloadBtn.className = 'audio-download';
+      downloadBtn.href = data.text;
+      downloadBtn.download = 'audio.webm';
+      downloadBtn.textContent = '⬇';
 
-      const progressContainer=document.createElement("div");
-      progressContainer.className="audio-progress-container";
-      const progress=document.createElement("div"); progress.className="audio-progress";
-      progressContainer.appendChild(progress);
-
-      const timeLabel=document.createElement("div"); timeLabel.className="audio-time";
-
-      const downloadBtn=document.createElement("a");
-      downloadBtn.className="audio-btn"; downloadBtn.textContent="⬇"; downloadBtn.href=data.text; downloadBtn.download="audio.webm";
-
-      const speedBtn=document.createElement("button"); speedBtn.className="speed-btn"; speedBtn.textContent="1x";
-
-      const audioEl=new Audio(data.text);
-
-      audioEl.addEventListener("loadedmetadata", ()=>{
-        const min=Math.floor(audioEl.duration/60);
-        const sec=Math.floor(audioEl.duration%60).toString().padStart(2,"0");
-        timeLabel.textContent=`0:00 / ${min}:${sec}`;
-      });
-
-      let interval;
-      playBtn.onclick=()=>{
-        if(audioEl.paused){ 
-          audioEl.play(); playBtn.textContent="⏸";
-          interval=setInterval(()=>{
-            const pct=(audioEl.currentTime/audioEl.duration)*100;
-            progress.style.width=pct+"%";
-            const m=Math.floor(audioEl.currentTime/60);
-            const s=Math.floor(audioEl.currentTime%60).toString().padStart(2,"0");
-            const dm=Math.floor(audioEl.duration/60);
-            const ds=Math.floor(audioEl.duration%60).toString().padStart(2,"0");
-            timeLabel.textContent=`${m}:${s} / ${dm}:${ds}`;
-          },200);
-        } else { audioEl.pause(); playBtn.textContent="▶"; clearInterval(interval);}
-      };
-      audioEl.onended=()=>{ playBtn.textContent="▶"; progress.style.width="0%"; clearInterval(interval); };
-
-      progressContainer.onclick=e=>{
-        const rect=progressContainer.getBoundingClientRect();
-        const pct=(e.clientX-rect.left)/rect.width;
-        audioEl.currentTime=pct*audioEl.duration;
+      audio.onloadedmetadata = () => { 
+        const sec = Math.floor(audio.duration % 60);
+        const min = Math.floor(audio.duration / 60);
+        durationSpan.textContent = `${min}:${sec<10?'0':''}${sec}`;
+        audio.playbackRate = globalSpeed;
       };
 
-      speedBtn.onclick=()=>{
-        if(audioEl.playbackRate===1) { audioEl.playbackRate=1.5; speedBtn.textContent="1.5x"; }
-        else if(audioEl.playbackRate===1.5) { audioEl.playbackRate=2; speedBtn.textContent="2x"; }
-        else { audioEl.playbackRate=1; speedBtn.textContent="1x"; }
+      playBtn.onclick = () => { if(audio.paused) audio.play(); else audio.pause(); };
+      audio.onplay = () => playBtn.textContent = '⏸';
+      audio.onpause = () => playBtn.textContent = '▶';
+
+      speedBtn.onclick = () => {
+        globalSpeed = globalSpeed === 2 ? 0.5 : globalSpeed + 0.5;
+        localStorage.setItem('audioSpeed', globalSpeed);
+        document.querySelectorAll('.audio-player audio').forEach(a=>a.playbackRate = globalSpeed);
+        document.querySelectorAll('.audio-speed').forEach(b=>b.textContent = globalSpeed+'x');
       };
 
-      container.appendChild(playBtn);
-      container.appendChild(progressContainer);
-      container.appendChild(timeLabel);
-      container.appendChild(speedBtn);
-      container.appendChild(downloadBtn);
-
-      div.appendChild(container);
-
-    } else { div.insertAdjacentHTML('beforeend',data.text); }
+      playerDiv.append(playBtn, durationSpan, speedBtn, downloadBtn);
+      div.appendChild(playerDiv);
+    } else {
+      div.insertAdjacentHTML('beforeend', data.text);
+    }
 
     if(isMe){
-      const delBtn=document.createElement("span");
-      delBtn.className="delete-btn"; delBtn.textContent="❌";
-      delBtn.onclick=()=>deleteMessage(docObj.id);
+      const delBtn = document.createElement('span');
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = '❌';
+      delBtn.onclick = () => deleteMessage(docObj.id);
       div.appendChild(delBtn);
     }
     chat.appendChild(div);
   });
-  chat.scrollTop=chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 }
 
-// ==================== Отправка сообщений и аудио ====================
-const sendRecordBtn=document.getElementById("sendRecordBtn");
-const messageInput=document.getElementById("messageInput");
+async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
+window.deleteMessage = deleteMessage;
+
+// --- theme & menu ---
+function toggleTheme(){ const body = document.body; body.classList.toggle('dark'); body.classList.toggle('light'); localStorage.setItem('theme', body.classList.contains('dark')?'dark':'light'); document.getElementById('mobileMenuBtn').style.color = body.classList.contains('dark')?'white':'black';}
+window.toggleTheme = toggleTheme;
+function toggleMobileMenu(){ const menu = document.getElementById('mobileMenu'); menu.style.display = menu.style.display==='flex'?'none':'flex'; }
+window.toggleMobileMenu = toggleMobileMenu;
+document.addEventListener('click', e=>{ const menu = document.getElementById('mobileMenu'); const btn = document.getElementById('mobileMenuBtn'); if(menu.style.display==='flex' && !menu.contains(e.target) && e.target!==btn) menu.style.display='none';});
+
+// --- send message / audio ---
+const sendRecordBtn = document.getElementById('sendRecordBtn');
+const messageInput = document.getElementById('messageInput');
 let mediaRecorder, audioChunks=[], isRecording=false;
 
-messageInput.addEventListener('input',()=>{
-  if(messageInput.value.trim()==="" && !isRecording) sendRecordBtn.textContent="🎤";
-  else if(!isRecording) sendRecordBtn.textContent="➤";
-});
+messageInput.addEventListener('input',()=>{ if(messageInput.value.trim()==='' && !isRecording) sendRecordBtn.textContent='🎤'; else if(!isRecording) sendRecordBtn.textContent='➤';});
 
 sendRecordBtn.addEventListener('click',async()=>{
-  if(messageInput.value.trim()!==""){
+  if(messageInput.value.trim()!==''){
     if(!currentUser) return;
-    await addDoc(collection(db,"messages"),{
-      text:messageInput.value,
-      user:nickname||(currentUser?currentUser.displayName:"Гость"),
-      uid:currentUser.uid,
-      time:Date.now()
-    });
-    messageInput.value=""; sendRecordBtn.textContent="🎤";
+    await addDoc(collection(db,'messages'),{text:messageInput.value,user:nickname||(currentUser?currentUser.displayName:'Гость'),uid:currentUser.uid,time:Date.now()});
+    messageInput.value=''; sendRecordBtn.textContent='🎤';
   } else {
     if(!isRecording){
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      mediaRecorder=new MediaRecorder(stream); audioChunks=[];
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder = new MediaRecorder(stream); audioChunks=[];
       mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-      mediaRecorder.onstop=async()=>{
-        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
-        const reader=new FileReader();
+      mediaRecorder.onstop=()=>{
+        const audioBlob = new Blob(audioChunks,{type:'audio/webm'});
+        const reader = new FileReader();
         reader.onloadend=async()=>{
           const base64Audio=reader.result;
           if(!currentUser) return;
-          await addDoc(collection(db,"messages"),{
-            text:base64Audio, isAudio:true,
-            user:nickname||(currentUser?currentUser.displayName:"Гость"),
-            uid:currentUser.uid,
-            time:Date.now()
-          });
+          await addDoc(collection(db,'messages'),{text:base64Audio,isAudio:true,user:nickname||(currentUser?currentUser.displayName:'Гость'),uid:currentUser.uid,time:Date.now()});
         };
         reader.readAsDataURL(audioBlob);
       };
-      mediaRecorder.start(); isRecording=true; sendRecordBtn.textContent="⏹️";
-    } else { mediaRecorder.stop(); isRecording=false; sendRecordBtn.textContent="🎤"; }
+      mediaRecorder.start(); isRecording=true; sendRecordBtn.textContent='⏹️';
+    } else { mediaRecorder.stop(); isRecording=false; sendRecordBtn.textContent='🎤'; }
   }
 });
 </script>
-
 </body>
 </html>
