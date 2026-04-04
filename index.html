@@ -59,16 +59,9 @@
   body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
   body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
-
-  @media (max-width: 600px) {
-    #userPanel { display: none; }
-    #mobileMenuBtn { display: flex; }
-    #chat { height: calc(100vh - 110px); }
-  }
 </style>
 </head>
 <body>
-
 <header>
   ПростикРостик
   <div id="headerButtons">
@@ -100,6 +93,7 @@
 </div>
 
 <script type="module">
+// Firebase и авторизация (без изменений)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -116,15 +110,13 @@ document.body.classList.add(theme);
 
 async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
-
 function logout() { signOut(auth); }
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText =
-    user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
@@ -151,11 +143,7 @@ window.setNicknameMobile = setNicknameMobile;
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
-
-onSnapshot(q, (snapshot) => {
-  messagesCache = snapshot.docs.map(docSnap => ({ id: docSnap.id, data: docSnap.data() }));
-  renderMessages();
-});
+onSnapshot(q, snapshot => { messagesCache = snapshot.docs.map(d => ({ id: d.id, data: d.data() })); renderMessages(); });
 
 function renderMessages() {
   chat.innerHTML = "";
@@ -163,54 +151,42 @@ function renderMessages() {
     const data = docObj.data;
     const isMe = currentUser && data.uid === currentUser.uid;
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
+
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if (data.isAudio) {
       const wrapper = document.createElement("div");
-      wrapper.style.display = "flex";
-      wrapper.style.flexDirection = "column";
-      wrapper.style.gap = "4px";
-      wrapper.style.marginTop = "5px";
-      wrapper.style.maxWidth = "320px";
-      wrapper.style.width = "100%";
+      wrapper.style.display = "flex"; wrapper.style.flexDirection = "column"; wrapper.style.gap = "4px"; wrapper.style.marginTop = "5px"; wrapper.style.maxWidth = "320px"; wrapper.style.width = "100%";
 
       const topRow = document.createElement("div");
-      topRow.style.display = "flex";
-      topRow.style.alignItems = "center";
-      topRow.style.gap = "12px";
+      topRow.style.display = "flex"; topRow.style.alignItems = "center"; topRow.style.gap = "12px";
 
       const audio = document.createElement("audio");
-      audio.src = data.text;
-      audio.preload = "metadata";
+      audio.src = data.text; audio.preload = "metadata";
       audio.playbackRate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
 
       const playBtn = document.createElement("div");
-      playBtn.style.width = "36px";
-      playBtn.style.height = "36px";
-      playBtn.style.borderRadius = "50%";
-      playBtn.style.display = "flex";
-      playBtn.style.alignItems = "center";
-      playBtn.style.justifyContent = "center";
-      playBtn.style.cursor = "pointer";
-      playBtn.style.flexShrink = "0";
+      playBtn.style.width = "36px"; playBtn.style.height = "36px"; playBtn.style.borderRadius = "50%"; playBtn.style.display = "flex"; playBtn.style.alignItems = "center"; playBtn.style.justifyContent = "center"; playBtn.style.cursor = "pointer"; playBtn.style.flexShrink = "0";
 
       const isDark = document.body.classList.contains("dark");
       let playBg, playColor, progressBg, progressFill;
-
       if (isMe) {
-        if (isDark) { playBg = "#3b82f6"; playColor = "#ffffff"; progressBg = "#1e40af"; progressFill = "#93c5fd"; }
-        else { playBg = "#2563eb"; playColor = "#ffffff"; progressBg = "#dbeafe"; progressFill = "#2563eb"; }
+        playBg = isDark ? "#2563eb" : "#3b82f6";
+        playColor = "#fff";
+        progressBg = isDark ? "#1e293b" : "#dbeafe";
+        progressFill = isDark ? "#3b82f6" : "#2563eb";
       } else {
-        if (isDark) { playBg = "#64748b"; playColor = "#ffffff"; progressBg = "#475569"; progressFill = "#94a3b8"; }
-        else { playBg = "#e2e8f0"; playColor = "#1f2937"; progressBg = "#e5e7eb"; progressFill = "#6b7280"; }
+        playBg = isDark ? "#475569" : "#e5e7eb";
+        playColor = isDark ? "#fff" : "#1f2937";
+        progressBg = isDark ? "#334155" : "#f1f5f9";
+        progressFill = isDark ? "#64748b" : "#94a3b8";
       }
-      playBtn.style.background = playBg; playBtn.style.color = playColor; playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
-      playBtn.textContent = "▶";
+      playBtn.style.background = playBg; playBtn.style.color = playColor; playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)"; playBtn.textContent = "▶";
 
       const progressWrap = document.createElement("div");
-      progressWrap.style.flex = "1"; progressWrap.style.minWidth = "200px"; progressWrap.style.height = "5px"; progressWrap.style.borderRadius = "4px"; progressWrap.style.background = progressBg; progressWrap.style.cursor = "pointer"; progressWrap.style.position = "relative";
+      progressWrap.style.flex = "1"; progressWrap.style.minWidth = "200px"; progressWrap.style.height = "6px"; progressWrap.style.borderRadius = "4px"; progressWrap.style.background = progressBg; progressWrap.style.cursor = "pointer"; progressWrap.style.position = "relative";
       const progressBar = document.createElement("div");
       progressBar.style.height = "100%"; progressBar.style.width = "0%"; progressBar.style.background = progressFill; progressBar.style.borderRadius = "4px";
       progressWrap.appendChild(progressBar);
@@ -219,129 +195,50 @@ function renderMessages() {
       bottomRow.style.display = "flex"; bottomRow.style.justifyContent = "space-between"; bottomRow.style.gap = "10px"; bottomRow.style.paddingLeft = "48px"; bottomRow.style.fontSize = "12px"; bottomRow.style.opacity = "0.8";
       const timeLabel = document.createElement("span"); timeLabel.textContent = "0:00";
       const speed = document.createElement("span"); speed.textContent = audio.playbackRate + "x"; speed.style.cursor = "pointer"; speed.classList.add("speed-label");
-
       speed.onclick = () => {
         let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
-        rate += 0.5; if (rate > 2) rate = 0.5;
-        localStorage.setItem("audioSpeed", rate);
-        document.querySelectorAll("audio").forEach(a => { a.playbackRate = rate; });
-        document.querySelectorAll(".speed-label").forEach(el => { el.textContent = rate + "x"; });
+        rate += 0.5; if (rate > 2) rate = 0.5; localStorage.setItem("audioSpeed", rate);
+        document.querySelectorAll("audio").forEach(a => a.playbackRate = rate);
+        document.querySelectorAll(".speed-label").forEach(el => el.textContent = rate + "x");
       };
 
-      playBtn.onclick = () => {
-        if (audio.paused) { document.querySelectorAll("audio").forEach(a => { if (a !== audio) a.pause(); }); audio.play(); playBtn.textContent = "❚❚"; }
-        else { audio.pause(); playBtn.textContent = "▶"; }
-      };
-
-      audio.addEventListener("timeupdate", () => {
-        if (!audio.duration) return;
-        const percent = (audio.currentTime / audio.duration) * 100; progressBar.style.width = percent + "%";
-        const min = Math.floor(audio.currentTime / 60); const sec = Math.floor(audio.currentTime % 60);
-        timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
-      });
-
-      audio.addEventListener("loadedmetadata", () => {
-        const min = Math.floor(audio.duration / 60); const sec = Math.floor(audio.duration % 60);
-        timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
-      });
-
-      audio.addEventListener("ended", () => { playBtn.textContent = "▶"; progressBar.style.width = "0%"; audio.currentTime = 0; });
-
-      progressWrap.onclick = (e) => {
-        const rect = progressWrap.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        audio.currentTime = percent * audio.duration;
-      };
+      playBtn.onclick = () => { if(audio.paused){ document.querySelectorAll("audio").forEach(a=>{if(a!==audio)a.pause()}); audio.play(); playBtn.textContent="❚❚";}else{audio.pause(); playBtn.textContent="▶";} };
+      audio.addEventListener("timeupdate",()=>{if(!audio.duration)return; progressBar.style.width=(audio.currentTime/audio.duration*100)+"%"; const min=Math.floor(audio.currentTime/60); const sec=Math.floor(audio.currentTime%60); timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`});
+      audio.addEventListener("ended",()=>{playBtn.textContent="▶"; progressBar.style.width="0%"; audio.currentTime=0});
+      progressWrap.onclick=(e)=>{const rect=progressWrap.getBoundingClientRect(); audio.currentTime=((e.clientX-rect.left)/rect.width)*audio.duration};
 
       topRow.appendChild(playBtn); topRow.appendChild(progressWrap);
       bottomRow.appendChild(timeLabel); bottomRow.appendChild(speed);
       wrapper.appendChild(topRow); wrapper.appendChild(bottomRow);
       div.appendChild(wrapper);
-    } else {
-      div.insertAdjacentHTML('beforeend', data.text);
-    }
+    } else { div.insertAdjacentHTML('beforeend', data.text); }
 
-    if (isMe) {
-      const delBtn = document.createElement("span");
-      delBtn.className = "delete-btn";
-      delBtn.textContent = "❌";
-      delBtn.onclick = () => deleteMessage(docObj.id);
-      div.appendChild(delBtn);
-    }
+    if (isMe) { const delBtn=document.createElement("span"); delBtn.className="delete-btn"; delBtn.textContent="❌"; delBtn.onclick=()=>deleteMessage(docObj.id); div.appendChild(delBtn); }
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
 }
 
-async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
+async function deleteMessage(id){await deleteDoc(doc(db,"messages",id));}
 window.deleteMessage = deleteMessage;
 
-function toggleTheme() {
-  const body = document.body;
-  body.classList.toggle("dark"); body.classList.toggle("light");
-  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
-  const mobileBtn = document.getElementById("mobileMenuBtn");
-  mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
-}
+function toggleTheme() { document.body.classList.toggle("dark"); document.body.classList.toggle("light"); localStorage.setItem("theme", document.body.classList.contains("dark")?"dark":"light"); }
 window.toggleTheme = toggleTheme;
 
-function toggleMobileMenu() {
-  const menu = document.getElementById("mobileMenu");
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-}
+function toggleMobileMenu() { const menu=document.getElementById("mobileMenu"); menu.style.display=menu.style.display==="flex"?"none":"flex"; }
 window.toggleMobileMenu = toggleMobileMenu;
 
-document.addEventListener('click', function(event) {
-  const menu = document.getElementById('mobileMenu');
-  const btn = document.getElementById('mobileMenuBtn');
-  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) menu.style.display = 'none';
-});
-
-// ==================== Кнопка отправки/аудио ====================
+// ==================== Отправка / запись ====================
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
-let mediaRecorder; let audioChunks = []; let isRecording = false;
+let mediaRecorder, audioChunks=[], isRecording=false;
+messageInput.addEventListener('input',()=>{ if(messageInput.value.trim()==="" && !isRecording){sendRecordBtn.textContent="🎤";} else{sendRecordBtn.textContent="➤";} });
 
-messageInput.addEventListener('input', () => {
-  if (messageInput.value.trim() === "" && !isRecording) sendRecordBtn.textContent = "🎤";
-  else if (!isRecording) sendRecordBtn.textContent = "➤";
-});
-
-sendRecordBtn.addEventListener('click', async () => {
-  if (messageInput.value.trim() !== "") {
-    if (!currentUser) return;
-    await addDoc(collection(db, "messages"), {
-      text: messageInput.value,
-      user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-      uid: currentUser.uid,
-      time: Date.now()
-    });
-    messageInput.value = ""; sendRecordBtn.textContent = "🎤";
-  } else {
-    if (!isRecording) {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream); audioChunks = [];
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64Audio = reader.result;
-          if (!currentUser) return;
-          await addDoc(collection(db, "messages"), {
-            text: base64Audio,
-            isAudio: true,
-            user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-            uid: currentUser.uid,
-            time: Date.now()
-          });
-        };
-        reader.readAsDataURL(audioBlob);
-      };
-      mediaRecorder.start(); isRecording = true; sendRecordBtn.textContent = "⏹️";
-    } else { mediaRecorder.stop(); isRecording = false; sendRecordBtn.textContent = "🎤"; }
-  }
-});
+sendRecordBtn.onclick=async()=>{
+  if(messageInput.value.trim()!==""){ await addDoc(collection(db,"messages"), { text: messageInput.value.trim(), uid: currentUser?currentUser.uid:null, user:nickname, time:Date.now(), isAudio:false }); messageInput.value=""; renderMessages(); return;}
+  if(!isRecording){ audioChunks=[]; const stream=await navigator.mediaDevices.getUserMedia({audio:true}); mediaRecorder=new MediaRecorder(stream); mediaRecorder.start(); isRecording=true; sendRecordBtn.textContent="⏺"; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=async()=>{const blob=new Blob(audioChunks,{type:'audio/webm'}); const url=URL.createObjectURL(blob); await addDoc(collection(db,"messages"),{text:url,uid:currentUser?currentUser.uid:null,user:nickname,time:Date.now(),isAudio:true}); renderMessages();}; }
+  else{ mediaRecorder.stop(); isRecording=false; sendRecordBtn.textContent="🎤"; }
+};
 </script>
 </body>
 </html>
