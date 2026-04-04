@@ -272,10 +272,40 @@ wrapper.style.width = "100%";
   playBtn.style.cursor = "pointer";
   playBtn.style.flexShrink = "0";
 
-  const isDark = document.body.classList.contains("dark");
-  playBtn.style.background = isDark ? "#2563eb" : "#3b82f6";
-  playBtn.style.color = "white";
-  playBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
+ const isDark = document.body.classList.contains("dark");
+
+// 🎨 ЦВЕТА КАК В ЧАТЕ
+let playBg;
+let progressBg;
+let progressFill;
+
+if (isMe) {
+  // мои сообщения
+  if (isDark) {
+    playBg = "#1d4ed8";        // ярче, не сливается
+    progressBg = "#1e3a8a";
+    progressFill = "#60a5fa";
+  } else {
+    playBg = "#2563eb";
+    progressBg = "#bfdbfe";
+    progressFill = "#2563eb";
+  }
+} else {
+  // чужие сообщения
+  if (isDark) {
+    playBg = "#475569";
+    progressBg = "#334155";
+    progressFill = "#3b82f6";
+  } else {
+    playBg = "#e2e8f0";
+    progressBg = "#e5e7eb";
+    progressFill = "#3b82f6";
+  }
+}
+
+playBtn.style.background = playBg;
+playBtn.style.color = isMe ? "white" : "black";
+playBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.25)";
   playBtn.textContent = "▶";
 
   // ===== ПРОГРЕСС =====
@@ -284,14 +314,14 @@ progressWrap.style.flex = "1";
 progressWrap.style.minWidth = "180px"; // 🔥 ключевое — длина
 progressWrap.style.height = "5px";
   progressWrap.style.borderRadius = "4px";
-  progressWrap.style.background = isDark ? "#475569" : "#cbd5e1";
+ progressWrap.style.background = progressBg;
   progressWrap.style.cursor = "pointer";
   progressWrap.style.position = "relative";
 
   const progressBar = document.createElement("div");
   progressBar.style.height = "100%";
   progressBar.style.width = "0%";
-  progressBar.style.background = "#3b82f6";
+  progressWrap.style.background = progressBg;
   progressBar.style.borderRadius = "4px";
 
   progressWrap.appendChild(progressBar);
