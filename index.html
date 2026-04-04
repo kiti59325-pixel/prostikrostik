@@ -233,7 +233,8 @@ function renderMessages() {
   wrapper.style.display = "flex";
   wrapper.style.alignItems = "center";
   wrapper.style.gap = "8px";
-  wrapper.style.maxWidth = "100%";
+  wrapper.style.width = "100%";
+  wrapper.style.maxWidth = "220px";
 
   const audio = document.createElement("audio");
   audio.src = data.text;
@@ -250,28 +251,67 @@ function renderMessages() {
     }
   });
 
-  // ▶️ кнопка play
-  const playBtn = document.createElement("button");
-  playBtn.textContent = "▶️";
+  // ▶️ КНОПКА PLAY (круглая как ТГ)
+  const playBtn = document.createElement("div");
+  playBtn.style.width = "36px";
+  playBtn.style.height = "36px";
+  playBtn.style.borderRadius = "50%";
+  playBtn.style.display = "flex";
+  playBtn.style.alignItems = "center";
+  playBtn.style.justifyContent = "center";
+  playBtn.style.cursor = "pointer";
+  playBtn.style.flexShrink = "0";
+
+  if (document.body.classList.contains("dark")) {
+    playBtn.style.background = "#3b82f6";
+    playBtn.style.color = "white";
+  } else {
+    playBtn.style.background = "#bfdbfe";
+    playBtn.style.color = "black";
+  }
+
+  playBtn.textContent = "▶";
+
+  // 📊 красивый прогресс
+  const progressWrap = document.createElement("div");
+  progressWrap.style.flex = "1";
+  progressWrap.style.height = "4px";
+  progressWrap.style.borderRadius = "4px";
+  progressWrap.style.cursor = "pointer";
+  progressWrap.style.position = "relative";
+
+  if (document.body.classList.contains("dark")) {
+    progressWrap.style.background = "#475569";
+  } else {
+    progressWrap.style.background = "#cbd5f5";
+  }
+
+  const progressBar = document.createElement("div");
+  progressBar.style.height = "100%";
+  progressBar.style.width = "0%";
+  progressBar.style.borderRadius = "4px";
+
+  if (document.body.classList.contains("dark")) {
+    progressBar.style.background = "#3b82f6";
+  } else {
+    progressBar.style.background = "#3b82f6";
+  }
+
+  progressWrap.appendChild(progressBar);
 
   // ⏱ время
   const timeLabel = document.createElement("span");
+  timeLabel.style.fontSize = "11px";
+  timeLabel.style.minWidth = "40px";
   timeLabel.textContent = "0:00";
-  timeLabel.style.fontSize = "12px";
-
-  // 📊 прогресс
-  const progress = document.createElement("input");
-  progress.type = "range";
-  progress.min = 0;
-  progress.max = 100;
-  progress.value = 0;
-  progress.style.flex = "1";
 
   // ⚡ скорость
   const speedBtn = document.createElement("button");
   let speed = parseFloat(localStorage.getItem("audioSpeed")) || 1;
   speedBtn.textContent = speed + "x";
   audio.playbackRate = speed;
+  speedBtn.style.fontSize = "11px";
+  speedBtn.style.padding = "4px 6px";
 
   speedBtn.onclick = () => {
     speed += 0.5;
@@ -281,50 +321,45 @@ function renderMessages() {
     localStorage.setItem("audioSpeed", speed);
   };
 
-  // 💾 скачать
-  const downloadBtn = document.createElement("a");
-  downloadBtn.href = data.text;
-  downloadBtn.download = "voice.webm";
-  downloadBtn.textContent = "⬇️";
-
   // ▶️ логика
   playBtn.onclick = () => {
     if (audio.paused) {
       audio.play();
-      playBtn.textContent = "⏸";
+      playBtn.textContent = "❚❚";
     } else {
       audio.pause();
-      playBtn.textContent = "▶️";
+      playBtn.textContent = "▶";
     }
   };
 
-  // обновление времени
+  // обновление
   audio.addEventListener("timeupdate", () => {
     const percent = (audio.currentTime / audio.duration) * 100;
-    progress.value = percent || 0;
+    progressBar.style.width = percent + "%";
 
     const min = Math.floor(audio.currentTime / 60);
     const sec = Math.floor(audio.currentTime % 60);
     timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
   });
 
-  // длительность сразу
+  // длительность
   audio.addEventListener("loadedmetadata", () => {
     const min = Math.floor(audio.duration / 60);
     const sec = Math.floor(audio.duration % 60);
     timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
   });
 
-  // перемотка
-  progress.oninput = () => {
-    audio.currentTime = (progress.value / 100) * audio.duration;
+  // перемотка (ТОЧНАЯ)
+  progressWrap.onclick = (e) => {
+    const rect = progressWrap.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = percent * audio.duration;
   };
 
   wrapper.appendChild(playBtn);
-  wrapper.appendChild(progress);
+  wrapper.appendChild(progressWrap);
   wrapper.appendChild(timeLabel);
   wrapper.appendChild(speedBtn);
-  wrapper.appendChild(downloadBtn);
 
   div.appendChild(wrapper);
 }
