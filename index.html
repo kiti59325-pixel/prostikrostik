@@ -229,9 +229,10 @@ function renderMessages() {
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `<div class="name">${displayName}</div>`;
     if (data.isAudio) {
-      const audioEl = document.createElement("audio");
-      audioEl.controls = true;
-      audioEl.src = data.text;
+     const audioEl = document.createElement("audio");
+audioEl.controls = true;
+audioEl.src = data.text;
+audioEl.preload = "metadata";
       div.appendChild(audioEl);
     } else {
       div.insertAdjacentHTML('beforeend', data.text);
