@@ -234,12 +234,13 @@ if (data.isAudio) {
   wrapper.style.flexDirection = "column";
   wrapper.style.gap = "4px";
   wrapper.style.marginTop = "5px";
-  wrapper.style.maxWidth = "260px";
+ wrapper.style.maxWidth = "320px"; // было мало — теперь как у норм чатов
+wrapper.style.width = "100%";
 
   const topRow = document.createElement("div");
   topRow.style.display = "flex";
   topRow.style.alignItems = "center";
-  topRow.style.gap = "8px";
+  topRow.style.gap = "12px"; // больше воздуха
 
   const audio = document.createElement("audio");
   audio.src = data.text;
@@ -279,8 +280,9 @@ if (data.isAudio) {
 
   // ===== ПРОГРЕСС =====
   const progressWrap = document.createElement("div");
-  progressWrap.style.flex = "1";
-  progressWrap.style.height = "4px";
+progressWrap.style.flex = "1";
+progressWrap.style.minWidth = "180px"; // 🔥 ключевое — длина
+progressWrap.style.height = "5px";
   progressWrap.style.borderRadius = "4px";
   progressWrap.style.background = isDark ? "#475569" : "#cbd5e1";
   progressWrap.style.cursor = "pointer";
@@ -297,8 +299,9 @@ if (data.isAudio) {
   // ===== НИЖНЯЯ СТРОКА =====
   const bottomRow = document.createElement("div");
   bottomRow.style.display = "flex";
-  bottomRow.style.justifyContent = "space-between";
-  bottomRow.style.paddingLeft = "44px"; // чтобы было под прогрессом
+bottomRow.style.justifyContent = "space-between";
+bottomRow.style.gap = "10px"; // 🔥 чтобы не было 0:151.5x
+ bottomRow.style.paddingLeft = "48px"; // чтобы идеально совпадало с прогрессом
   bottomRow.style.fontSize = "12px";
   bottomRow.style.opacity = "0.8";
 
