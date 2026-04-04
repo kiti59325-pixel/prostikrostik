@@ -43,14 +43,75 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  .voice-container { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-  .voice-btn { width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-  .voice-progress { flex: 1; height: 4px; background: #ccc; border-radius: 2px; cursor: pointer; position: relative; }
-  .voice-progress .fill { height: 100%; background: #3b82f6; width: 0%; border-radius: 2px; }
-  .voice-duration { font-size: 11px; width: 40px; text-align: right; }
-  .voice-speed { margin-left: 6px; font-size: 12px; }
-  .voice-download { margin-left: 6px; font-size: 12px; cursor: pointer; }
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
+  body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
+  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #3b82f6; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #3b82f6 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
+
+  @media (max-width: 600px) {
+    #userPanel { display: none; }
+    #mobileMenuBtn { display: flex; }
+    #chat { height: calc(100vh - 110px); }
+
+    #mobileMenu { 
+      position: fixed;
+      top: 50px;
+      right: 10px;
+      z-index: 300;
+      border-radius: 12px;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    body.dark #mobileMenuBtn { color: white; }
+    body.light #mobileMenuBtn { color: black; }
+
+    body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    #mobileMenu input {
+      box-sizing: border-box;
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: inherit;
+      color: inherit;
+      border: 1px solid #ccc;
+    }
+    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
+    body.light #mobileMenu input { border: 1px solid #d1d5db; }
+
+    #mobileMenu button {
+      display: block;
+      margin: 0 auto 8px auto;
+      width: 90%;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      transition: 0.2s;
+      border: none;
+    }
+    body.dark #mobileMenu button { background-color: #2563eb; color: white; }
+    body.dark #mobileMenu button:hover { background-color: #1e40af; }
+    body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
+  }
 </style>
 </head>
 <body>
@@ -105,29 +166,26 @@ let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
-let savedPlaybackRate = parseFloat(localStorage.getItem('voiceRate')) || 1;
-
-async function login() {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
+async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
-
 function logout() { signOut(auth); }
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    user ? "Ты: " + nickname : "Не вошёл";
 });
 
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
+  alert("Твой ник теперь: " + nickname);
   renderMessages();
 }
 window.setNickname = setNickname;
@@ -135,7 +193,8 @@ window.setNickname = setNickname;
 function setNicknameMobile() {
   const input = document.getElementById("mobileNickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  document.getElementById("userInfo").innerText =
+    currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   renderMessages();
@@ -152,126 +211,13 @@ onSnapshot(q, (snapshot) => {
   renderMessages();
 });
 
-function renderMessages() {
-  chat.innerHTML = "";
-  messagesCache.forEach(docObj => {
-    const data = docObj.data;
-    const isMe = currentUser && data.uid === currentUser.uid;
-    const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
-
-    const div = document.createElement("div");
-    div.className = "message " + (isMe ? "me" : "other");
-    div.innerHTML = `<div class="name">${displayName}</div>`;
-
-    if (data.isAudio) {
-      const container = document.createElement('div');
-      container.className = 'voice-container';
-
-      const audio = new Audio(data.text);
-      audio.preload = 'metadata';
-      audio.playbackRate = savedPlaybackRate;
-
-      const playBtn = document.createElement('button');
-      playBtn.className = 'voice-btn';
-      playBtn.textContent = '▶️';
-
-      const progress = document.createElement('div');
-      progress.className = 'voice-progress';
-      const fill = document.createElement('div');
-      fill.className = 'fill';
-      progress.appendChild(fill);
-
-      const durationLabel = document.createElement('span');
-      durationLabel.className = 'voice-duration';
-      durationLabel.textContent = '0:00';
-
-      const speedBtn = document.createElement('button');
-      speedBtn.className = 'voice-speed';
-      speedBtn.textContent = savedPlaybackRate + 'x';
-
-      const downloadBtn = document.createElement('a');
-      downloadBtn.className = 'voice-download';
-      downloadBtn.href = data.text;
-      downloadBtn.download = 'voice_message.webm';
-      downloadBtn.textContent = '⬇️';
-
-      container.append(playBtn, progress, durationLabel, speedBtn, downloadBtn);
-      div.appendChild(container);
-
-      let isPlaying = false;
-
-      audio.addEventListener('loadedmetadata', () => {
-        const total = Math.floor(audio.duration);
-        durationLabel.textContent = formatTime(total);
-      });
-
-      playBtn.addEventListener('click', () => {
-        if (!isPlaying) {
-          audio.play();
-          playBtn.textContent = '⏸️';
-        } else {
-          audio.pause();
-          playBtn.textContent = '▶️';
-        }
-        isPlaying = !isPlaying;
-      });
-
-      audio.addEventListener('timeupdate', () => {
-        const percent = (audio.currentTime / audio.duration) * 100;
-        fill.style.width = percent + '%';
-      });
-
-      progress.addEventListener('click', (e) => {
-        const rect = progress.getBoundingClientRect();
-        const pct = (e.clientX - rect.left) / rect.width;
-        audio.currentTime = pct * audio.duration;
-      });
-
-      speedBtn.addEventListener('click', () => {
-        savedPlaybackRate += 0.25;
-        if (savedPlaybackRate > 3) savedPlaybackRate = 0.5;
-        audio.playbackRate = savedPlaybackRate;
-        speedBtn.textContent = savedPlaybackRate + 'x';
-        localStorage.setItem('voiceRate', savedPlaybackRate);
-      });
-
-      audio.addEventListener('ended', () => {
-        playBtn.textContent = '▶️';
-        isPlaying = false;
-      });
-
-    } else {
-      div.insertAdjacentHTML('beforeend', data.text);
-    }
-
-    if (isMe) {
-      const delBtn = document.createElement("span");
-      delBtn.className = "delete-btn";
-      delBtn.textContent = "❌";
-      delBtn.onclick = () => deleteMessage(docObj.id);
-      div.appendChild(delBtn);
-    }
-
-    chat.appendChild(div);
-  });
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return m + ':' + (s < 10 ? '0' + s : s);
-}
-
-async function deleteMessage(id) { await deleteDoc(doc(db, "messages", id)); }
-window.deleteMessage = deleteMessage;
-
 function toggleTheme() {
   const body = document.body;
   body.classList.toggle("dark");
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
-  document.getElementById("mobileMenuBtn").style.color = body.classList.contains("dark") ? "white" : "black";
+  const mobileBtn = document.getElementById("mobileMenuBtn");
+  mobileBtn.style.color = body.classList.contains("dark") ? "white" : "black";
 }
 window.toggleTheme = toggleTheme;
 
@@ -289,36 +235,91 @@ document.addEventListener('click', function(event) {
   }
 });
 
-// ==================== Кнопка отправки/аудио ====================
-const sendRecordBtn = document.getElementById('sendRecordBtn');
-const messageInput = document.getElementById('messageInput');
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
+// ================== Кастомный аудиоплеер ==================
+let globalPlaybackRate = parseFloat(localStorage.getItem('playbackRate')) || 1;
 
-messageInput.addEventListener('input', () => {
-  sendRecordBtn.textContent = (messageInput.value.trim() === "" && !isRecording) ? "🎤" : (!isRecording ? "➤" : "⏹️");
-});
+function createAudioPlayer(src) {
+  const container = document.createElement('div');
+  container.className = 'custom-audio-player';
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.alignItems = 'flex-start';
+  container.style.gap = '4px';
 
-sendRecordBtn.addEventListener('click', async () => {
-  if (messageInput.value.trim() !== "") {
-    if (!currentUser) return;
-    await addDoc(collection(db, "messages"), {
-      text: messageInput.value,
-      user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-      uid: currentUser.uid,
-      time: Date.now()
-    });
-    messageInput.value = "";
-    sendRecordBtn.textContent = "🎤";
-  } else {
-    if (!isRecording) {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+  const audio = new Audio(src);
+  audio.preload = 'metadata';
+  audio.playbackRate = globalPlaybackRate;
 
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.onloadend = async () => {
+  const controls = document.createElement('div');
+  controls.style.display = 'flex';
+  controls.style.alignItems = 'center';
+  controls.style.gap = '8px';
+
+  const playBtn = document.createElement('button');
+  playBtn.textContent = '▶️';
+  playBtn.style.cursor = 'pointer';
+
+  const speedBtn = document.createElement('button');
+  speedBtn.textContent = globalPlaybackRate + 'x';
+  speedBtn.style.cursor = 'pointer';
+
+  const downloadBtn = document.createElement('a');
+  downloadBtn.textContent = '⬇️';
+  downloadBtn.href = src;
+  downloadBtn.download = 'voice_message.webm';
+  downloadBtn.style.cursor = 'pointer';
+
+  controls.appendChild(playBtn);
+  controls.appendChild(speedBtn);
+  controls.appendChild(downloadBtn);
+
+  const progressContainer = document.createElement('div');
+  progressContainer.style.width = '100%';
+  progressContainer.style.background = '#ccc';
+  progressContainer.style.height = '4px';
+  progressContainer.style.borderRadius = '2px';
+  progressContainer.style.position = 'relative';
+  progressContainer.style.cursor = 'pointer';
+
+  const progressBar = document.createElement('div');
+  progressBar.style.height = '100%';
+  progressBar.style.width = '0%';
+  progressBar.style.background = '#3b82f6';
+  progressBar.style.borderRadius = '2px';
+  progressBar.style.position = 'absolute';
+  progressBar.style.top = '0';
+  progressBar.style.left = '0';
+  progressContainer.appendChild(progressBar);
+
+  const timeLabel = document.createElement('span');
+  timeLabel.style.fontSize = '12px';
+  timeLabel.textContent = '0:00 / 0:00';
+
+  container.appendChild(controls);
+  container.appendChild(progressContainer);
+  container.appendChild(timeLabel);
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      playBtn.textContent = '⏸️';
+    } else {
+      audio.pause();
+      playBtn.textContent = '▶️';
+    }
+  });
+
+  speedBtn.addEventListener('click', () => {
+    if (globalPlaybackRate === 1) globalPlaybackRate = 1.5;
+    else if (globalPlaybackRate === 1.5) globalPlaybackRate = 2;
+    else globalPlaybackRate = 1;
+    audio.playbackRate = globalPlaybackRate;
+    speedBtn.textContent = globalPlaybackRate + 'x';
+    localStorage.setItem('playbackRate', globalPlaybackRate);
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = percent + '%';
+    const curMin = Math.floor(audio.currentTime / 60);
+    const curSec = Math.floor(audio.currentTime % 60).toString().
