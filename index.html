@@ -233,6 +233,18 @@ function renderMessages() {
 audioEl.controls = true;
 audioEl.src = data.text;
 audioEl.preload = "metadata";
+
+// 🔥 фикс длительности
+audioEl.addEventListener("loadedmetadata", () => {
+  if (audioEl.duration === Infinity || isNaN(audioEl.duration)) {
+    audioEl.currentTime = 1e101;
+    audioEl.ontimeupdate = () => {
+      audioEl.ontimeupdate = null;
+      audioEl.currentTime = 0;
+    };
+  }
+});
+audioEl.preload = "metadata";
       div.appendChild(audioEl);
     } else {
       div.insertAdjacentHTML('beforeend', data.text);
