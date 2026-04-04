@@ -274,39 +274,40 @@ wrapper.style.width = "100%";
 
  const isDark = document.body.classList.contains("dark");
 
-// 🎨 ЦВЕТА КАК В ЧАТЕ
-let playBg;
-let progressBg;
-let progressFill;
+let playBg, playColor, progressBg, progressFill;
 
 if (isMe) {
-  // мои сообщения
+  // ===== МОИ СООБЩЕНИЯ =====
   if (isDark) {
-    playBg = "#1d4ed8";        // ярче, не сливается
-    progressBg = "#1e3a8a";
-    progressFill = "#60a5fa";
+    playBg = "#3b82f6";       // яркий синий (контраст к твоему bubble)
+    playColor = "#ffffff";
+    progressBg = "#1e40af";   // темнее кнопки
+    progressFill = "#93c5fd"; // светлее → видно движение
   } else {
-    playBg = "#2563eb";
-    progressBg = "#bfdbfe";
+    playBg = "#2563eb";       // нормальный синий
+    playColor = "#ffffff";
+    progressBg = "#dbeafe";   // мягкий фон
     progressFill = "#2563eb";
   }
 } else {
-  // чужие сообщения
+  // ===== ЧУЖИЕ СООБЩЕНИЯ =====
   if (isDark) {
-    playBg = "#475569";
-    progressBg = "#334155";
-    progressFill = "#3b82f6";
+    playBg = "#64748b";       // серый, но НЕ сливается
+    playColor = "#ffffff";
+    progressBg = "#475569";
+    progressFill = "#94a3b8";
   } else {
-    playBg = "#e2e8f0";
+    playBg = "#e2e8f0";       // светло-серый (как кнопки UI)
+    playColor = "#1f2937";    // тёмный текст
     progressBg = "#e5e7eb";
-    progressFill = "#3b82f6";
+    progressFill = "#6b7280"; // нейтральный серый
   }
 }
 
+// применяем
 playBtn.style.background = playBg;
-playBtn.style.color = isMe ? "white" : "black";
-playBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.25)";
-  playBtn.textContent = "▶";
+playBtn.style.color = playColor;
+playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
 
   // ===== ПРОГРЕСС =====
   const progressWrap = document.createElement("div");
@@ -321,7 +322,7 @@ progressWrap.style.height = "5px";
   const progressBar = document.createElement("div");
   progressBar.style.height = "100%";
   progressBar.style.width = "0%";
-  progressWrap.style.background = progressBg;
+  progressBar.style.background = progressFill;
   progressBar.style.borderRadius = "4px";
 
   progressWrap.appendChild(progressBar);
