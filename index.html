@@ -228,7 +228,7 @@ function renderMessages() {
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `<div class="name">${displayName}</div>`;
-   if (data.isAudio) {
+if (data.isAudio) {
   const wrapper = document.createElement("div");
   wrapper.style.display = "flex";
   wrapper.style.alignItems = "center";
@@ -251,10 +251,10 @@ function renderMessages() {
     }
   });
 
-  // ▶️ КНОПКА PLAY (круглая как ТГ)
+  // ===== КНОПКА PLAY =====
   const playBtn = document.createElement("div");
-  playBtn.style.width = "36px";
-  playBtn.style.height = "36px";
+  playBtn.style.width = "34px";
+  playBtn.style.height = "34px";
   playBtn.style.borderRadius = "50%";
   playBtn.style.display = "flex";
   playBtn.style.alignItems = "center";
@@ -262,66 +262,56 @@ function renderMessages() {
   playBtn.style.cursor = "pointer";
   playBtn.style.flexShrink = "0";
 
-  if (document.body.classList.contains("dark")) {
-    playBtn.style.background = "#3b82f6";
-    playBtn.style.color = "white";
-  } else {
-    playBtn.style.background = "#bfdbfe";
-    playBtn.style.color = "black";
-  }
+  const isDark = document.body.classList.contains("dark");
 
+  playBtn.style.background = isDark ? "#2563eb" : "#3b82f6";
+  playBtn.style.color = "white";
+  playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.3)";
   playBtn.textContent = "▶";
 
-  // 📊 красивый прогресс
+  // ===== ПРОГРЕСС =====
   const progressWrap = document.createElement("div");
   progressWrap.style.flex = "1";
-  progressWrap.style.height = "4px";
-  progressWrap.style.borderRadius = "4px";
+  progressWrap.style.height = "3px";
+  progressWrap.style.borderRadius = "3px";
   progressWrap.style.cursor = "pointer";
   progressWrap.style.position = "relative";
-
-  if (document.body.classList.contains("dark")) {
-    progressWrap.style.background = "#475569";
-  } else {
-    progressWrap.style.background = "#cbd5f5";
-  }
+  progressWrap.style.background = isDark ? "#64748b" : "#cbd5e1";
 
   const progressBar = document.createElement("div");
   progressBar.style.height = "100%";
   progressBar.style.width = "0%";
-  progressBar.style.borderRadius = "4px";
-
-  if (document.body.classList.contains("dark")) {
-    progressBar.style.background = "#3b82f6";
-  } else {
-    progressBar.style.background = "#3b82f6";
-  }
+  progressBar.style.borderRadius = "3px";
+  progressBar.style.background = "#3b82f6";
+  progressBar.style.transition = "width 0.1s linear";
 
   progressWrap.appendChild(progressBar);
 
-  // ⏱ время
+  // ===== ВРЕМЯ =====
   const timeLabel = document.createElement("span");
   timeLabel.style.fontSize = "11px";
-  timeLabel.style.minWidth = "40px";
+  timeLabel.style.opacity = "0.8";
+  timeLabel.style.minWidth = "38px";
   timeLabel.textContent = "0:00";
 
-  // ⚡ скорость
-  const speedBtn = document.createElement("button");
-  let speed = parseFloat(localStorage.getItem("audioSpeed")) || 1;
-  speedBtn.textContent = speed + "x";
-  audio.playbackRate = speed;
-  speedBtn.style.fontSize = "11px";
-  speedBtn.style.padding = "4px 6px";
+  // ===== СКОРОСТЬ (как текст, без кнопки-уродца) =====
+  const speed = document.createElement("span");
+  let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
+  audio.playbackRate = rate;
+  speed.textContent = rate + "x";
+  speed.style.fontSize = "11px";
+  speed.style.opacity = "0.7";
+  speed.style.cursor = "pointer";
 
-  speedBtn.onclick = () => {
-    speed += 0.5;
-    if (speed > 2) speed = 0.5;
-    audio.playbackRate = speed;
-    speedBtn.textContent = speed + "x";
-    localStorage.setItem("audioSpeed", speed);
+  speed.onclick = () => {
+    rate += 0.5;
+    if (rate > 2) rate = 0.5;
+    audio.playbackRate = rate;
+    speed.textContent = rate + "x";
+    localStorage.setItem("audioSpeed", rate);
   };
 
-  // ▶️ логика
+  // ===== PLAY/PAUSE =====
   playBtn.onclick = () => {
     if (audio.paused) {
       audio.play();
@@ -332,8 +322,10 @@ function renderMessages() {
     }
   };
 
-  // обновление
+  // ===== ОБНОВЛЕНИЕ =====
   audio.addEventListener("timeupdate", () => {
+    if (!audio.duration) return;
+
     const percent = (audio.currentTime / audio.duration) * 100;
     progressBar.style.width = percent + "%";
 
@@ -342,24 +334,31 @@ function renderMessages() {
     timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
   });
 
-  // длительность
+  // ===== ДЛИТЕЛЬНОСТЬ =====
   audio.addEventListener("loadedmetadata", () => {
     const min = Math.floor(audio.duration / 60);
     const sec = Math.floor(audio.duration % 60);
     timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
   });
 
-  // перемотка (ТОЧНАЯ)
-  progressWrap.onclick = (e) => {
+  // ===== КОНЕЦ АУДИО =====
+  audio.addEventListener("ended", () => {
+    playBtn.textContent = "▶";
+    progressBar.style.width = "0%";
+    audio.currentTime = 0;
+  });
+
+  // ===== ПЕРЕМОТКА (ТОЧНАЯ) =====
+  progressWrap.addEventListener("click", (e) => {
     const rect = progressWrap.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
     audio.currentTime = percent * audio.duration;
-  };
+  });
 
   wrapper.appendChild(playBtn);
   wrapper.appendChild(progressWrap);
   wrapper.appendChild(timeLabel);
-  wrapper.appendChild(speedBtn);
+  wrapper.appendChild(speed);
 
   div.appendChild(wrapper);
 }
