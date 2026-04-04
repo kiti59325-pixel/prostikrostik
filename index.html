@@ -220,28 +220,28 @@ function renderMessages() {
 if (isMe) {
   // ===== МОИ КНОПКИ =====
   if (isDark) {
-    playBg = "#3b82f6";       // синий, заметный, но не неон
-    playColor = "#ffffff";     // текст белый
-    progressBg = "#1e293b";   // чуть светлее фона, чтобы было видно
-    progressFill = "#60a5fa"; // мягкий синий прогресс
-  } else {
-    playBg = "#2563eb";       // мягкий синий
+    playBg = "#2563eb";       // синий более яркий
     playColor = "#ffffff";
-    progressBg = "#e0f2fe";   // светлый фон прогресса
-    progressFill = "#3b82f6"; // чуть ярче, но гармонично
+    progressBg = "#1e293b";   
+    progressFill = "#60a5fa"; 
+  } else {
+    playBg = "#3b82f6";       // мягкий синий
+    playColor = "#ffffff";
+    progressBg = "#e0f2fe";   
+    progressFill = "#2563eb"; 
   }
 } else {
   // ===== ЧУЖИЕ КНОПКИ =====
   if (isDark) {
-    playBg = "#475569";       // тёмно-серый синий
+    playBg = "#475569";       // серо-синий, заметный на тёмном фоне
     playColor = "#ffffff";
-    progressBg = "#1e293b";   // фон совпадает с панелью
-    progressFill = "#94a3b8"; // серо-голубой прогресс, читаемо
+    progressBg = "#1e293b";   
+    progressFill = "#94a3b8"; 
   } else {
-    playBg = "#e5e7eb";       // светло-серый
-    playColor = "#1f2937";    // тёмный текст
-    progressBg = "#f1f5f9";   // чуть светлее фона
-    progressFill = "#6b7280"; // мягкий серый прогресс
+    playBg = "#cbd5e1";       // мягкий серый, контрастный на светлом фоне
+    playColor = "#1f2937";    
+    progressBg = "#f1f5f9";   
+    progressFill = "#6b7280"; 
   }
 }
       playBtn.style.background = playBg;
