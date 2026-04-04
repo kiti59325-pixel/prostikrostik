@@ -93,7 +93,7 @@
 </div>
 
 <script type="module">
-// Firebase и авторизация
+// Firebase и авторизация (без изменений)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -172,26 +172,18 @@ function renderMessages() {
 
       const isDark = document.body.classList.contains("dark");
       let playBg, playColor, progressBg, progressFill;
-
-      // ===== Цвета кнопки и прогресса =====
       if (isMe) {
-        if (isDark) {
-          playBg = "#3b82f6"; progressBg = "#1e40af"; progressFill = "#60a5fa"; playColor = "#ffffff";
-        } else {
-          playBg = "#2563eb"; progressBg = "#dbeafe"; progressFill = "#3b82f6"; playColor = "#ffffff";
-        }
+        playBg = isDark ? "#2563eb" : "#3b82f6";
+        playColor = "#fff";
+        progressBg = isDark ? "#1e293b" : "#dbeafe";
+        progressFill = isDark ? "#3b82f6" : "#2563eb";
       } else {
-        if (isDark) {
-          playBg = "#64748b"; progressBg = "#475569"; progressFill = "#94a3b8"; playColor = "#ffffff";
-        } else {
-          playBg = "#e2e8f0"; progressBg = "#f1f5f9"; progressFill = "#6b7280"; playColor = "#1f2937";
-        }
+        playBg = isDark ? "#475569" : "#e5e7eb";
+        playColor = isDark ? "#fff" : "#1f2937";
+        progressBg = isDark ? "#334155" : "#f1f5f9";
+        progressFill = isDark ? "#64748b" : "#94a3b8";
       }
-
-      playBtn.style.background = playBg;
-      playBtn.style.color = playColor;
-      playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
-      playBtn.textContent = "▶";
+      playBtn.style.background = playBg; playBtn.style.color = playColor; playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)"; playBtn.textContent = "▶";
 
       const progressWrap = document.createElement("div");
       progressWrap.style.flex = "1"; progressWrap.style.minWidth = "200px"; progressWrap.style.height = "6px"; progressWrap.style.borderRadius = "4px"; progressWrap.style.background = progressBg; progressWrap.style.cursor = "pointer"; progressWrap.style.position = "relative";
