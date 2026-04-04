@@ -116,28 +116,6 @@
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
   }
-  .voice-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 5px;
-}
-
-.voice-message button {
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.voice-message input[type="range"] {
-  flex: 1;
-}
-
-.voice-message span {
-  font-size: 12px;
-  opacity: 0.7;
-}
 </style>
 </head>
 <body>
@@ -250,68 +228,25 @@ function renderMessages() {
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `<div class="name">${displayName}</div>`;
-   if (data.isAudio) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "voice-message";
+    if (data.isAudio) {
+     const audioEl = document.createElement("audio");
+audioEl.controls = true;
+audioEl.src = data.text;
+audioEl.preload = "metadata";
 
-  const audio = new Audio(data.text);
-
-  // фикс длительности
-  audio.addEventListener("loadedmetadata", () => {
-    if (audio.duration === Infinity || isNaN(audio.duration)) {
-      audio.currentTime = 1e101;
-      audio.ontimeupdate = () => {
-        audio.ontimeupdate = null;
-        audio.currentTime = 0;
-      };
-    }
-  });
-
-  const playBtn = document.createElement("button");
-  playBtn.textContent = "▶️";
-
-  const progress = document.createElement("input");
-  progress.type = "range";
-  progress.value = 0;
-  progress.min = 0;
-  progress.max = 100;
-
-  const time = document.createElement("span");
-  time.textContent = "0:00";
-
-  playBtn.onclick = () => {
-    if (audio.paused) {
-      audio.play();
-      playBtn.textContent = "⏸";
+// 🔥 фикс длительности
+audioEl.addEventListener("loadedmetadata", () => {
+  if (audioEl.duration === Infinity || isNaN(audioEl.duration)) {
+    audioEl.currentTime = 1e101;
+    audioEl.ontimeupdate = () => {
+      audioEl.ontimeupdate = null;
+      audioEl.currentTime = 0;
+    };
+  }
+});
+audioEl.preload = "metadata";
+      div.appendChild(audioEl);
     } else {
-      audio.pause();
-      playBtn.textContent = "▶️";
-    }
-  };
-
-  audio.addEventListener("timeupdate", () => {
-    const percent = (audio.currentTime / audio.duration) * 100;
-    progress.value = percent || 0;
-
-    const minutes = Math.floor(audio.currentTime / 60);
-    const seconds = Math.floor(audio.currentTime % 60)
-      .toString()
-      .padStart(2, "0");
-
-    time.textContent = `${minutes}:${seconds}`;
-  });
-
-  progress.oninput = () => {
-    audio.currentTime = (progress.value / 100) * audio.duration;
-  };
-
-  wrapper.appendChild(playBtn);
-  wrapper.appendChild(progress);
-  wrapper.appendChild(time);
-
-  div.appendChild(wrapper);
-}
-   else {
       div.insertAdjacentHTML('beforeend', data.text);
     }
     if (isMe) {
