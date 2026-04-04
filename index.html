@@ -217,34 +217,33 @@ function renderMessages() {
       const isDark = document.body.classList.contains("dark");
       let playBg, playColor, progressBg, progressFill;
 
-   if (isMe) {
-  // ===== МОИ СООБЩЕНИЯ =====
+if (isMe) {
+  // ===== МОИ =====
   if (isDark) {
-    playBg = "#2563eb";       // насыщенный синий (контраст к bubble)
-    playColor = "#ffffff";
-    progressBg = "#1e293b";   // фон бара (чуть светлее фона сообщения)
-    progressFill = "#60a5fa"; // яркий голубой → видно движение
+    playBg = "#22c55e";       // ЗЕЛЁНЫЙ (как WhatsApp/Telegram)
+    playColor = "#022c22";
+    progressBg = "#1e293b";
+    progressFill = "#4ade80";
   } else {
-    playBg = "#1d4ed8";       // более глубокий синий (не яркий)
+    playBg = "#2563eb";       // синий
     playColor = "#ffffff";
-    progressBg = "#dbeafe";   // светло-голубой
-    progressFill = "#2563eb"; // основной цвет
+    progressBg = "#e0f2fe";
+    progressFill = "#2563eb";
   }
 } else {
-  // ===== ЧУЖИЕ СООБЩЕНИЯ =====
+  // ===== ЧУЖИЕ =====
   if (isDark) {
-    playBg = "#475569";       // серо-синий (не сливается)
-    playColor = "#e2e8f0";
+    playBg = "#e11d48";       // КРАСНО-РОЗОВЫЙ → сильно отличается
+    playColor = "#ffffff";
     progressBg = "#1e293b";
-    progressFill = "#94a3b8"; // спокойный светлый
+    progressFill = "#fb7185";
   } else {
-    playBg = "#e5e7eb";       // светло-серый (как iMessage/Telegram)
+    playBg = "#d1d5db";       // светло-серый
     playColor = "#111827";
-    progressBg = "#f1f5f9";
-    progressFill = "#6b7280"; // нейтральный серый
+    progressBg = "#f3f4f6";
+    progressFill = "#6b7280";
   }
 }
-
       playBtn.style.background = playBg;
       playBtn.style.color = playColor;
       playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
