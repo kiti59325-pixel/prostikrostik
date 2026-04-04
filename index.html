@@ -217,13 +217,33 @@ function renderMessages() {
       const isDark = document.body.classList.contains("dark");
       let playBg, playColor, progressBg, progressFill;
 
-      if (isMe) {
-        if (isDark) { playBg="#3b82f6"; playColor="#fff"; progressBg="#1e40af"; progressFill="#93c5fd"; }
-        else { playBg="#2563eb"; playColor="#fff"; progressBg="#dbeafe"; progressFill="#2563eb"; }
-      } else {
-        if (isDark) { playBg="#64748b"; playColor="#fff"; progressBg="#475569"; progressFill="#94a3b8"; }
-        else { playBg="#e2e8f0"; playColor="#1f2937"; progressBg="#e5e7eb"; progressFill="#6b7280"; }
-      }
+     if (isMe) {
+  // ===== МОИ СООБЩЕНИЯ =====
+  if (isDark) {
+    playBg = "#60a5fa";       // светлее → не сливается с bubble
+    playColor = "#0f172a";    // тёмная иконка (контраст)
+    progressBg = "#334155";   // был слишком тёмный → сделали светлее
+    progressFill = "#93c5fd"; // мягкий голубой
+  } else {
+    playBg = "#3b82f6";       // нормальный синий (не кислотный)
+    playColor = "#ffffff";
+    progressBg = "#e0f2fe";   // мягкий светлый фон
+    progressFill = "#3b82f6";
+  }
+} else {
+  // ===== ЧУЖИЕ СООБЩЕНИЯ =====
+  if (isDark) {
+    playBg = "#94a3b8";       // чуть светлее → не сливается
+    playColor = "#0f172a";
+    progressBg = "#475569";
+    progressFill = "#cbd5f5";
+  } else {
+    playBg = "#f1f5f9";       // в стиле твоего UI
+    playColor = "#1e293b";
+    progressBg = "#e5e7eb";
+    progressFill = "#64748b"; // спокойный серый
+  }
+}
 
       playBtn.style.background = playBg;
       playBtn.style.color = playColor;
