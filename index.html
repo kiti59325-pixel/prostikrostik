@@ -231,10 +231,15 @@ function renderMessages() {
 if (data.isAudio) {
   const wrapper = document.createElement("div");
   wrapper.style.display = "flex";
-  wrapper.style.alignItems = "center";
-  wrapper.style.gap = "8px";
-  wrapper.style.width = "100%";
-  wrapper.style.maxWidth = "220px";
+  wrapper.style.flexDirection = "column";
+  wrapper.style.gap = "6px";
+  wrapper.style.marginTop = "5px";
+  wrapper.style.maxWidth = "260px"; // увеличили размер
+
+  const row = document.createElement("div");
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  row.style.gap = "10px";
 
   const audio = document.createElement("audio");
   audio.src = data.text;
@@ -251,10 +256,14 @@ if (data.isAudio) {
     }
   });
 
+  // ===== ГЛОБАЛЬНАЯ СКОРОСТЬ =====
+  let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
+  audio.playbackRate = rate;
+
   // ===== КНОПКА PLAY =====
   const playBtn = document.createElement("div");
-  playBtn.style.width = "34px";
-  playBtn.style.height = "34px";
+  playBtn.style.width = "36px";
+  playBtn.style.height = "36px";
   playBtn.style.borderRadius = "50%";
   playBtn.style.display = "flex";
   playBtn.style.alignItems = "center";
@@ -263,57 +272,70 @@ if (data.isAudio) {
   playBtn.style.flexShrink = "0";
 
   const isDark = document.body.classList.contains("dark");
-
   playBtn.style.background = isDark ? "#2563eb" : "#3b82f6";
   playBtn.style.color = "white";
-  playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.3)";
+  playBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
   playBtn.textContent = "▶";
 
   // ===== ПРОГРЕСС =====
   const progressWrap = document.createElement("div");
-  progressWrap.style.flex = "1";
-  progressWrap.style.height = "3px";
-  progressWrap.style.borderRadius = "3px";
+  progressWrap.style.width = "100%";
+  progressWrap.style.height = "4px";
+  progressWrap.style.borderRadius = "4px";
+  progressWrap.style.background = isDark ? "#475569" : "#cbd5e1";
   progressWrap.style.cursor = "pointer";
   progressWrap.style.position = "relative";
-  progressWrap.style.background = isDark ? "#64748b" : "#cbd5e1";
 
   const progressBar = document.createElement("div");
   progressBar.style.height = "100%";
   progressBar.style.width = "0%";
-  progressBar.style.borderRadius = "3px";
   progressBar.style.background = "#3b82f6";
+  progressBar.style.borderRadius = "4px";
   progressBar.style.transition = "width 0.1s linear";
 
   progressWrap.appendChild(progressBar);
 
-  // ===== ВРЕМЯ =====
+  // ===== ВРЕМЯ + СКОРОСТЬ =====
+  const bottom = document.createElement("div");
+  bottom.style.display = "flex";
+  bottom.style.justifyContent = "space-between";
+  bottom.style.fontSize = "12px";
+  bottom.style.opacity = "0.8";
+
   const timeLabel = document.createElement("span");
-  timeLabel.style.fontSize = "11px";
-  timeLabel.style.opacity = "0.8";
-  timeLabel.style.minWidth = "38px";
   timeLabel.textContent = "0:00";
 
-  // ===== СКОРОСТЬ (как текст, без кнопки-уродца) =====
   const speed = document.createElement("span");
-  let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
-  audio.playbackRate = rate;
   speed.textContent = rate + "x";
-  speed.style.fontSize = "11px";
-  speed.style.opacity = "0.7";
   speed.style.cursor = "pointer";
 
+  // ⚡ ГЛОБАЛЬНАЯ смена скорости
   speed.onclick = () => {
     rate += 0.5;
     if (rate > 2) rate = 0.5;
-    audio.playbackRate = rate;
-    speed.textContent = rate + "x";
     localStorage.setItem("audioSpeed", rate);
+
+    // применяем ко ВСЕМ аудио
+    document.querySelectorAll("audio").forEach(a => {
+      a.playbackRate = rate;
+    });
+
+    // обновляем все кнопки скорости
+    document.querySelectorAll(".speed-label").forEach(el => {
+      el.textContent = rate + "x";
+    });
   };
 
-  // ===== PLAY/PAUSE =====
+  speed.classList.add("speed-label");
+
+  // ===== PLAY =====
   playBtn.onclick = () => {
     if (audio.paused) {
+      // стопаем другие аудио
+      document.querySelectorAll("audio").forEach(a => {
+        if (a !== audio) a.pause();
+      });
+
       audio.play();
       playBtn.textContent = "❚❚";
     } else {
@@ -341,24 +363,30 @@ if (data.isAudio) {
     timeLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
   });
 
-  // ===== КОНЕЦ АУДИО =====
+  // ===== КОНЕЦ =====
   audio.addEventListener("ended", () => {
     playBtn.textContent = "▶";
     progressBar.style.width = "0%";
     audio.currentTime = 0;
   });
 
-  // ===== ПЕРЕМОТКА (ТОЧНАЯ) =====
-  progressWrap.addEventListener("click", (e) => {
+  // ===== ПЕРЕМОТКА =====
+  progressWrap.onclick = (e) => {
     const rect = progressWrap.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
     audio.currentTime = percent * audio.duration;
-  });
+  };
 
-  wrapper.appendChild(playBtn);
+  // ===== СБОРКА =====
+  row.appendChild(playBtn);
+  row.appendChild(timeLabel);
+
+  bottom.appendChild(timeLabel);
+  bottom.appendChild(speed);
+
+  wrapper.appendChild(row);
   wrapper.appendChild(progressWrap);
-  wrapper.appendChild(timeLabel);
-  wrapper.appendChild(speed);
+  wrapper.appendChild(bottom);
 
   div.appendChild(wrapper);
 }
