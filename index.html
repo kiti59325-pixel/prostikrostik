@@ -114,11 +114,19 @@
 </div>
 
 <script type="module">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js">
-const supabase = window.supabase.createClient(
-  "https://cdasjlliptlfxguwtufq.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkYXNqbGxpcHRsZnhndXd0dWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDI4MjgsImV4cCI6MjA5MDk3ODgyOH0.TIrd3D8k_Cw60xhKOnHOjKVPsjLU7G2S2TelTOgMk-c"
-);
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// === Firebase ===
+const firebaseConfig = {
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
@@ -405,23 +413,10 @@ document.addEventListener('click',function(event){
 });
 
 // === Отправка сообщений и аудио ===
-async function loadMessages() {
-  const { data } = await supabase
-    .from("messages")
-    .select("*")
-    .order("time", { ascending: true });
+const sendRecordBtn = document.getElementById('sendRecordBtn');
+const messageInput = document.getElementById('messageInput');
 
-  messagesCache = data.map(d => ({
-    id: d.id,
-    data: d
-  }));
-
-  renderMessages();
-}
-
-// автообновление
-setInterval(loadMessages, 1000);
-loadMessages();
+let mediaRecorder, audioChunks=[], isRecording=false;
 
 messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
@@ -444,12 +439,20 @@ sendRecordBtn.addEventListener('click', async ()=>{
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
       mediaRecorder=new MediaRecorder(stream);
       audioChunks=[];
-     await supabase.from("messages").insert([{
-  text: messageInput.value,
-  user: nickname,
-  uid: currentUser?.id || "guest",
-  time: Date.now()
-}]);
+      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRecorder.onstop=async ()=>{
+        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onloadend=async ()=>{
+          const base64Audio=reader.result;
+          if(!currentUser)return;
+          await addDoc(collection(db,"messages"),{
+            text: base64Audio,
+            isAudio:true,
+            user: nickname||(currentUser?currentUser.displayName:"Гость"),
+            uid: currentUser.uid,
+            time: Date.now()
+          });
         };
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
