@@ -114,19 +114,11 @@
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// === Firebase ===
-const firebaseConfig = {
-  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
-  authDomain: "prostikrostik-90812.firebaseapp.com",
-  projectId: "prostikrostik-90812"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+const SUPABASE_URL = 'https://cdasjlliptlfxguwtufq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkYXNqbGxpcHRsZnhndXd0dWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDI4MjgsImV4cCI6MjA5MDk3ODgyOH0.TIrd3D8k_Cw60xhKOnHOjKVPsjLU7G2S2TelTOgMk-c';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let nickname = localStorage.getItem("nickname") || "";
@@ -134,78 +126,39 @@ let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
 // === Авторизация ===
-async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
+async function login() {
+  const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+  if (error) console.error(error);
+}
 window.login = login;
-function logout() { signOut(auth); }
+
+async function logout() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  document.getElementById("userInfo").innerText = "Не вошёл";
+}
 window.logout = logout;
 
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  if (!nickname && user) nickname = user.displayName;
-  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
+supabase.auth.onAuthStateChange((_event, session) => {
+  currentUser = session?.user || null;
+  if (!nickname && currentUser) nickname = currentUser.user_metadata?.full_name || "Гость";
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
 });
 
 // === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  nickname = input.value.trim() || (currentUser ? currentUser.user_metadata?.full_name : "Гость");
   document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
   renderMessages();
 }
-  function updateAudioTheme() {
-  const isDark = document.body.classList.contains("dark");
-
-  document.querySelectorAll(".message").forEach(msg => {
-    const playBtn = msg.querySelector("div[style*='36px']");
-    const progressWrap = msg.querySelector("div[style*='height: 5px']");
-
-    if (!playBtn || !progressWrap) return;
-
-    const isMe = msg.classList.contains("me");
-
-    let playBg, playColor, progressBg, progressFill;
-
-    if (isMe) {
-      if (isDark) {
-        playBg = "#00419b";
-        playColor = "#ffffff";
-        progressBg = "#00419b";
-        progressFill = "#0057d3";
-      } else {
-        playBg = "#3b82f6";
-        playColor = "#ffffff";
-        progressBg = "#8bc1ff";
-        progressFill = "#3b82f6";
-      }
-    } else {
-      if (isDark) {
-        playBg = "#8492a6";
-        playColor = "#ffffff";
-        progressBg = "#475569";
-        progressFill = "#8492a6";
-      } else {
-        playBg = "#d4d6dc";
-        playColor = "#5b5c60";
-        progressBg = "#f1f4f9";
-        progressFill = "#d4d6dc";
-      }
-    }
-
-    playBtn.style.background = playBg;
-    playBtn.style.color = playColor;
-    progressWrap.style.background = progressBg;
-
-    const bar = progressWrap.querySelector("div");
-    if (bar) bar.style.background = progressFill;
-  });
-}
 window.setNickname = setNickname;
 
 function setNicknameMobile() {
   const input = document.getElementById("mobileNickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  nickname = input.value.trim() || (currentUser ? currentUser.user_metadata?.full_name : "Гость");
   document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
   input.value = "";
   localStorage.setItem("nickname", nickname);
@@ -217,253 +170,100 @@ window.setNicknameMobile = setNicknameMobile;
 
 // === Чат ===
 const chat = document.getElementById("chat");
-const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
-onSnapshot(q, snapshot => { messagesCache = snapshot.docs.map(d=>({id:d.id,data:d.data()})); renderMessages(); });
+
+async function fetchMessages() {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .order('time', { ascending: true });
+
+  if (error) console.error(error);
+  else {
+    messagesCache = data;
+    renderMessages();
+  }
+}
+
+// Подписка на новые сообщения
+supabase
+  .channel('public:messages')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+    messagesCache.push(payload.new);
+    renderMessages();
+  })
+  .subscribe();
+
+async function addMessage(text, isAudio = false) {
+  if (!currentUser) return;
+  await supabase.from('messages').insert([{
+    text,
+    is_audio: isAudio,
+    user: nickname,
+    uid: currentUser.id,
+    time: Date.now()
+  }]);
+}
 
 function renderMessages() {
   chat.innerHTML = "";
-  messagesCache.forEach(docObj => {
-    const data = docObj.data;
-    const isMe = currentUser && data.uid === currentUser.uid;
-    const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
+  messagesCache.forEach(data => {
+    const isMe = currentUser && data.uid === currentUser.id;
+    const displayName = isMe ? nickname : data.user;
+
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
-    if (data.isAudio) {
-      const wrapper = document.createElement("div");
-      wrapper.style.display = "flex";
-      wrapper.style.flexDirection = "column";
-      wrapper.style.gap = "4px";
-      wrapper.style.marginTop = "5px";
-      wrapper.style.maxWidth = "320px";
-      wrapper.style.width = "100%";
-
-      const topRow = document.createElement("div");
-      topRow.style.display = "flex";
-      topRow.style.alignItems = "center";
-      topRow.style.gap = "12px";
-
+    if (data.is_audio) {
       const audio = document.createElement("audio");
       audio.src = data.text;
-      audio.preload = "metadata";
+      audio.controls = true;
+      div.appendChild(audio);
+    } else {
+      div.insertAdjacentHTML('beforeend', data.text);
+    }
 
-      let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
-      audio.playbackRate = rate;
-
-      const playBtn = document.createElement("div");
-      playBtn.style.width = "36px";
-      playBtn.style.height = "36px";
-      playBtn.style.borderRadius = "50%";
-      playBtn.style.display = "flex";
-      playBtn.style.alignItems = "center";
-      playBtn.style.justifyContent = "center";
-      playBtn.style.cursor = "pointer";
-      playBtn.style.flexShrink = "0";
-
-      const isDark = document.body.classList.contains("dark");
-      let playBg, playColor, progressBg, progressFill;
-
-   if (isMe) {
-  if (isDark) {
-    // ТВОИ сообщения (тёмная тема)
-    playBg = "#00419b";        // светлее пузыря → не сливается
-    playColor = "#ffffff";
-    progressBg = "#00419b";    // заметный фон
-    progressFill = "#0057d3";  // приятный голубой
-  } else {
-    // ТВОИ сообщения (светлая тема)
-    playBg = "#3b82f6";        // нормальный синий (не кислотный)
-    playColor = "#ffffff";
-    progressBg = "#8bc1ff";    // мягкий фон
-    progressFill = "#3b82f6";  // контрастный прогресс
-  }
-} else {
-  if (isDark) {
-    // ЧУЖИЕ сообщения (тёмная тема)
-    playBg = "#8492a6";        // светлее пузыря → не сливается
-    playColor = "#ffffff";
-    progressBg = "#475569";
-    progressFill = "#8492a6";
-  } else {
-    // ЧУЖИЕ сообщения (светлая тема)
-    playBg = "#d4d6dc";        // светло-серый (не тёмный)
-    playColor = "#5b5c60";
-    progressBg = "#f1f4f9";    // почти фон, но видно
-    progressFill = "#d4d6dc";  // аккуратный серый прогресс
-  }
-}
-
-      playBtn.style.background = playBg;
-      playBtn.style.color = playColor;
-      playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
-      playBtn.textContent = "▶";
-
-      const progressWrap = document.createElement("div");
-      progressWrap.style.flex = "1";
-      progressWrap.style.minWidth = "180px";
-      progressWrap.style.height = "5px";
-      progressWrap.style.borderRadius = "4px";
-      progressWrap.style.background = progressBg;
-      progressWrap.style.cursor = "pointer";
-      progressWrap.style.position = "relative";
-
-      const progressBar = document.createElement("div");
-      progressBar.style.height = "100%";
-      progressBar.style.width = "0%";
-      progressBar.style.background = progressFill;
-      progressBar.style.borderRadius = "4px";
-
-      progressWrap.appendChild(progressBar);
-
-      const bottomRow = document.createElement("div");
-      bottomRow.style.display = "flex";
-      bottomRow.style.justifyContent = "space-between";
-      bottomRow.style.gap = "10px";
-      bottomRow.style.paddingLeft = "48px";
-      bottomRow.style.fontSize = "12px";
-      bottomRow.style.opacity = "0.8";
-
-      const timeLabel = document.createElement("span"); timeLabel.textContent="0:00";
-      const speed = document.createElement("span"); speed.textContent = rate + "x"; speed.style.cursor="pointer"; speed.classList.add("speed-label");
-      speed.onclick = ()=>{
-        rate += 0.5; if(rate>2) rate=0.5;
-        localStorage.setItem("audioSpeed", rate);
-        document.querySelectorAll("audio").forEach(a=>a.playbackRate=rate);
-        document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
-      };
-
-      playBtn.onclick = ()=>{
-        if(audio.paused){ document.querySelectorAll("audio").forEach(a=>{if(a!==audio)a.pause();}); audio.play(); playBtn.textContent="❚❚"; }
-        else { audio.pause(); playBtn.textContent="▶"; }
-      };
-
-      audio.addEventListener("timeupdate", ()=>{
-        if(!audio.duration)return;
-        const percent=(audio.currentTime/audio.duration)*100;
-        progressBar.style.width = percent+"%";
-        const min=Math.floor(audio.currentTime/60);
-        const sec=Math.floor(audio.currentTime%60);
-        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
-      });
-
-      audio.addEventListener("loadedmetadata", ()=>{
-        const min=Math.floor(audio.duration/60);
-        const sec=Math.floor(audio.duration%60);
-        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
-      });
-
-      audio.addEventListener("ended", ()=>{
-        playBtn.textContent="▶";
-        progressBar.style.width="0%";
-        audio.currentTime=0;
-      });
-
-      progressWrap.onclick = (e)=>{
-        const rect=progressWrap.getBoundingClientRect();
-        const percent=(e.clientX-rect.left)/rect.width;
-        audio.currentTime=percent*audio.duration;
-      };
-
-      topRow.appendChild(playBtn);
-      topRow.appendChild(progressWrap);
-      bottomRow.appendChild(timeLabel);
-      bottomRow.appendChild(speed);
-      wrapper.appendChild(topRow);
-      wrapper.appendChild(bottomRow);
-      div.appendChild(wrapper);
-    } else { div.insertAdjacentHTML('beforeend', data.text); }
-
-    if(isMe){ const delBtn=document.createElement("span"); delBtn.className="delete-btn"; delBtn.textContent="❌"; delBtn.onclick=()=>deleteMessage(docObj.id); div.appendChild(delBtn); }
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
 }
 
-async function deleteMessage(id){ await deleteDoc(doc(db,"messages",id)); }
-window.deleteMessage = deleteMessage;
+fetchMessages();
 
-function toggleTheme() {
-  const body = document.body;
-  body.classList.toggle("dark");
-  body.classList.toggle("light");
-
-  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
-
-  document.getElementById("mobileMenuBtn").style.color =
-    body.classList.contains("dark") ? "white" : "black";
-
-  // 🔥 ВАЖНО — обновляем аудио сразу
-  updateAudioTheme();
-}
-window.toggleTheme = toggleTheme;
-
-// === Мобильное меню ===
-function toggleMobileMenu() {
-  const menu=document.getElementById("mobileMenu");
-  menu.style.display = menu.style.display==="flex"?"none":"flex";
-}
-window.toggleMobileMenu = toggleMobileMenu;
-
-document.addEventListener('click',function(event){
-  const menu=document.getElementById('mobileMenu');
-  const btn=document.getElementById('mobileMenuBtn');
-  if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
-});
-
-// === Отправка сообщений и аудио ===
+// === Отправка текста и аудио ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
 
-let mediaRecorder, audioChunks=[], isRecording=false;
+let mediaRecorder, audioChunks = [], isRecording = false;
 
-messageInput.addEventListener('input', ()=>{
-  if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
-  else if(!isRecording){sendRecordBtn.textContent="➤";}
-});
-
-sendRecordBtn.addEventListener('click', async ()=>{
-  if(messageInput.value.trim()!==""){
-    if(!currentUser)return;
-    await addDoc(collection(db,"messages"),{
-      text: messageInput.value,
-      user: nickname||(currentUser?currentUser.displayName:"Гость"),
-      uid: currentUser.uid,
-      time: Date.now()
-    });
-    messageInput.value="";
-    sendRecordBtn.textContent="🎤";
+sendRecordBtn.addEventListener('click', async () => {
+  if (messageInput.value.trim() !== "") {
+    await addMessage(messageInput.value);
+    messageInput.value = "";
   } else {
-    if(!isRecording){
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      mediaRecorder=new MediaRecorder(stream);
-      audioChunks=[];
-      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-      mediaRecorder.onstop=async ()=>{
-        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
-        const reader=new FileReader();
-        reader.onloadend=async ()=>{
-          const base64Audio=reader.result;
-          if(!currentUser)return;
-          await addDoc(collection(db,"messages"),{
-            text: base64Audio,
-            isAudio:true,
-            user: nickname||(currentUser?currentUser.displayName:"Гость"),
-            uid: currentUser.uid,
-            time: Date.now()
-          });
+    if (!isRecording) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Audio = reader.result;
+          await addMessage(base64Audio, true);
         };
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
       mediaRecorder.start();
-      isRecording=true;
-      sendRecordBtn.textContent="⏹️";
+      isRecording = true;
+      sendRecordBtn.textContent = "⏹️";
     } else {
       mediaRecorder.stop();
-      isRecording=false;
-      sendRecordBtn.textContent="🎤";
+      isRecording = false;
+      sendRecordBtn.textContent = "🎤";
     }
   }
 });
