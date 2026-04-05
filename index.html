@@ -21,7 +21,7 @@
   body.dark #userPanel { background-color: #1e293b; }
   body.light #userPanel { background-color: #f1f5f9; }
   #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
-  body.dark #userPanel button { background-color: #273c73; color: white; }
+  body.dark #userPanel button { background-color: #00419b; color: white; }
   body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
   body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
   body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
@@ -36,7 +36,7 @@
   #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
   .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .message audio { max-width: 200px; display: block; }
-  .me { align-self: flex-end; background: #273c73; color: white; }
+  .me { align-self: flex-end; background: #00419b; color: white; }
   body.dark .other { background: #334155; color: white; }
   body.light .other { background: #e5e7eb; color: black; }
   body.light .me { background: #bfdbfe; color: black; }
@@ -54,11 +54,11 @@
 
   body.dark #chat::-webkit-scrollbar { width: 8px; }
   body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #00419b; border-radius: 4px; border: 2px solid #1e293b; }
   body.light #chat::-webkit-scrollbar { width: 8px; }
   body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
   body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
-  body.dark #chat { scrollbar-width: thin; scrollbar-color: #273c73 #1e293b; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #00419b #1e293b; }
   body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
 
   @media (max-width: 600px) {
@@ -220,9 +220,9 @@ function renderMessages() {
    if (isMe) {
   if (isDark) {
     // ТВОИ сообщения (тёмная тема)
-    playBg = "#00419b";        // светлее пузыря → не сливается
+    playBg = "#273c73";        // светлее пузыря → не сливается
     playColor = "#ffffff";
-    progressBg = "#00419b";    // заметный фон
+    progressBg = "#273c73";    // заметный фон
     progressFill = "#0057d3";  // приятный голубой
   } else {
     // ТВОИ сообщения (светлая тема)
