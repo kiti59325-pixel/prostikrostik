@@ -220,30 +220,30 @@ function renderMessages() {
    if (isMe) {
   if (isDark) {
     // ТВОИ сообщения (тёмная тема)
-    playBg = "#60a5fa";        // светлее пузыря → не сливается
-    playColor = "#0f172a";
-    progressBg = "#334155";    // заметный фон
+    playBg = "#0865f1";        // светлее пузыря → не сливается
+    playColor = "#ffffff";
+    progressBg = "#376cbc";    // заметный фон
     progressFill = "#93c5fd";  // приятный голубой
   } else {
     // ТВОИ сообщения (светлая тема)
     playBg = "#3b82f6";        // нормальный синий (не кислотный)
     playColor = "#ffffff";
-    progressBg = "#bfdbfe";    // мягкий фон
+    progressBg = "#8bc1ff";    // мягкий фон
     progressFill = "#1d4ed8";  // контрастный прогресс
   }
 } else {
   if (isDark) {
     // ЧУЖИЕ сообщения (тёмная тема)
     playBg = "#94a3b8";        // светлее пузыря → не сливается
-    playColor = "#0f172a";
+    playColor = "#ffffff";
     progressBg = "#475569";
     progressFill = "#cbd5f5";
   } else {
     // ЧУЖИЕ сообщения (светлая тема)
-    playBg = "#e2e8f0";        // светло-серый (не тёмный)
-    playColor = "#1f2937";
+    playBg = "#d4d6dc";        // светло-серый (не тёмный)
+    playColor = "#ffffff";
     progressBg = "#f1f5f9";    // почти фон, но видно
-    progressFill = "#64748b";  // аккуратный серый прогресс
+    progressFill = "#aaacb0";  // аккуратный серый прогресс
   }
 }
 
