@@ -5,11 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
 <style>
-  /* --- твои стили без изменений --- */
   body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f8fafc; color: black; }
-  /* ... остальные стили остаются без изменений ... */
+
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+  body.dark header { background: #1e293b; color: white; }
+  body.light header { background: #f1f5f9; color: black; }
+
+  #headerButtons { display: flex; gap: 10px; align-items: center; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
+  #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
+
+  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  body.dark #userPanel { background-color: #1e293b; }
+  body.light #userPanel { background-color: #f1f5f9; }
+  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
+  body.dark #userPanel button { background-color: #273c73; color: white; }
+  body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
+  body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
+
+  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+
+  #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
+  #mobileMenu input, #mobileMenu button { width: 100%; }
+
+  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
+  .message audio { max-width: 200px; display: block; }
+  .me { align-self: flex-end; background: #273c73; color: white; }
+  body.dark .other { background: #334155; color: white; }
+  body.light .other { background: #e5e7eb; color: black; }
+  body.light .me { background: #bfdbfe; color: black; }
+
+  .name { font-size: 11px; opacity: 0.7; }
+  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
+
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
+  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
+  body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+
+  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #273c73 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
+
+  @media (max-width: 600px) {
+    #userPanel { display: none; }
+    #mobileMenuBtn { display: flex; }
+    #chat { height: calc(100vh - 110px); }
+    #mobileMenu { position: fixed; top: 50px; right: 10px; z-index: 300; border-radius: 12px; padding: 12px; display: none; flex-direction: column; gap: 8px; }
+    body.dark #mobileMenuBtn { color: white; }
+    body.light #mobileMenuBtn { color: black; }
+    body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; border-radius: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
+    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
+    body.light #mobileMenu input { border: 1px solid #d1d5db; }
+    #mobileMenu button { display: block; margin: 0 auto 8px auto; width: 90%; border-radius: 12px; padding: 10px 15px; font-weight: 500; letter-spacing: 0.2px; transition: 0.2s; border: none; }
+    body.dark #mobileMenu button { background-color: #273c73; color: white; }
+    body.dark #mobileMenu button:hover { background-color: #1e40af; }
+    body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
+  }
 </style>
 </head>
 <body>
@@ -123,6 +192,11 @@ function renderMessages() {
       wrapper.style.maxWidth = "320px";
       wrapper.style.width = "100%";
 
+      const topRow = document.createElement("div");
+      topRow.style.display = "flex";
+      topRow.style.alignItems = "center";
+      topRow.style.gap = "12px";
+
       const audio = document.createElement("audio");
       audio.src = data.text;
       audio.preload = "metadata";
@@ -139,7 +213,78 @@ function renderMessages() {
       playBtn.style.justifyContent = "center";
       playBtn.style.cursor = "pointer";
       playBtn.style.flexShrink = "0";
+
+      const isDark = document.body.classList.contains("dark");
+      let playBg, playColor, progressBg, progressFill;
+
+   if (isMe) {
+  if (isDark) {
+    // ТВОИ сообщения (тёмная тема)
+    playBg = "#00419b";        // светлее пузыря → не сливается
+    playColor = "#ffffff";
+    progressBg = "#00419b";    // заметный фон
+    progressFill = "#0057d3";  // приятный голубой
+  } else {
+    // ТВОИ сообщения (светлая тема)
+    playBg = "#3b82f6";        // нормальный синий (не кислотный)
+    playColor = "#ffffff";
+    progressBg = "#8bc1ff";    // мягкий фон
+    progressFill = "#3b82f6";  // контрастный прогресс
+  }
+} else {
+  if (isDark) {
+    // ЧУЖИЕ сообщения (тёмная тема)
+    playBg = "#8492a6";        // светлее пузыря → не сливается
+    playColor = "#ffffff";
+    progressBg = "#475569";
+    progressFill = "#8492a6";
+  } else {
+    // ЧУЖИЕ сообщения (светлая тема)
+    playBg = "#d4d6dc";        // светло-серый (не тёмный)
+    playColor = "#5b5c60";
+    progressBg = "#f1f4f9";    // почти фон, но видно
+    progressFill = "#d4d6dc";  // аккуратный серый прогресс
+  }
+}
+
+      playBtn.style.background = playBg;
+      playBtn.style.color = playColor;
+      playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
       playBtn.textContent = "▶";
+
+      const progressWrap = document.createElement("div");
+      progressWrap.style.flex = "1";
+      progressWrap.style.minWidth = "180px";
+      progressWrap.style.height = "5px";
+      progressWrap.style.borderRadius = "4px";
+      progressWrap.style.background = progressBg;
+      progressWrap.style.cursor = "pointer";
+      progressWrap.style.position = "relative";
+
+      const progressBar = document.createElement("div");
+      progressBar.style.height = "100%";
+      progressBar.style.width = "0%";
+      progressBar.style.background = progressFill;
+      progressBar.style.borderRadius = "4px";
+
+      progressWrap.appendChild(progressBar);
+
+      const bottomRow = document.createElement("div");
+      bottomRow.style.display = "flex";
+      bottomRow.style.justifyContent = "space-between";
+      bottomRow.style.gap = "10px";
+      bottomRow.style.paddingLeft = "48px";
+      bottomRow.style.fontSize = "12px";
+      bottomRow.style.opacity = "0.8";
+
+      const timeLabel = document.createElement("span"); timeLabel.textContent="0:00";
+      const speed = document.createElement("span"); speed.textContent = rate + "x"; speed.style.cursor="pointer"; speed.classList.add("speed-label");
+      speed.onclick = ()=>{
+        rate += 0.5; if(rate>2) rate=0.5;
+        localStorage.setItem("audioSpeed", rate);
+        document.querySelectorAll("audio").forEach(a=>a.playbackRate=rate);
+        document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
+      };
 
       playBtn.onclick = ()=>{
         if(audio.paused){ document.querySelectorAll("audio").forEach(a=>{if(a!==audio)a.pause();}); audio.play(); playBtn.textContent="❚❚"; }
@@ -149,15 +294,36 @@ function renderMessages() {
       audio.addEventListener("timeupdate", ()=>{
         if(!audio.duration)return;
         const percent=(audio.currentTime/audio.duration)*100;
-        // можно добавить визуальный прогресс если нужно
+        progressBar.style.width = percent+"%";
+        const min=Math.floor(audio.currentTime/60);
+        const sec=Math.floor(audio.currentTime%60);
+        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
+      });
+
+      audio.addEventListener("loadedmetadata", ()=>{
+        const min=Math.floor(audio.duration/60);
+        const sec=Math.floor(audio.duration%60);
+        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
       audio.addEventListener("ended", ()=>{
         playBtn.textContent="▶";
+        progressBar.style.width="0%";
         audio.currentTime=0;
       });
 
-      wrapper.appendChild(playBtn);
+      progressWrap.onclick = (e)=>{
+        const rect=progressWrap.getBoundingClientRect();
+        const percent=(e.clientX-rect.left)/rect.width;
+        audio.currentTime=percent*audio.duration;
+      };
+
+      topRow.appendChild(playBtn);
+      topRow.appendChild(progressWrap);
+      bottomRow.appendChild(timeLabel);
+      bottomRow.appendChild(speed);
+      wrapper.appendChild(topRow);
+      wrapper.appendChild(bottomRow);
       div.appendChild(wrapper);
     } else { div.insertAdjacentHTML('beforeend', data.text); }
 
@@ -193,10 +359,16 @@ document.addEventListener('click',function(event){
   if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
 });
 
-// === Отправка сообщений и аудио с полной остановкой микрофона ===
+// === Отправка сообщений и аудио ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
+
 let mediaRecorder, audioChunks=[], isRecording=false;
+
+messageInput.addEventListener('input', ()=>{
+  if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
+  else if(!isRecording){sendRecordBtn.textContent="➤";}
+});
 
 sendRecordBtn.addEventListener('click', async ()=>{
   if(messageInput.value.trim()!==""){
@@ -211,15 +383,15 @@ sendRecordBtn.addEventListener('click', async ()=>{
     sendRecordBtn.textContent="🎤";
   } else {
     if(!isRecording){
-      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      mediaRecorder = new MediaRecorder(stream);
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder=new MediaRecorder(stream);
       audioChunks=[];
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = async ()=>{
-        const audioBlob = new Blob(audioChunks,{type:'audio/webm'});
-        const reader = new FileReader();
-        reader.onloadend = async ()=>{
-          const base64Audio = reader.result;
+      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRecorder.onstop=async ()=>{
+        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onloadend=async ()=>{
+          const base64Audio=reader.result;
           if(!currentUser)return;
           await addDoc(collection(db,"messages"),{
             text: base64Audio,
@@ -230,8 +402,6 @@ sendRecordBtn.addEventListener('click', async ()=>{
           });
         };
         reader.readAsDataURL(audioBlob);
-
-        // 🔹 Полная остановка микрофона после отправки
         stream.getTracks().forEach(track => track.stop());
       };
       mediaRecorder.start();
