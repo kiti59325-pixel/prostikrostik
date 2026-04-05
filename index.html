@@ -5,80 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
-  body.dark { background: #0f172a; color: white; }
-  body.light { background: #f8fafc; color: black; }
-
-  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; position: relative; }
-  body.dark header { background: #1e293b; color: white; }
-  body.light header { background: #f1f5f9; color: black; }
-
-  #headerButtons { display: flex; gap: 10px; align-items: center; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
-  #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
-
-  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-  body.dark #userPanel { background-color: #1e293b; }
-  body.light #userPanel { background-color: #f1f5f9; }
-  #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
-  body.dark #userPanel button { background-color: #273c73; color: white; }
-  body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-  body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
-  body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
-
-  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-  body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-
-  #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
-  #mobileMenu input, #mobileMenu button { width: 100%; }
-
-  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-  .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
-  .message audio { max-width: 200px; display: block; }
-  .me { align-self: flex-end; background: #273c73; color: white; }
-  body.dark .other { background: #334155; color: white; }
-  body.light .other { background: #e5e7eb; color: black; }
-  body.light .me { background: #bfdbfe; color: black; }
-
-  .name { font-size: 11px; opacity: 0.7; }
-  .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
-
-  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
-  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
-  #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
-  body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
-  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-
-  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
-
-  body.dark #chat::-webkit-scrollbar { width: 8px; }
-  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
-  body.light #chat::-webkit-scrollbar { width: 8px; }
-  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
-  body.dark #chat { scrollbar-width: thin; scrollbar-color: #273c73 #1e293b; }
-  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
-
-  @media (max-width: 600px) {
-    #userPanel { display: none; }
-    #mobileMenuBtn { display: flex; }
-    #chat { height: calc(100vh - 110px); }
-    #mobileMenu { position: fixed; top: 50px; right: 10px; z-index: 300; border-radius: 12px; padding: 12px; display: none; flex-direction: column; gap: 8px; }
-    body.dark #mobileMenuBtn { color: white; }
-    body.light #mobileMenuBtn { color: black; }
-    body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; border-radius: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
-    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
-    body.light #mobileMenu input { border: 1px solid #d1d5db; }
-    #mobileMenu button { display: block; margin: 0 auto 8px auto; width: 90%; border-radius: 12px; padding: 10px 15px; font-weight: 500; letter-spacing: 0.2px; transition: 0.2s; border: none; }
-    body.dark #mobileMenu button { background-color: #273c73; color: white; }
-    body.dark #mobileMenu button:hover { background-color: #1e40af; }
-    body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
-  }
+  body { margin:0; font-family:Arial; transition:0.3s; display:flex; flex-direction:column; height:100vh; }
+  body.dark { background:#0f172a; color:white; }
+  body.light { background:#f8fafc; color:black; }
+  header { padding:15px; font-size:18px; display:flex; justify-content:space-between; align-items:center; }
+  #headerButtons { display:flex; gap:10px; align-items:center; }
+  #themeBtn, #mobileMenuBtn { cursor:pointer; border:none; background:none; font-size:18px; }
+  #userPanel { padding:10px; display:flex; flex-wrap:wrap; gap:10px; border-radius:0 0 12px 12px; }
+  #userPanel button { border-radius:12px; padding:10px 15px; border:none; cursor:pointer; font-weight:500; }
+  #nickname { padding:10px; border-radius:10px; border:1px solid #ccc; background:inherit; color:inherit; }
+  #chat { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; }
+  .message { max-width:60%; width:fit-content; padding:10px; margin:5px; border-radius:12px; position:relative; word-wrap:break-word; }
+  .message audio { max-width:200px; display:block; }
+  .me { align-self:flex-end; background:#273c73; color:white; }
+  .other { background:#e5e7eb; color:black; }
+  .name { font-size:11px; opacity:0.7; }
+  .delete-btn { position:absolute; top:2px; right:6px; cursor:pointer; font-size:12px; opacity:0.6; }
+  #inputArea { display:flex; padding:10px; }
+  #messageInput { flex:1; padding:10px; border-radius:25px; border:none; background:inherit; color:inherit; }
+  #sendRecordBtn { margin-left:10px; border-radius:25px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -86,8 +31,7 @@
 <header>
   ПростикРостик
   <div id="headerButtons">
-    <button id="themeBtn" onclick="toggleTheme()">🌗</button>
-    <button id="mobileMenuBtn" onclick="toggleMobileMenu()">⋮</button>
+    <button id="themeBtn">🌗</button>
   </div>
 </header>
 
@@ -97,13 +41,6 @@
   <button onclick="login()">Войти через Google</button>
   <button onclick="logout()">Выйти</button>
   <div id="userInfo"></div>
-</div>
-
-<div id="mobileMenu">
-  <input id="mobileNickname" placeholder="Придумай ник..." />
-  <button onclick="setNicknameMobile()">Сохранить ник</button>
-  <button onclick="login()">Войти через Google</button>
-  <button onclick="logout()">Выйти</button>
 </div>
 
 <div id="chat"></div>
@@ -118,58 +55,45 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = 'https://cdasjlliptlfxguwtufq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkYXNqbGxpcHRsZnhndXd0dWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDI4MjgsImV4cCI6MjA5MDk3ODgyOH0.TIrd3D8k_Cw60xhKOnHOjKVPsjLU7G2S2TelTOgMk-c';
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
-let nickname = localStorage.getItem("nickname") || "";
-let theme = localStorage.getItem("theme") || "dark";
+let nickname = localStorage.getItem('nickname') || '';
+let theme = localStorage.getItem('theme') || 'dark';
 document.body.classList.add(theme);
 
-// === Авторизация ===
+// ===== AUTH =====
 async function login() {
-  const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-  if (error) console.error(error);
+  await supabase.auth.signInWithOAuth({ provider: 'google' });
 }
 window.login = login;
 
 async function logout() {
   await supabase.auth.signOut();
   currentUser = null;
-  document.getElementById("userInfo").innerText = "Не вошёл";
+  document.getElementById('userInfo').innerText = 'Не вошёл';
 }
 window.logout = logout;
 
 supabase.auth.onAuthStateChange((_event, session) => {
   currentUser = session?.user || null;
-  if (!nickname && currentUser) nickname = currentUser.user_metadata?.full_name || "Гость";
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  if (!nickname && currentUser) nickname = currentUser.user_metadata.full_name || 'Гость';
+  document.getElementById('userInfo').innerText = currentUser ? 'Ты: ' + nickname : 'Не вошёл';
 });
 
-// === Ник ===
+// ===== NICKNAME =====
 function setNickname() {
-  const input = document.getElementById("nickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.user_metadata?.full_name : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
-  input.value = "";
-  localStorage.setItem("nickname", nickname);
-  renderMessages();
+  const input = document.getElementById('nickname');
+  nickname = input.value.trim() || (currentUser?.user_metadata.full_name || 'Гость');
+  document.getElementById('userInfo').innerText = currentUser ? 'Ты: ' + nickname : 'Не вошёл';
+  input.value = '';
+  localStorage.setItem('nickname', nickname);
 }
 window.setNickname = setNickname;
 
-function setNicknameMobile() {
-  const input = document.getElementById("mobileNickname");
-  nickname = input.value.trim() || (currentUser ? currentUser.user_metadata?.full_name : "Гость");
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
-  input.value = "";
-  localStorage.setItem("nickname", nickname);
-  renderMessages();
-  document.getElementById("mobileMenu").style.display = "none";
-  updateAudioTheme();
-}
-window.setNicknameMobile = setNicknameMobile;
-
-// === Чат ===
-const chat = document.getElementById("chat");
+// ===== CHAT =====
+const chat = document.getElementById('chat');
 let messagesCache = [];
 
 async function fetchMessages() {
@@ -177,51 +101,46 @@ async function fetchMessages() {
     .from('messages')
     .select('*')
     .order('time', { ascending: true });
-
   if (error) console.error(error);
-  else {
-    messagesCache = data;
-    renderMessages();
-  }
+  else { messagesCache = data; renderMessages(); }
 }
 
-// Подписка на новые сообщения
+fetchMessages();
+
+// Realtime
 supabase
   .channel('public:messages')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-    messagesCache.push(payload.new);
-    renderMessages();
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, payload => {
+    fetchMessages();
   })
   .subscribe();
 
-async function addMessage(text, isAudio = false) {
-  if (!currentUser) return;
-  await supabase.from('messages').insert([{
-    text,
-    is_audio: isAudio,
-    user: nickname,
-    uid: currentUser.id,
-    time: Date.now()
-  }]);
-}
-
 function renderMessages() {
-  chat.innerHTML = "";
-  messagesCache.forEach(data => {
-    const isMe = currentUser && data.uid === currentUser.id;
-    const displayName = isMe ? nickname : data.user;
-
-    const div = document.createElement("div");
-    div.className = "message " + (isMe ? "me" : "other");
+  chat.innerHTML = '';
+  messagesCache.forEach(msg => {
+    const isMe = currentUser && msg.uid === currentUser.id;
+    const displayName = isMe ? nickname : msg.user;
+    const div = document.createElement('div');
+    div.className = 'message ' + (isMe ? 'me' : 'other');
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
-    if (data.is_audio) {
-      const audio = document.createElement("audio");
-      audio.src = data.text;
+    if (msg.isAudio) {
+      const audio = document.createElement('audio');
       audio.controls = true;
+      audio.src = msg.text;
       div.appendChild(audio);
     } else {
-      div.insertAdjacentHTML('beforeend', data.text);
+      div.insertAdjacentHTML('beforeend', msg.text);
+    }
+
+    if (isMe) {
+      const delBtn = document.createElement('span');
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = '❌';
+      delBtn.onclick = async () => {
+        await supabase.from('messages').delete().eq('id', msg.id);
+      };
+      div.appendChild(delBtn);
     }
 
     chat.appendChild(div);
@@ -229,18 +148,31 @@ function renderMessages() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-fetchMessages();
+// ===== THEME =====
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  document.body.classList.toggle('light');
+  localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+document.getElementById('themeBtn').onclick = toggleTheme;
 
-// === Отправка текста и аудио ===
-const sendRecordBtn = document.getElementById('sendRecordBtn');
+// ===== SEND MESSAGES & AUDIO =====
 const messageInput = document.getElementById('messageInput');
+const sendRecordBtn = document.getElementById('sendRecordBtn');
 
 let mediaRecorder, audioChunks = [], isRecording = false;
 
 sendRecordBtn.addEventListener('click', async () => {
-  if (messageInput.value.trim() !== "") {
-    await addMessage(messageInput.value);
-    messageInput.value = "";
+  if (messageInput.value.trim() !== '') {
+    if (!currentUser) return;
+    await supabase.from('messages').insert([{
+      text: messageInput.value,
+      user: nickname,
+      uid: currentUser.id,
+      time: Date.now(),
+      isAudio: false
+    }]);
+    messageInput.value = '';
   } else {
     if (!isRecording) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -252,18 +184,25 @@ sendRecordBtn.addEventListener('click', async () => {
         const reader = new FileReader();
         reader.onloadend = async () => {
           const base64Audio = reader.result;
-          await addMessage(base64Audio, true);
+          if (!currentUser) return;
+          await supabase.from('messages').insert([{
+            text: base64Audio,
+            user: nickname,
+            uid: currentUser.id,
+            time: Date.now(),
+            isAudio: true
+          }]);
         };
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
       mediaRecorder.start();
       isRecording = true;
-      sendRecordBtn.textContent = "⏹️";
+      sendRecordBtn.textContent = '⏹️';
     } else {
       mediaRecorder.stop();
       isRecording = false;
-      sendRecordBtn.textContent = "🎤";
+      sendRecordBtn.textContent = '🎤';
     }
   }
 });
