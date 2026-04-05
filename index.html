@@ -154,6 +154,53 @@ function setNickname() {
   localStorage.setItem("nickname", nickname);
   renderMessages();
 }
+  function updateAudioTheme() {
+  const isDark = document.body.classList.contains("dark");
+
+  document.querySelectorAll(".message").forEach(msg => {
+    const playBtn = msg.querySelector("div[style*='36px']");
+    const progressWrap = msg.querySelector("div[style*='height: 5px']");
+
+    if (!playBtn || !progressWrap) return;
+
+    const isMe = msg.classList.contains("me");
+
+    let playBg, playColor, progressBg, progressFill;
+
+    if (isMe) {
+      if (isDark) {
+        playBg = "#00419b";
+        playColor = "#ffffff";
+        progressBg = "#00419b";
+        progressFill = "#0057d3";
+      } else {
+        playBg = "#3b82f6";
+        playColor = "#ffffff";
+        progressBg = "#8bc1ff";
+        progressFill = "#3b82f6";
+      }
+    } else {
+      if (isDark) {
+        playBg = "#8492a6";
+        playColor = "#ffffff";
+        progressBg = "#475569";
+        progressFill = "#8492a6";
+      } else {
+        playBg = "#d4d6dc";
+        playColor = "#5b5c60";
+        progressBg = "#f1f4f9";
+        progressFill = "#d4d6dc";
+      }
+    }
+
+    playBtn.style.background = playBg;
+    playBtn.style.color = playColor;
+    progressWrap.style.background = progressBg;
+
+    const bar = progressWrap.querySelector("div");
+    if (bar) bar.style.background = progressFill;
+  });
+}
 window.setNickname = setNickname;
 
 function setNicknameMobile() {
@@ -336,13 +383,18 @@ function renderMessages() {
 async function deleteMessage(id){ await deleteDoc(doc(db,"messages",id)); }
 window.deleteMessage = deleteMessage;
 
-// === Тема ===
 function toggleTheme() {
-  const body=document.body;
+  const body = document.body;
   body.classList.toggle("dark");
   body.classList.toggle("light");
-  localStorage.setItem("theme", body.classList.contains("dark")?"dark":"light");
-  document.getElementById("mobileMenuBtn").style.color = body.classList.contains("dark") ? "white" : "black";
+
+  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+
+  document.getElementById("mobileMenuBtn").style.color =
+    body.classList.contains("dark") ? "white" : "black";
+
+  // 🔥 ВАЖНО — обновляем аудио сразу
+  updateAudioTheme();
 }
 window.toggleTheme = toggleTheme;
 
