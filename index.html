@@ -299,6 +299,9 @@ sendRecordBtn.addEventListener('click', async ()=>{
 });
 
 fetchMessages();
+  if (window.location.hash && window.location.hash.includes("access_token")) {
+  window.location.href = "/prostikrostik/";
+}
 </script>
 </body>
 </html>
