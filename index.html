@@ -446,34 +446,31 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 };
 
-mediaRecorder.onstop = async () => {
-  // если вдруг пусто — не отправляем
-  if (audioChunks.length === 0) return;
-
-  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-  audioChunks = []; // 🔥 ОЧЕНЬ ВАЖНО — очищаем сразу
+mediaRecorder.ondataavailable = async (e) => {
+  if (e.data.size === 0) return;
 
   const reader = new FileReader();
+
   reader.onloadend = async () => {
-    const base64Audio = reader.result;
     if (!currentUser) return;
 
     await addDoc(collection(db, "messages"), {
-      text: base64Audio,
+      text: reader.result,
       isAudio: true,
       user: nickname || (currentUser ? currentUser.displayName : "Гость"),
       uid: currentUser.uid,
       time: Date.now()
     });
   };
-  reader.readAsDataURL(audioBlob);
 
+  reader.readAsDataURL(e.data);
+};
   // ❗ треки останавливаем ТОЛЬКО если запись реально закончена
   if (!isRecording) {
     stream.getTracks().forEach(track => track.stop());
   }
 };
-      mediaRecorder.start();
+    mediaRecorder.start(59000); // 🔥 авто-разделение каждые 59 сек
       isRecording=true;
       sendRecordBtn.textContent="⏹️";
     } else {
@@ -481,13 +478,7 @@ mediaRecorder.onstop = async () => {
 isRecording = false;
 sendRecordBtn.textContent = "🎤";
 
-// ❌ останавливаем таймер
-if (recordInterval) {
-  clearInterval(recordInterval);
-  recordInterval = null;
-}
     }
-  }
 });
 </script>
 </body>
