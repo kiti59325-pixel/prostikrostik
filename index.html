@@ -438,7 +438,7 @@ sendRecordBtn.addEventListener('click', async ()=>{
   } else {
     if(!isRecording){
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder = new MediaRecorder(stream);
+mediaRecorder = new MediaRecorder(stream);
 audioChunks = [];
 
 // 🔥 каждые 59 сек приходит кусок
@@ -459,6 +459,7 @@ mediaRecorder.ondataavailable = async (e) => {
   };
 
   reader.readAsDataURL(e.data);
+};
 };
   // ❗ треки останавливаем ТОЛЬКО если запись реально закончена
   if (!isRecording) {
