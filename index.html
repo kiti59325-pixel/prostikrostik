@@ -416,8 +416,7 @@ document.addEventListener('click',function(event){
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
 
-let mediaRecorder, audioChunks = [], isRecording = false;
-let recordInterval = null; // таймер для авто-разделения
+let mediaRecorder, audioChunks=[], isRecording=false;
 
 messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
@@ -438,43 +437,35 @@ sendRecordBtn.addEventListener('click', async ()=>{
   } else {
     if(!isRecording){
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-mediaRecorder = new MediaRecorder(stream);
-audioChunks = [];
-
-// 🔥 каждые 59 сек приходит кусок
-mediaRecorder.ondataavailable = async (e) => {
-  if (e.data.size === 0) return;
-
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    if (!currentUser) return;
-
-    await addDoc(collection(db, "messages"), {
-      text: reader.result,
-      isAudio: true,
-      user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-      uid: currentUser.uid,
-      time: Date.now()
-    });
-  };
-
-  reader.readAsDataURL(e.data);
-};
-};
-  // ❗ треки останавливаем ТОЛЬКО если запись реально закончена
-  if (!isRecording) {
-    stream.getTracks().forEach(track => track.stop());
-  }
-};
-    mediaRecorder.start(59000); // 🔥 авто-разделение каждые 59 сек
+      mediaRecorder=new MediaRecorder(stream);
+      audioChunks=[];
+      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRecorder.onstop=async ()=>{
+        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onloadend=async ()=>{
+          const base64Audio=reader.result;
+          if(!currentUser)return;
+          await addDoc(collection(db,"messages"),{
+            text: base64Audio,
+            isAudio:true,
+            user: nickname||(currentUser?currentUser.displayName:"Гость"),
+            uid: currentUser.uid,
+            time: Date.now()
+          });
+        };
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+      mediaRecorder.start();
       isRecording=true;
       sendRecordBtn.textContent="⏹️";
     } else {
-     mediaRecorder.stop();
-isRecording = false;
-sendRecordBtn.textContent = "🎤";
-
+      mediaRecorder.stop();
+      isRecording=false;
+      sendRecordBtn.textContent="🎤";
     }
+  }
 });
 </script>
 </body>
