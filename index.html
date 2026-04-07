@@ -440,24 +440,39 @@ sendRecordBtn.addEventListener('click', async ()=>{
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
       mediaRecorder=new MediaRecorder(stream);
       audioChunks=[];
-      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-      mediaRecorder.onstop=async ()=>{
-        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
-        const reader=new FileReader();
-        reader.onloadend=async ()=>{
-          const base64Audio=reader.result;
-          if(!currentUser)return;
-          await addDoc(collection(db,"messages"),{
-            text: base64Audio,
-            isAudio:true,
-            user: nickname||(currentUser?currentUser.displayName:"Гость"),
-            uid: currentUser.uid,
-            time: Date.now()
-          });
-        };
-        reader.readAsDataURL(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
+      mediaRecorder.ondataavailable = e => {
+  if (e.data.size > 0) {
+    audioChunks.push(e.data);
+  }
+};
+
+mediaRecorder.onstop = async () => {
+  // если вдруг пусто — не отправляем
+  if (audioChunks.length === 0) return;
+
+  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+  audioChunks = []; // 🔥 ОЧЕНЬ ВАЖНО — очищаем сразу
+
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const base64Audio = reader.result;
+    if (!currentUser) return;
+
+    await addDoc(collection(db, "messages"), {
+      text: base64Audio,
+      isAudio: true,
+      user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+      uid: currentUser.uid,
+      time: Date.now()
+    });
+  };
+  reader.readAsDataURL(audioBlob);
+
+  // ❗ треки останавливаем ТОЛЬКО если запись реально закончена
+  if (!isRecording) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+};
       mediaRecorder.start();
       isRecording=true;
       sendRecordBtn.textContent="⏹️";
