@@ -438,19 +438,14 @@ sendRecordBtn.addEventListener('click', async ()=>{
   } else {
     if(!isRecording){
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      mediaRecorder=new MediaRecorder(stream);
-      audioChunks=[];
-      mediaRecorder.ondataavailable = e => {
-  if (e.data.size > 0) {
-    audioChunks.push(e.data);
-  }
-};
+    mediaRecorder = new MediaRecorder(stream);
+audioChunks = [];
 
+// 🔥 каждые 59 сек приходит кусок
 mediaRecorder.ondataavailable = async (e) => {
   if (e.data.size === 0) return;
 
   const reader = new FileReader();
-
   reader.onloadend = async () => {
     if (!currentUser) return;
 
