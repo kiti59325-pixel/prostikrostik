@@ -416,7 +416,8 @@ document.addEventListener('click',function(event){
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
 
-let mediaRecorder, audioChunks=[], isRecording=false;
+let mediaRecorder, audioChunks = [], isRecording = false;
+let recordInterval = null; // таймер для авто-разделения
 
 messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
@@ -461,9 +462,15 @@ sendRecordBtn.addEventListener('click', async ()=>{
       isRecording=true;
       sendRecordBtn.textContent="⏹️";
     } else {
-      mediaRecorder.stop();
-      isRecording=false;
-      sendRecordBtn.textContent="🎤";
+     mediaRecorder.stop();
+isRecording = false;
+sendRecordBtn.textContent = "🎤";
+
+// ❌ останавливаем таймер
+if (recordInterval) {
+  clearInterval(recordInterval);
+  recordInterval = null;
+}
     }
   }
 });
