@@ -340,7 +340,7 @@ function renderMessages() {
       };
 
       audio.addEventListener("timeupdate", ()=>{
-        if(!audio.duration)return;
+      if(!audio.duration || !isFinite(audio.duration)) return;
         const percent=(audio.currentTime/audio.duration)*100;
         progressBar.style.width = percent+"%";
         const min=Math.floor(audio.currentTime/60);
@@ -348,11 +348,16 @@ function renderMessages() {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-      audio.addEventListener("loadedmetadata", ()=>{
-        const min=Math.floor(audio.duration/60);
-        const sec=Math.floor(audio.duration%60);
-        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
-      });
+    audio.addEventListener("loadedmetadata", ()=>{
+  if (!isFinite(audio.duration)) {
+    timeLabel.textContent = "0:00";
+    return;
+  }
+
+  const min = Math.floor(audio.duration / 60);
+  const sec = Math.floor(audio.duration % 60);
+  timeLabel.textContent = `${min}:${sec.toString().padStart(2,"0")}`;
+});
 
       audio.addEventListener("ended", ()=>{
         playBtn.textContent="▶";
