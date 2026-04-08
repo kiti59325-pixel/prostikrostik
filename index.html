@@ -325,7 +325,15 @@ function renderMessages() {
       bottomRow.style.fontSize = "12px";
       bottomRow.style.opacity = "0.8";
 
-      const timeLabel = document.createElement("span"); timeLabel.textContent="0:00";
+   const timeLabel = document.createElement("span");
+
+if (data.duration && isFinite(data.duration)) {
+  const min = Math.floor(data.duration / 60);
+  const sec = Math.floor(data.duration % 60);
+  timeLabel.textContent = `${min}:${sec.toString().padStart(2,"0")}`;
+} else {
+  timeLabel.textContent = "0:00";
+}
       const speed = document.createElement("span"); speed.textContent = rate + "x"; speed.style.cursor="pointer"; speed.classList.add("speed-label");
       speed.onclick = ()=>{
         rate += 0.5; if(rate>2) rate=0.5;
@@ -481,17 +489,29 @@ sendRecordBtn.addEventListener('click', async () => {
     const reader = new FileReader();
 
     reader.onloadend = async () => {
-      if (!currentUser) return;
+  if (!currentUser) return;
 
-      await addDoc(collection(db, "messages"), {
-        text: reader.result,
-        isAudio: true,
-        user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-        uid: currentUser.uid,
-        time: Date.now()
-      });
-    };
+  const audioContext = new AudioContext();
+  const arrayBuffer = await audioBlob.arrayBuffer();
 
+  let duration = 0;
+
+  try {
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    duration = audioBuffer.duration;
+  } catch (e) {
+    console.warn("Не удалось определить длительность", e);
+  }
+
+  await addDoc(collection(db, "messages"), {
+    text: reader.result,
+    isAudio: true,
+    duration: duration, // 🔥 сохраняем длительность
+    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    uid: currentUser.uid,
+    time: Date.now()
+  });
+};
     reader.readAsDataURL(audioBlob);
   };
 
