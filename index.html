@@ -457,7 +457,7 @@ sendRecordBtn.addEventListener('click', async ()=>{
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
-      mediaRecorder.start(30000);
+      mediaRecorder.start();
       isRecording=true;
       sendRecordBtn.textContent="⏹️";
     } else {
