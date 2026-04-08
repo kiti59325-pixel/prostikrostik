@@ -325,15 +325,7 @@ function renderMessages() {
       bottomRow.style.fontSize = "12px";
       bottomRow.style.opacity = "0.8";
 
-   const timeLabel = document.createElement("span");
-
-if (data.duration && isFinite(data.duration)) {
-  const min = Math.floor(data.duration / 60);
-  const sec = Math.floor(data.duration % 60);
-  timeLabel.textContent = `${min}:${sec.toString().padStart(2,"0")}`;
-} else {
-  timeLabel.textContent = "0:00";
-}
+      const timeLabel = document.createElement("span"); timeLabel.textContent="0:00";
       const speed = document.createElement("span"); speed.textContent = rate + "x"; speed.style.cursor="pointer"; speed.classList.add("speed-label");
       speed.onclick = ()=>{
         rate += 0.5; if(rate>2) rate=0.5;
@@ -348,7 +340,7 @@ if (data.duration && isFinite(data.duration)) {
       };
 
       audio.addEventListener("timeupdate", ()=>{
-      if(!audio.duration || !isFinite(audio.duration)) return;
+        if(!audio.duration)return;
         const percent=(audio.currentTime/audio.duration)*100;
         progressBar.style.width = percent+"%";
         const min=Math.floor(audio.currentTime/60);
@@ -356,16 +348,11 @@ if (data.duration && isFinite(data.duration)) {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-    audio.addEventListener("loadedmetadata", ()=>{
-  if (!isFinite(audio.duration)) {
-    timeLabel.textContent = "0:00";
-    return;
-  }
-
-  const min = Math.floor(audio.duration / 60);
-  const sec = Math.floor(audio.duration % 60);
-  timeLabel.textContent = `${min}:${sec.toString().padStart(2,"0")}`;
-});
+      audio.addEventListener("loadedmetadata", ()=>{
+        const min=Math.floor(audio.duration/60);
+        const sec=Math.floor(audio.duration%60);
+        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
+      });
 
       audio.addEventListener("ended", ()=>{
         playBtn.textContent="▶";
@@ -429,94 +416,57 @@ document.addEventListener('click',function(event){
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
 
-let mediaRecorder, audioChunks = [], isRecording = false;
-let recordingStream = null;
+let mediaRecorder, audioChunks=[], isRecording=false;
 
 messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
   else if(!isRecording){sendRecordBtn.textContent="➤";}
 });
 
-sendRecordBtn.addEventListener('click', async () => {
-  if (messageInput.value.trim() !== "") {
-    if (!currentUser) return;
-
-    await addDoc(collection(db, "messages"), {
+sendRecordBtn.addEventListener('click', async ()=>{
+  if(messageInput.value.trim()!==""){
+    if(!currentUser)return;
+    await addDoc(collection(db,"messages"),{
       text: messageInput.value,
-      user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+      user: nickname||(currentUser?currentUser.displayName:"Гость"),
       uid: currentUser.uid,
       time: Date.now()
     });
-
-    messageInput.value = "";
-    sendRecordBtn.textContent = "🎤";
-    return;
-  }
-
-  // === ЗАПИСЬ ===
-  if (!isRecording) {
-    recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    startRecorder(); // старт первого куска
-
-    isRecording = true;
-    sendRecordBtn.textContent = "⏹️";
-
+    messageInput.value="";
+    sendRecordBtn.textContent="🎤";
   } else {
-
-    if (mediaRecorder && mediaRecorder.state === "recording") {
+    if(!isRecording){
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder=new MediaRecorder(stream);
+      audioChunks=[];
+      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRecorder.onstop=async ()=>{
+        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onloadend=async ()=>{
+          const base64Audio=reader.result;
+          if(!currentUser)return;
+          await addDoc(collection(db,"messages"),{
+            text: base64Audio,
+            isAudio:true,
+            user: nickname||(currentUser?currentUser.displayName:"Гость"),
+            uid: currentUser.uid,
+            time: Date.now()
+          });
+        };
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+      mediaRecorder.start();
+      isRecording=true;
+      sendRecordBtn.textContent="⏹️";
+    } else {
       mediaRecorder.stop();
+      isRecording=false;
+      sendRecordBtn.textContent="🎤";
     }
-
-    recordingStream.getTracks().forEach(track => track.stop());
-
-    isRecording = false;
-    sendRecordBtn.textContent = "🎤";
   }
 });
-  function startRecorder() {
-  audioChunks = [];
-  mediaRecorder = new MediaRecorder(recordingStream);
-
-  mediaRecorder.ondataavailable = e => {
-    if (e.data.size > 0) audioChunks.push(e.data);
-  };
-
-  mediaRecorder.onstop = async () => {
-    if (audioChunks.length === 0) return;
-
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-    const reader = new FileReader();
-
-    reader.onloadend = async () => {
-  if (!currentUser) return;
-
-  const audioContext = new AudioContext();
-  const arrayBuffer = await audioBlob.arrayBuffer();
-
-  let duration = 0;
-
-  try {
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    duration = audioBuffer.duration;
-  } catch (e) {
-    console.warn("Не удалось определить длительность", e);
-  }
-
-  await addDoc(collection(db, "messages"), {
-    text: reader.result,
-    isAudio: true,
-    duration: duration, // 🔥 сохраняем длительность
-    user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-    uid: currentUser.uid,
-    time: Date.now()
-  });
-};
-    reader.readAsDataURL(audioBlob);
-  };
-
-  mediaRecorder.start(30000);
-}
 </script>
 </body>
 </html>
