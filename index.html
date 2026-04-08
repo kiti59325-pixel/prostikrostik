@@ -418,7 +418,6 @@ const messageInput = document.getElementById('messageInput');
 
 let mediaRecorder, audioChunks = [], isRecording = false;
 let recordingStream = null;
-let recordInterval = null;
 
 messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
@@ -447,20 +446,10 @@ sendRecordBtn.addEventListener('click', async () => {
 
     startRecorder(); // старт первого куска
 
-    // каждые 59 сек режем
-    recordInterval = setInterval(() => {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop(); // отправит кусок
-        startRecorder();      // начнёт новый
-      }
-    }, 59000);
-
     isRecording = true;
     sendRecordBtn.textContent = "⏹️";
 
   } else {
-    // стоп записи
-    clearInterval(recordInterval);
 
     if (mediaRecorder && mediaRecorder.state === "recording") {
       mediaRecorder.stop();
@@ -501,7 +490,7 @@ sendRecordBtn.addEventListener('click', async () => {
     reader.readAsDataURL(audioBlob);
   };
 
-  mediaRecorder.start();
+  mediaRecorder.start(59000);
 }
 </script>
 </body>
