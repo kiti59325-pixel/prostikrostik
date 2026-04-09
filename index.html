@@ -51,6 +51,20 @@
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
+  #debugPanel {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.8);
+    color: #0f0;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    z-index: 999;
+    pointer-events: none;
+  }
+
   body.dark #chat::-webkit-scrollbar { width: 8px; }
   body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
   body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
@@ -110,13 +124,14 @@
   <button id="sendRecordBtn">🎤</button>
 </div>
 
+<div id="debugPanel">🔍 Ожидание...</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// === Firebase ===
 const firebaseConfig = {
   apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
   authDomain: "prostikrostik-90812.firebaseapp.com",
@@ -126,7 +141,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// === Supabase ===
 const SUPABASE_URL = 'https://wwimmalpgkfrfgrlumgw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3aW1tYWxwZ2tmcmZncmx1bWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODAxMzksImV4cCI6MjA5MTI1NjEzOX0.hYymJY-OrDRr7Nv3OE9Tk0hgcOKhzXPyYrij4JGoitg';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -140,6 +154,12 @@ document.body.classList.add(theme);
 let currentlyPlayingAudio = null;
 let currentlyPlayingPlayBtn = null;
 
+function debugLog(msg) {
+  const debugDiv = document.getElementById('debugPanel');
+  debugDiv.innerHTML = msg;
+  console.log(msg);
+}
+
 // === Функция остановки всех аудио ===
 function stopAllAudio() {
   if (currentlyPlayingAudio) {
@@ -152,46 +172,6 @@ function stopAllAudio() {
     if (progressBar) progressBar.style.width = "0%";
     currentlyPlayingAudio = null;
     currentlyPlayingPlayBtn = null;
-  }
-}
-
-// === Функция поиска следующего голосового ===
-function findNextVoiceMessage(currentMessageElement) {
-  let nextMessage = currentMessageElement.nextElementSibling;
-  let hasTextBetween = false;
-  
-  while (nextMessage) {
-    const nextAudio = nextMessage.querySelector('audio');
-    const textContent = nextMessage.innerText.trim();
-    const isTextMessage = textContent.length > 0 && textContent !== "▶" && textContent !== "❚❚" && !nextAudio;
-    
-    if (nextAudio && !hasTextBetween) {
-      return { audio: nextAudio, message: nextMessage };
-    }
-    
-    if (isTextMessage) {
-      hasTextBetween = true;
-    }
-    
-    nextMessage = nextMessage.nextElementSibling;
-  }
-  return null;
-}
-
-// === Функция воспроизведения следующего ===
-function playNextVoice(currentAudioElement, currentMessageElement) {
-  const next = findNextVoiceMessage(currentMessageElement);
-  if (next) {
-    const nextPlayBtn = next.message.querySelector('div[style*="36px"]');
-    const nextProgressBar = next.message.querySelector('div[style*="height: 5px"] div');
-    
-    setTimeout(() => {
-      stopAllAudio();
-      next.audio.play();
-      if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
-      currentlyPlayingAudio = next.audio;
-      currentlyPlayingPlayBtn = nextPlayBtn;
-    }, 200);
   }
 }
 
@@ -336,7 +316,6 @@ function renderMessages() {
         document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
       };
 
-      // Кнопка воспроизведения
       playBtn.onclick = () => {
         if (audio.paused) {
           stopAllAudio();
@@ -344,6 +323,7 @@ function renderMessages() {
           playBtn.textContent = "❚❚";
           currentlyPlayingAudio = audio;
           currentlyPlayingPlayBtn = playBtn;
+          debugLog("▶ Воспроизведение начато");
         } else {
           audio.pause();
           playBtn.textContent = "▶";
@@ -351,6 +331,7 @@ function renderMessages() {
             currentlyPlayingAudio = null;
             currentlyPlayingPlayBtn = null;
           }
+          debugLog("⏸ Воспроизведение остановлено");
         }
       };
 
@@ -369,8 +350,10 @@ function renderMessages() {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-      // === АВТОВОСПРОИЗВЕДЕНИЕ ===
+      // === АВТОВОСПРОИЗВЕДЕНИЕ (прямо здесь, без вызовов других функций) ===
       audio.addEventListener("ended", () => {
+        debugLog("🎬 Аудио закончилось! Ищем следующее...");
+        
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
         audio.currentTime = 0;
@@ -380,8 +363,48 @@ function renderMessages() {
           currentlyPlayingPlayBtn = null;
         }
         
-        // Запускаем следующее
-        playNextVoice(audio, div);
+        // Ищем следующее сообщение
+        let nextElement = div.nextElementSibling;
+        let hasTextBetween = false;
+        let foundNext = null;
+        let foundPlayBtn = null;
+        
+        while (nextElement) {
+          const nextAudio = nextElement.querySelector('audio');
+          const nextPlayBtnElement = nextElement.querySelector('div[style*="36px"]');
+          const textContent = nextElement.innerText.trim();
+          const isTextMessage = textContent.length > 0 && textContent !== "▶" && textContent !== "❚❚" && !nextAudio;
+          
+          debugLog(`  Проверяем сообщение: hasAudio=${!!nextAudio}, isText=${isTextMessage}, текст="${textContent.substring(0,15)}"`);
+          
+          if (nextAudio && !hasTextBetween) {
+            foundNext = nextAudio;
+            foundPlayBtn = nextPlayBtnElement;
+            debugLog("✅ Нашли следующее голосовое! Запускаем через 0.3 сек");
+            break;
+          }
+          
+          if (isTextMessage) {
+            hasTextBetween = true;
+            debugLog("📝 Нашли текстовое сообщение, автовоспроизведение отменяется");
+            break;
+          }
+          
+          nextElement = nextElement.nextElementSibling;
+        }
+        
+        if (foundNext) {
+          setTimeout(() => {
+            stopAllAudio();
+            foundNext.play();
+            if (foundPlayBtn) foundPlayBtn.textContent = "❚❚";
+            currentlyPlayingAudio = foundNext;
+            currentlyPlayingPlayBtn = foundPlayBtn;
+            debugLog("▶ Следующее голосовое запущено!");
+          }, 300);
+        } else {
+          debugLog("❌ Следующее голосовое не найдено или есть текст между");
+        }
       });
 
       progressWrap.onclick = (e)=>{
