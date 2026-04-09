@@ -52,6 +52,15 @@
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
+  body.dark #chat::-webkit-scrollbar { width: 8px; }
+  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
+  body.light #chat::-webkit-scrollbar { width: 8px; }
+  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
+  body.dark #chat { scrollbar-width: thin; scrollbar-color: #273c73 #1e293b; }
+  body.light #chat { scrollbar-width: thin; scrollbar-color: #93c5fd #f1f5f9; }
+
   @media (max-width: 600px) {
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
@@ -110,7 +119,7 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// === Firebase (для входа и сообщений) ===
+// === Firebase ===
 const firebaseConfig = {
   apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
   authDomain: "prostikrostik-90812.firebaseapp.com",
@@ -120,10 +129,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// === Supabase (для хранения аудио) ===
-// ⚠️ ЗАМЕНИ НА СВОИ ДАННЫЕ ИЗ SUPABASE ⚠️
-const SUPABASE_URL = 'https://wwimmalpgkfrfgrlumgw.supabase.co';  // ВСТАВЬ СЮДА
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3aW1tYWxwZ2tmcmZncmx1bWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODAxMzksImV4cCI6MjA5MTI1NjEzOX0.hYymJY-OrDRr7Nv3OE9Tk0hgcOKhzXPyYrij4JGoitg';  // ВСТАВЬ СЮДА
+// === Supabase (только для аудио) ===
+// ⚠️ ВСТАВЬ СВОИ ДАННЫЕ ИЗ SUPABASE ⚠️
+const SUPABASE_URL = 'https://wwimmalpgkfrfgrlumgw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3aW1tYWxwZ2tmcmZncmx1bWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODAxMzksImV4cCI6MjA5MTI1NjEzOX0.hYymJY-OrDRr7Nv3OE9Tk0hgcOKhzXPyYrij4JGoitg';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
@@ -132,22 +141,15 @@ let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
 // === Авторизация ===
-async function login() { 
-  const provider = new GoogleAuthProvider(); 
-  await signInWithPopup(auth, provider); 
-}
+async function login() { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); }
 window.login = login;
-
-function logout() { 
-  signOut(auth); 
-}
+function logout() { signOut(auth); }
 window.logout = logout;
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (!nickname && user) nickname = user.displayName;
   document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
-  renderMessages();
 });
 
 // === Ник ===
@@ -172,14 +174,11 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// === Чат ===
+// === Чат с оригинальным аудиоплеером ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
-onSnapshot(q, snapshot => { 
-  messagesCache = snapshot.docs.map(d=>({id:d.id, data:d.data()})); 
-  renderMessages(); 
-});
+onSnapshot(q, snapshot => { messagesCache = snapshot.docs.map(d=>({id:d.id,data:d.data()})); renderMessages(); });
 
 function renderMessages() {
   chat.innerHTML = "";
@@ -192,30 +191,134 @@ function renderMessages() {
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if (data.isAudio) {
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.gap = "4px";
+      wrapper.style.marginTop = "5px";
+      wrapper.style.maxWidth = "320px";
+      wrapper.style.width = "100%";
+
+      const topRow = document.createElement("div");
+      topRow.style.display = "flex";
+      topRow.style.alignItems = "center";
+      topRow.style.gap = "12px";
+
       const audio = document.createElement("audio");
       audio.src = data.text;
-      audio.controls = true;
-      audio.style.maxWidth = "250px";
-      div.appendChild(audio);
-    } else {
-      div.insertAdjacentHTML('beforeend', data.text);
-    }
+      audio.preload = "metadata";
 
-    if(isMe){ 
-      const delBtn=document.createElement("span"); 
-      delBtn.className="delete-btn"; 
-      delBtn.textContent="❌"; 
-      delBtn.onclick=()=>deleteMessage(docObj.id); 
-      div.appendChild(delBtn); 
-    }
+      let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
+      audio.playbackRate = rate;
+
+      const playBtn = document.createElement("div");
+      playBtn.style.width = "36px";
+      playBtn.style.height = "36px";
+      playBtn.style.borderRadius = "50%";
+      playBtn.style.display = "flex";
+      playBtn.style.alignItems = "center";
+      playBtn.style.justifyContent = "center";
+      playBtn.style.cursor = "pointer";
+      playBtn.style.flexShrink = "0";
+
+      const isDark = document.body.classList.contains("dark");
+      let playBg, playColor, progressBg, progressFill;
+
+      if (isMe) {
+        if (isDark) { playBg = "#00419b"; playColor = "#ffffff"; progressBg = "#00419b"; progressFill = "#0057d3"; }
+        else { playBg = "#3b82f6"; playColor = "#ffffff"; progressBg = "#8bc1ff"; progressFill = "#3b82f6"; }
+      } else {
+        if (isDark) { playBg = "#8492a6"; playColor = "#ffffff"; progressBg = "#475569"; progressFill = "#8492a6"; }
+        else { playBg = "#d4d6dc"; playColor = "#5b5c60"; progressBg = "#f1f4f9"; progressFill = "#d4d6dc"; }
+      }
+
+      playBtn.style.background = playBg;
+      playBtn.style.color = playColor;
+      playBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.25)";
+      playBtn.textContent = "▶";
+
+      const progressWrap = document.createElement("div");
+      progressWrap.style.flex = "1";
+      progressWrap.style.minWidth = "180px";
+      progressWrap.style.height = "5px";
+      progressWrap.style.borderRadius = "4px";
+      progressWrap.style.background = progressBg;
+      progressWrap.style.cursor = "pointer";
+      progressWrap.style.position = "relative";
+
+      const progressBar = document.createElement("div");
+      progressBar.style.height = "100%";
+      progressBar.style.width = "0%";
+      progressBar.style.background = progressFill;
+      progressBar.style.borderRadius = "4px";
+
+      progressWrap.appendChild(progressBar);
+
+      const bottomRow = document.createElement("div");
+      bottomRow.style.display = "flex";
+      bottomRow.style.justifyContent = "space-between";
+      bottomRow.style.gap = "10px";
+      bottomRow.style.paddingLeft = "48px";
+      bottomRow.style.fontSize = "12px";
+      bottomRow.style.opacity = "0.8";
+
+      const timeLabel = document.createElement("span"); timeLabel.textContent="0:00";
+      const speed = document.createElement("span"); speed.textContent = rate + "x"; speed.style.cursor="pointer"; speed.classList.add("speed-label");
+      speed.onclick = ()=>{
+        rate += 0.5; if(rate>2) rate=0.5;
+        localStorage.setItem("audioSpeed", rate);
+        document.querySelectorAll("audio").forEach(a=>a.playbackRate=rate);
+        document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
+      };
+
+      playBtn.onclick = ()=>{
+        if(audio.paused){ document.querySelectorAll("audio").forEach(a=>{if(a!==audio)a.pause();}); audio.play(); playBtn.textContent="❚❚"; }
+        else { audio.pause(); playBtn.textContent="▶"; }
+      };
+
+      audio.addEventListener("timeupdate", ()=>{
+        if(!audio.duration)return;
+        const percent=(audio.currentTime/audio.duration)*100;
+        progressBar.style.width = percent+"%";
+        const min=Math.floor(audio.currentTime/60);
+        const sec=Math.floor(audio.currentTime%60);
+        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
+      });
+
+      audio.addEventListener("loadedmetadata", ()=>{
+        const min=Math.floor(audio.duration/60);
+        const sec=Math.floor(audio.duration%60);
+        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
+      });
+
+      audio.addEventListener("ended", ()=>{
+        playBtn.textContent="▶";
+        progressBar.style.width="0%";
+        audio.currentTime=0;
+      });
+
+      progressWrap.onclick = (e)=>{
+        const rect=progressWrap.getBoundingClientRect();
+        const percent=(e.clientX-rect.left)/rect.width;
+        audio.currentTime=percent*audio.duration;
+      };
+
+      topRow.appendChild(playBtn);
+      topRow.appendChild(progressWrap);
+      bottomRow.appendChild(timeLabel);
+      bottomRow.appendChild(speed);
+      wrapper.appendChild(topRow);
+      wrapper.appendChild(bottomRow);
+      div.appendChild(wrapper);
+    } else { div.insertAdjacentHTML('beforeend', data.text); }
+
+    if(isMe){ const delBtn=document.createElement("span"); delBtn.className="delete-btn"; delBtn.textContent="❌"; delBtn.onclick=()=>deleteMessage(docObj.id); div.appendChild(delBtn); }
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
 }
 
-async function deleteMessage(id){ 
-  await deleteDoc(doc(db,"messages",id)); 
-}
+async function deleteMessage(id){ await deleteDoc(doc(db,"messages",id)); }
 window.deleteMessage = deleteMessage;
 
 function toggleTheme() {
@@ -224,6 +327,8 @@ function toggleTheme() {
   body.classList.toggle("light");
   localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
   document.getElementById("mobileMenuBtn").style.color = body.classList.contains("dark") ? "white" : "black";
+  // Обновляем аудио стили
+  setTimeout(() => renderMessages(), 50);
 }
 window.toggleTheme = toggleTheme;
 
@@ -245,24 +350,16 @@ const messageInput = document.getElementById('messageInput');
 
 let mediaRecorder, audioChunks=[], isRecording=false;
 
-// Функция загрузки аудио в Supabase
 async function uploadToSupabase(audioBlob) {
   const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webm`;
-  const filePath = `voice-messages/${fileName}`;
+  const filePath = `${fileName}`;
   
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('voice-messages')
-    .upload(filePath, audioBlob, {
-      contentType: 'audio/webm',
-      upsert: false
-    });
+    .upload(filePath, audioBlob, { contentType: 'audio/webm' });
   
-  if (error) {
-    console.error("Ошибка загрузки в Supabase:", error);
-    throw error;
-  }
+  if (error) throw error;
   
-  // Получаем публичный URL
   const { data: urlData } = supabase.storage
     .from('voice-messages')
     .getPublicUrl(filePath);
@@ -272,7 +369,7 @@ async function uploadToSupabase(audioBlob) {
 
 sendRecordBtn.addEventListener('click', async ()=>{
   if(messageInput.value.trim()!==""){
-    if(!currentUser) return;
+    if(!currentUser)return;
     await addDoc(collection(db,"messages"),{
       text: messageInput.value,
       user: nickname||(currentUser?currentUser.displayName:"Гость"),
@@ -290,16 +387,10 @@ sendRecordBtn.addEventListener('click', async ()=>{
         mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
         mediaRecorder.onstop=async ()=>{
           const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
-          
-          // Показываем индикатор загрузки
-          sendRecordBtn.textContent = "📤";
-          
+          sendRecordBtn.textContent = "⏳";
           try {
-            // Загружаем в Supabase
             const audioUrl = await uploadToSupabase(audioBlob);
-            
-            // Сохраняем ссылку в Firebase
-            if(!currentUser) return;
+            if(!currentUser)return;
             await addDoc(collection(db,"messages"),{
               text: audioUrl,
               isAudio:true,
@@ -307,9 +398,9 @@ sendRecordBtn.addEventListener('click', async ()=>{
               uid: currentUser.uid,
               time: Date.now()
             });
-          } catch (err) {
-            console.error("Ошибка:", err);
-            alert("Не удалось отправить голосовое. Попробуй ещё раз.");
+          } catch(err) {
+            console.error(err);
+            alert("Ошибка отправки голосового");
           } finally {
             sendRecordBtn.textContent="🎤";
             stream.getTracks().forEach(track => track.stop());
@@ -318,8 +409,7 @@ sendRecordBtn.addEventListener('click', async ()=>{
         mediaRecorder.start();
         isRecording=true;
         sendRecordBtn.textContent="⏹️";
-      } catch (err) {
-        console.error("Ошибка доступа к микрофону:", err);
+      } catch(err) {
         alert("Нет доступа к микрофону");
       }
     } else {
