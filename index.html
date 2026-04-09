@@ -442,6 +442,17 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
+  // Запрещаем ввод текста во время записи
+setInterval(() => {
+  if (isRecording) {
+    messageInput.disabled = true;
+    messageInput.style.opacity = "0.5";
+    if (messageInput.value !== "") messageInput.value = "";
+  } else {
+    messageInput.disabled = false;
+    messageInput.style.opacity = "1";
+  }
+}, 100);
 </script>
 </body>
 </html>
