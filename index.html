@@ -155,28 +155,22 @@ function stopAllAudio() {
   }
 }
 
-// === Функция поиска следующего голосового (без текстовых между) ===
-function findNextVoiceMessage(currentAudioElement) {
-  const currentMessage = currentAudioElement.closest('.message');
-  if (!currentMessage) return null;
-  
-  let nextMessage = currentMessage.nextElementSibling;
-  let foundTextBetween = false;
+// === Функция поиска следующего голосового ===
+function findNextVoiceMessage(currentMessageElement) {
+  let nextMessage = currentMessageElement.nextElementSibling;
+  let hasTextBetween = false;
   
   while (nextMessage) {
-    const hasAudio = nextMessage.querySelector('audio');
+    const nextAudio = nextMessage.querySelector('audio');
     const textContent = nextMessage.innerText.trim();
-    const hasText = textContent.length > 0 && textContent !== "▶" && textContent !== "❚❚" && !hasAudio;
+    const isTextMessage = textContent.length > 0 && textContent !== "▶" && textContent !== "❚❚" && !nextAudio;
     
-    if (hasAudio) {
-      if (!foundTextBetween) {
-        return nextMessage.querySelector('audio');
-      }
-      return null;
+    if (nextAudio && !hasTextBetween) {
+      return { audio: nextAudio, message: nextMessage };
     }
     
-    if (hasText) {
-      foundTextBetween = true;
+    if (isTextMessage) {
+      hasTextBetween = true;
     }
     
     nextMessage = nextMessage.nextElementSibling;
@@ -185,18 +179,17 @@ function findNextVoiceMessage(currentAudioElement) {
 }
 
 // === Функция воспроизведения следующего ===
-function playNextAudio(currentAudio) {
-  const nextAudio = findNextVoiceMessage(currentAudio);
-  if (nextAudio) {
-    const nextMessage = nextAudio.closest('.message');
-    const nextPlayBtn = nextMessage.querySelector('div[style*="36px"]');
-    const nextProgressBar = nextMessage.querySelector('div[style*="height: 5px"] div');
+function playNextVoice(currentAudioElement, currentMessageElement) {
+  const next = findNextVoiceMessage(currentMessageElement);
+  if (next) {
+    const nextPlayBtn = next.message.querySelector('div[style*="36px"]');
+    const nextProgressBar = next.message.querySelector('div[style*="height: 5px"] div');
     
     setTimeout(() => {
       stopAllAudio();
-      nextAudio.play().catch(e => console.log("Автовоспроизведение заблокировано браузером"));
+      next.audio.play();
       if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
-      currentlyPlayingAudio = nextAudio;
+      currentlyPlayingAudio = next.audio;
       currentlyPlayingPlayBtn = nextPlayBtn;
     }, 200);
   }
@@ -343,6 +336,7 @@ function renderMessages() {
         document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
       };
 
+      // Кнопка воспроизведения
       playBtn.onclick = () => {
         if (audio.paused) {
           stopAllAudio();
@@ -375,7 +369,7 @@ function renderMessages() {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-      // === АВТОВОСПРОИЗВЕДЕНИЕ СЛЕДУЮЩЕГО ===
+      // === АВТОВОСПРОИЗВЕДЕНИЕ ===
       audio.addEventListener("ended", () => {
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
@@ -386,8 +380,8 @@ function renderMessages() {
           currentlyPlayingPlayBtn = null;
         }
         
-        // Запускаем следующее голосовое
-        playNextAudio(audio);
+        // Запускаем следующее
+        playNextVoice(audio, div);
       });
 
       progressWrap.onclick = (e)=>{
@@ -550,46 +544,6 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
-  // === ПРОСТОЙ КОСТЫЛЬ ДЛЯ АВТОВОСПРОИЗВЕДЕНИЯ ===
-setInterval(() => {
-  const allAudios = document.querySelectorAll('audio');
-  let playingAudio = null;
-  
-  // Находим играющее аудио
-  for (let audio of allAudios) {
-    if (!audio.paused && audio.currentTime > 0 && audio.duration - audio.currentTime < 0.5) {
-      playingAudio = audio;
-      break;
-    }
-  }
-  
-  // Если аудио почти закончилось (менее 0.5 секунд)
-  if (playingAudio && playingAudio.duration - playingAudio.currentTime < 0.3 && playingAudio.duration - playingAudio.currentTime > 0) {
-    console.log("🎵 Аудио почти закончилось, ищем следующее");
-    
-    // Ищем следующее сообщение
-    let nextMsg = playingAudio.closest('.message').nextElementSibling;
-    let hasTextBetween = false;
-    
-    while (nextMsg) {
-      const nextAudio = nextMsg.querySelector('audio');
-      const hasText = nextMsg.innerText.trim().length > 0 && !nextAudio;
-      
-      if (nextAudio && !hasTextBetween) {
-        console.log("✅ Запускаем следующее голосовое");
-        const nextPlayBtn = nextMsg.querySelector('div[style*="36px"]');
-        setTimeout(() => {
-          nextAudio.play();
-          if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
-        }, 100);
-        break;
-      }
-      
-      if (hasText) hasTextBetween = true;
-      nextMsg = nextMsg.nextElementSibling;
-    }
-  }
-}, 100);
 </script>
 </body>
 </html>
