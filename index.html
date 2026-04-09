@@ -177,7 +177,7 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// === Чат с оригинальным аудиоплеером ===
+// === Чат ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
@@ -277,23 +277,8 @@ function renderMessages() {
         document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
       };
 
-      // ========== ИСПРАВЛЕННАЯ КНОПКА — ОСТАНАВЛИВАЕТ ДРУГИЕ АУДИО ==========
       playBtn.onclick = ()=>{
         if(audio.paused){ 
-          // Останавливаем ВСЕ другие аудио
-          document.querySelectorAll('audio').forEach(otherAudio => {
-            if (otherAudio !== audio && !otherAudio.paused) {
-              otherAudio.pause();
-              otherAudio.currentTime = 0;
-              const otherMessage = otherAudio.closest('.message');
-              if (otherMessage) {
-                const otherPlayBtn = otherMessage.querySelector('div[style*="36px"]');
-                if (otherPlayBtn) otherPlayBtn.textContent = "▶";
-                const otherProgressBar = otherMessage.querySelector('div[style*="height: 5px"] div');
-                if (otherProgressBar) otherProgressBar.style.width = "0%";
-              }
-            }
-          });
           audio.play(); 
           playBtn.textContent="❚❚"; 
         }
@@ -302,7 +287,6 @@ function renderMessages() {
           playBtn.textContent="▶"; 
         }
       };
-      // ======================================================================
 
       audio.addEventListener("timeupdate", ()=>{
         if(!audio.duration)return;
@@ -381,13 +365,51 @@ document.addEventListener('click',function(event){
   if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
 });
 
-// === ЗАПИСЬ АУДИО С ЗАГРУЗКОЙ В SUPABASE ===
+// === ЖЁСТКИЙ ЗАПРЕТ НА ОДНОВРЕМЕННОЕ ВОСПРОИЗВЕДЕНИЕ ===
+function stopAllAudiosExcept(currentAudio) {
+  document.querySelectorAll('audio').forEach(audio => {
+    if (audio !== currentAudio && !audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      
+      const messageDiv = audio.closest('.message');
+      if (messageDiv) {
+        const playBtn = messageDiv.querySelector('div[style*="36px"]');
+        if (playBtn) playBtn.textContent = "▶";
+        const progressBar = messageDiv.querySelector('div[style*="height: 5px"] div');
+        if (progressBar) progressBar.style.width = "0%";
+      }
+    }
+  });
+}
+
+document.addEventListener('play', function(e) {
+  if (e.target.tagName === 'AUDIO') {
+    stopAllAudiosExcept(e.target);
+  }
+}, true);
+
+document.addEventListener('mousedown', function(e) {
+  const progressBar = e.target.closest('div[style*="height: 5px"]');
+  if (progressBar) {
+    const messageDiv = progressBar.closest('.message');
+    if (messageDiv) {
+      const audio = messageDiv.querySelector('audio');
+      if (audio) {
+        setTimeout(() => {
+          stopAllAudiosExcept(audio);
+        }, 10);
+      }
+    }
+  }
+}, true);
+
+// === ЗАПИСЬ АУДИО ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
 const messageInput = document.getElementById('messageInput');
 
 let mediaRecorder, audioChunks=[], isRecording=false;
 
-// МЕНЯЕМ КНОПКУ ПРИ ВВОДЕ ТЕКСТА
 messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim() === "" && !isRecording){
     sendRecordBtn.textContent = "🎤";
@@ -396,7 +418,6 @@ messageInput.addEventListener('input', ()=>{
   }
 });
 
-// Запрещаем ввод текста во время записи
 setInterval(() => {
   if (isRecording) {
     messageInput.disabled = true;
