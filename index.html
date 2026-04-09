@@ -50,9 +50,7 @@
   body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
   body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
-  button { cursor: pointer; }
-  
-  .login-panel { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
   @media (max-width: 600px) {
     #userPanel { display: none; }
@@ -63,10 +61,14 @@
     body.light #mobileMenuBtn { color: black; }
     body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
+    #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; border-radius: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
+    body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
+    body.light #mobileMenu input { border: 1px solid #d1d5db; }
     #mobileMenu button { display: block; margin: 0 auto 8px auto; width: 90%; border-radius: 12px; padding: 10px 15px; font-weight: 500; letter-spacing: 0.2px; transition: 0.2s; border: none; }
     body.dark #mobileMenu button { background-color: #273c73; color: white; }
+    body.dark #mobileMenu button:hover { background-color: #1e40af; }
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
   }
 </style>
 </head>
@@ -83,19 +85,15 @@
 <div id="userPanel">
   <input id="nickname" placeholder="Придумай ник..." />
   <button onclick="setNickname()">Сохранить ник</button>
-  <div class="login-panel">
-    <input type="email" id="loginEmail" placeholder="Email" style="flex:2; min-width:120px;" />
-    <button onclick="loginWithEmail()">Войти</button>
-    <button onclick="logout()">Выйти</button>
-  </div>
+  <button onclick="login()">Войти через Google</button>
+  <button onclick="logout()">Выйти</button>
   <div id="userInfo"></div>
 </div>
 
 <div id="mobileMenu">
   <input id="mobileNickname" placeholder="Придумай ник..." />
   <button onclick="setNicknameMobile()">Сохранить ник</button>
-  <input type="email" id="mobileLoginEmail" placeholder="Email" />
-  <button onclick="loginWithEmailMobile()">Войти</button>
+  <button onclick="login()">Войти через Google</button>
   <button onclick="logout()">Выйти</button>
 </div>
 
@@ -107,323 +105,229 @@
 </div>
 
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// ⚠️ ВСТАВЬ СВОИ ДАННЫЕ (из Project Settings → API) ⚠️
-const SUPABASE_URL = 'https://dsqdfmabexngmnuhpait.supabase.co'  // ЗАМЕНИ!
-const SUPABASE_ANON_KEY = 'sb_publishable_A3vgFzPN5yMExCUAfZdJfw_a0mhxCTt'  // ЗАМЕНИ!
+// === Firebase (для входа и сообщений) ===
+const firebaseConfig = {
+  apiKey: "AIzaSyDe5k1pVFUxSB33pxwtivIorB0VQ1atc08",
+  authDomain: "prostikrostik-90812.firebaseapp.com",
+  projectId: "prostikrostik-90812"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// === Supabase (для хранения аудио) ===
+// ⚠️ ЗАМЕНИ НА СВОИ ДАННЫЕ ИЗ SUPABASE ⚠️
+const SUPABASE_URL = 'https://wwimmalpgkfrfgrlumgw.supabase.co';  // ВСТАВЬ СЮДА
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3aW1tYWxwZ2tmcmZncmx1bWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODAxMzksImV4cCI6MjA5MTI1NjEzOX0.hYymJY-OrDRr7Nv3OE9Tk0hgcOKhzXPyYrij4JGoitg';  // ВСТАВЬ СЮДА
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let currentUser = null
-let nickname = localStorage.getItem("nickname") || ""
-let theme = localStorage.getItem("theme") || "dark"
-document.body.classList.add(theme)
+let currentUser = null;
+let nickname = localStorage.getItem("nickname") || "";
+let theme = localStorage.getItem("theme") || "dark";
+document.body.classList.add(theme);
 
-// === ВХОД ПО EMAIL (без подтверждения — сразу) ===
-async function loginWithEmail() {
-  const email = document.getElementById("loginEmail").value
-  if (!email) {
-    alert("Введи email")
-    return
-  }
-  
-  // Пробуем войти. Если пользователь не существует — создаётся автоматически
-  const { data, error } = await supabase.auth.signInWithOtp({
-    email: email,
-    options: {
-      shouldCreateUser: true,
-    }
-  })
-  
-  if (error) {
-    alert("Ошибка: " + error.message)
-  } else {
-    // Если всё хорошо — ждём авторизации через onAuthStateChange
-    alert("Проверь почту! Пришло письмо со ссылкой для входа.")
-  }
+// === Авторизация ===
+async function login() { 
+  const provider = new GoogleAuthProvider(); 
+  await signInWithPopup(auth, provider); 
 }
-window.loginWithEmail = loginWithEmail
+window.login = login;
 
-async function loginWithEmailMobile() {
-  const email = document.getElementById("mobileLoginEmail").value
-  if (!email) {
-    alert("Введи email")
-    return
-  }
-  
-  const { error } = await supabase.auth.signInWithOtp({
-    email: email,
-    options: {
-      shouldCreateUser: true,
-    }
-  })
-  
-  if (error) {
-    alert("Ошибка: " + error.message)
-  } else {
-    alert("Проверь почту!")
-    document.getElementById("mobileMenu").style.display = "none"
-  }
+function logout() { 
+  signOut(auth); 
 }
-window.loginWithEmailMobile = loginWithEmailMobile
+window.logout = logout;
 
-async function logout() {
-  await supabase.auth.signOut()
-  currentUser = null
-  document.getElementById("userInfo").innerText = "Не вошёл"
-  renderMessages()
-}
-window.logout = logout
-
-// Следим за состоянием авторизации
-supabase.auth.onAuthStateChange((event, session) => {
-  if (session?.user) {
-    currentUser = session.user
-    if (!nickname) nickname = currentUser.email?.split('@')[0] || "Гость"
-    document.getElementById("userInfo").innerText = "Ты: " + nickname
-    document.getElementById("loginEmail").value = ""
-    document.getElementById("mobileLoginEmail").value = ""
-    // Перезагружаем сообщения после входа
-    loadMessages()
-  } else {
-    currentUser = null
-    document.getElementById("userInfo").innerText = "Не вошёл"
-  }
-  renderMessages()
-})
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  if (!nickname && user) nickname = user.displayName;
+  document.getElementById("userInfo").innerText = user ? "Ты: " + nickname : "Не вошёл";
+  renderMessages();
+});
 
 // === Ник ===
 function setNickname() {
-  const input = document.getElementById("nickname")
-  nickname = input.value.trim() || (currentUser ? currentUser.email?.split('@')[0] || "Гость" : "Гость")
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"
-  input.value = ""
-  localStorage.setItem("nickname", nickname)
-  renderMessages()
+  const input = document.getElementById("nickname");
+  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  input.value = "";
+  localStorage.setItem("nickname", nickname);
+  renderMessages();
 }
-window.setNickname = setNickname
+window.setNickname = setNickname;
 
 function setNicknameMobile() {
-  const input = document.getElementById("mobileNickname")
-  nickname = input.value.trim() || (currentUser ? currentUser.email?.split('@')[0] || "Гость" : "Гость")
-  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"
-  input.value = ""
-  localStorage.setItem("nickname", nickname)
-  renderMessages()
-  document.getElementById("mobileMenu").style.display = "none"
+  const input = document.getElementById("mobileNickname");
+  nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
+  document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл";
+  input.value = "";
+  localStorage.setItem("nickname", nickname);
+  renderMessages();
+  document.getElementById("mobileMenu").style.display = "none";
 }
-window.setNicknameMobile = setNicknameMobile
+window.setNicknameMobile = setNicknameMobile;
 
-// === Работа с сообщениями ===
-const chat = document.getElementById("chat")
-let messagesCache = []
-
-async function loadMessages() {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .order('created_at', { ascending: true })
-  
-  if (error) {
-    console.error("Ошибка загрузки:", error)
-    return
-  }
-  messagesCache = data
-  renderMessages()
-}
-
-// Подписка на новые сообщения
-supabase
-  .channel('messages-channel')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
-    loadMessages()
-  })
-  .subscribe()
-
-async function sendTextMessage(text) {
-  if (!currentUser) {
-    alert("Сначала войди по email")
-    return false
-  }
-  
-  const { error } = await supabase
-    .from('messages')
-    .insert({
-      text: text,
-      is_audio: false,
-      user_name: nickname || currentUser.email?.split('@')[0] || "Гость",
-      user_id: currentUser.id
-    })
-  
-  if (error) console.error("Ошибка отправки:", error)
-  return !error
-}
-
-async function sendAudioMessage(audioBlob) {
-  if (!currentUser) {
-    alert("Сначала войди по email")
-    return false
-  }
-  
-  const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webm`
-  const filePath = `${currentUser.id}/${fileName}`
-  
-  const { error: uploadError } = await supabase.storage
-    .from('audio-messages')
-    .upload(filePath, audioBlob, { contentType: 'audio/webm' })
-  
-  if (uploadError) {
-    console.error("Ошибка загрузки:", uploadError)
-    alert("Ошибка загрузки аудио. Проверь настройки Storage в Supabase")
-    return false
-  }
-  
-  const { data: urlData } = supabase.storage
-    .from('audio-messages')
-    .getPublicUrl(filePath)
-  
-  const { error } = await supabase
-    .from('messages')
-    .insert({
-      text: urlData.publicUrl,
-      is_audio: true,
-      audio_url: urlData.publicUrl,
-      user_name: nickname || currentUser.email?.split('@')[0] || "Гость",
-      user_id: currentUser.id
-    })
-  
-  if (error) console.error("Ошибка сохранения:", error)
-  return !error
-}
-
-async function deleteMessage(id, userId, isAudio, audioUrl) {
-  if (userId !== currentUser?.id) return
-  
-  if (isAudio && audioUrl) {
-    const path = audioUrl.split('/audio-messages/')[1]
-    if (path) {
-      await supabase.storage.from('audio-messages').remove([path])
-    }
-  }
-  
-  await supabase.from('messages').delete().eq('id', id)
-  loadMessages()
-}
-window.deleteMessage = deleteMessage
+// === Чат ===
+const chat = document.getElementById("chat");
+const q = query(collection(db, "messages"), orderBy("time"));
+let messagesCache = [];
+onSnapshot(q, snapshot => { 
+  messagesCache = snapshot.docs.map(d=>({id:d.id, data:d.data()})); 
+  renderMessages(); 
+});
 
 function renderMessages() {
-  chat.innerHTML = ""
-  
-  messagesCache.forEach(msg => {
-    const isMe = currentUser && msg.user_id === currentUser.id
-    const displayName = isMe ? nickname || currentUser?.email?.split('@')[0] || "Гость" : msg.user_name
-    
-    const div = document.createElement("div")
-    div.className = "message " + (isMe ? "me" : "other")
-    div.innerHTML = `<div class="name">${displayName}</div>`
-    
-    if (msg.is_audio) {
-      const audio = document.createElement("audio")
-      audio.src = msg.text
-      audio.controls = true
-      audio.style.maxWidth = "250px"
-      div.appendChild(audio)
+  chat.innerHTML = "";
+  messagesCache.forEach(docObj => {
+    const data = docObj.data;
+    const isMe = currentUser && data.uid === currentUser.uid;
+    const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
+    const div = document.createElement("div");
+    div.className = "message " + (isMe ? "me" : "other");
+    div.innerHTML = `<div class="name">${displayName}</div>`;
+
+    if (data.isAudio) {
+      const audio = document.createElement("audio");
+      audio.src = data.text;
+      audio.controls = true;
+      audio.style.maxWidth = "250px";
+      div.appendChild(audio);
     } else {
-      div.insertAdjacentHTML('beforeend', msg.text)
+      div.insertAdjacentHTML('beforeend', data.text);
     }
-    
-    if (isMe) {
-      const delBtn = document.createElement("span")
-      delBtn.className = "delete-btn"
-      delBtn.textContent = "❌"
-      delBtn.onclick = () => deleteMessage(msg.id, msg.user_id, msg.is_audio, msg.audio_url)
-      div.appendChild(delBtn)
+
+    if(isMe){ 
+      const delBtn=document.createElement("span"); 
+      delBtn.className="delete-btn"; 
+      delBtn.textContent="❌"; 
+      delBtn.onclick=()=>deleteMessage(docObj.id); 
+      div.appendChild(delBtn); 
     }
-    
-    chat.appendChild(div)
-  })
-  
-  chat.scrollTop = chat.scrollHeight
+    chat.appendChild(div);
+  });
+  chat.scrollTop = chat.scrollHeight;
 }
 
-// === ЗАПИСЬ АУДИО ===
-const sendRecordBtn = document.getElementById('sendRecordBtn')
-const messageInput = document.getElementById('messageInput')
+async function deleteMessage(id){ 
+  await deleteDoc(doc(db,"messages",id)); 
+}
+window.deleteMessage = deleteMessage;
 
-let mediaRecorder
-let audioChunks = []
-let isRecording = false
-
-sendRecordBtn.addEventListener('click', async () => {
-  if (messageInput.value.trim() !== "") {
-    await sendTextMessage(messageInput.value)
-    messageInput.value = ""
-    sendRecordBtn.textContent = "🎤"
-    return
-  }
-  
-  if (!isRecording) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorder = new MediaRecorder(stream)
-      audioChunks = []
-      
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data)
-      
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
-        await sendAudioMessage(audioBlob)
-        stream.getTracks().forEach(track => track.stop())
-      }
-      
-      mediaRecorder.start()
-      isRecording = true
-      sendRecordBtn.textContent = "⏹️"
-    } catch (err) {
-      alert("Нет доступа к микрофону")
-    }
-  } else {
-    mediaRecorder.stop()
-    isRecording = false
-    sendRecordBtn.textContent = "🎤"
-  }
-})
-
-// === ТЕМА ===
 function toggleTheme() {
-  document.body.classList.toggle("dark")
-  document.body.classList.toggle("light")
-  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light")
+  const body = document.body;
+  body.classList.toggle("dark");
+  body.classList.toggle("light");
+  localStorage.setItem("theme", body.classList.contains("dark") ? "dark" : "light");
+  document.getElementById("mobileMenuBtn").style.color = body.classList.contains("dark") ? "white" : "black";
 }
-window.toggleTheme = toggleTheme
+window.toggleTheme = toggleTheme;
 
 function toggleMobileMenu() {
-  const menu = document.getElementById("mobileMenu")
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex"
+  const menu=document.getElementById("mobileMenu");
+  menu.style.display = menu.style.display==="flex"?"none":"flex";
 }
-window.toggleMobileMenu = toggleMobileMenu
+window.toggleMobileMenu = toggleMobileMenu;
 
-document.addEventListener('click', function(event) {
-  const menu = document.getElementById('mobileMenu')
-  const btn = document.getElementById('mobileMenuBtn')
-  if (menu.style.display === 'flex' && !menu.contains(event.target) && event.target !== btn) {
-    menu.style.display = 'none'
+document.addEventListener('click',function(event){
+  const menu=document.getElementById('mobileMenu');
+  const btn=document.getElementById('mobileMenuBtn');
+  if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
+});
+
+// === ЗАПИСЬ АУДИО С ЗАГРУЗКОЙ В SUPABASE ===
+const sendRecordBtn = document.getElementById('sendRecordBtn');
+const messageInput = document.getElementById('messageInput');
+
+let mediaRecorder, audioChunks=[], isRecording=false;
+
+// Функция загрузки аудио в Supabase
+async function uploadToSupabase(audioBlob) {
+  const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webm`;
+  const filePath = `voice-messages/${fileName}`;
+  
+  const { data, error } = await supabase.storage
+    .from('voice-messages')
+    .upload(filePath, audioBlob, {
+      contentType: 'audio/webm',
+      upsert: false
+    });
+  
+  if (error) {
+    console.error("Ошибка загрузки в Supabase:", error);
+    throw error;
   }
-})
+  
+  // Получаем публичный URL
+  const { data: urlData } = supabase.storage
+    .from('voice-messages')
+    .getPublicUrl(filePath);
+  
+  return urlData.publicUrl;
+}
 
-// Загрузка при старте
-loadMessages()
-
-// Восстановление сессии
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) {
-    currentUser = session.user
-    if (!nickname) nickname = currentUser.email?.split('@')[0] || "Гость"
-    document.getElementById("userInfo").innerText = "Ты: " + nickname
-    renderMessages()
+sendRecordBtn.addEventListener('click', async ()=>{
+  if(messageInput.value.trim()!==""){
+    if(!currentUser) return;
+    await addDoc(collection(db,"messages"),{
+      text: messageInput.value,
+      user: nickname||(currentUser?currentUser.displayName:"Гость"),
+      uid: currentUser.uid,
+      time: Date.now()
+    });
+    messageInput.value="";
+    sendRecordBtn.textContent="🎤";
+  } else {
+    if(!isRecording){
+      try {
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder=new MediaRecorder(stream);
+        audioChunks=[];
+        mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+        mediaRecorder.onstop=async ()=>{
+          const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+          
+          // Показываем индикатор загрузки
+          sendRecordBtn.textContent = "📤";
+          
+          try {
+            // Загружаем в Supabase
+            const audioUrl = await uploadToSupabase(audioBlob);
+            
+            // Сохраняем ссылку в Firebase
+            if(!currentUser) return;
+            await addDoc(collection(db,"messages"),{
+              text: audioUrl,
+              isAudio:true,
+              user: nickname||(currentUser?currentUser.displayName:"Гость"),
+              uid: currentUser.uid,
+              time: Date.now()
+            });
+          } catch (err) {
+            console.error("Ошибка:", err);
+            alert("Не удалось отправить голосовое. Попробуй ещё раз.");
+          } finally {
+            sendRecordBtn.textContent="🎤";
+            stream.getTracks().forEach(track => track.stop());
+          }
+        };
+        mediaRecorder.start();
+        isRecording=true;
+        sendRecordBtn.textContent="⏹️";
+      } catch (err) {
+        console.error("Ошибка доступа к микрофону:", err);
+        alert("Нет доступа к микрофону");
+      }
+    } else {
+      mediaRecorder.stop();
+      isRecording=false;
+    }
   }
-})
+});
 </script>
 </body>
 </html>
