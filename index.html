@@ -278,8 +278,23 @@ function renderMessages() {
       };
 
       playBtn.onclick = ()=>{
-        if(audio.paused){ document.querySelectorAll("audio").forEach(a=>{if(a!==audio)a.pause();}); audio.play(); playBtn.textContent="❚❚"; }
-        else { audio.pause(); playBtn.textContent="▶"; }
+        if(audio.paused){ 
+          // Останавливаем все другие аудио перед воспроизведением
+          document.querySelectorAll('audio').forEach(a => {
+            if (a !== audio && !a.paused) {
+              a.pause();
+              a.currentTime = 0;
+              const otherPlayBtn = a.closest('.message')?.querySelector('div[style*="36px"]');
+              if (otherPlayBtn) otherPlayBtn.textContent = "▶";
+            }
+          });
+          audio.play(); 
+          playBtn.textContent="❚❚"; 
+        }
+        else { 
+          audio.pause(); 
+          playBtn.textContent="▶"; 
+        }
       };
 
       audio.addEventListener("timeupdate", ()=>{
