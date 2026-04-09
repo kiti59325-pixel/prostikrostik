@@ -279,15 +279,6 @@ function renderMessages() {
 
       playBtn.onclick = ()=>{
         if(audio.paused){ 
-          // Останавливаем все другие аудио перед воспроизведением
-          document.querySelectorAll('audio').forEach(a => {
-            if (a !== audio && !a.paused) {
-              a.pause();
-              a.currentTime = 0;
-              const otherPlayBtn = a.closest('.message')?.querySelector('div[style*="36px"]');
-              if (otherPlayBtn) otherPlayBtn.textContent = "▶";
-            }
-          });
           audio.play(); 
           playBtn.textContent="❚❚"; 
         }
@@ -345,6 +336,9 @@ function renderMessages() {
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
+  
+  // Добавляем слушатели на новые аудио
+  addAudioListeners();
 }
 
 async function deleteMessage(id){ 
@@ -373,6 +367,46 @@ document.addEventListener('click',function(event){
   const btn=document.getElementById('mobileMenuBtn');
   if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
 });
+
+// === ЗАПРЕЩАЕМ ОДНОВРЕМЕННОЕ ВОСПРОИЗВЕДЕНИЕ НЕСКОЛЬКИХ АУДИО ===
+function stopAllOtherAudio(currentAudio) {
+  document.querySelectorAll('audio').forEach(audio => {
+    if (audio !== currentAudio && !audio.paused) {
+      audio.pause();
+      const messageDiv = audio.closest('.message');
+      if (messageDiv) {
+        const playBtn = messageDiv.querySelector('div[style*="36px"]');
+        if (playBtn && playBtn.textContent === "❚❚") {
+          playBtn.textContent = "▶";
+        }
+        const progressBar = messageDiv.querySelector('div[style*="height: 5px"] div');
+        if (progressBar) {
+          progressBar.style.width = "0%";
+        }
+      }
+      audio.currentTime = 0;
+    }
+  });
+}
+
+function addAudioListeners() {
+  document.querySelectorAll('audio').forEach(audio => {
+    if (!audio.hasAttribute('data-listener-added')) {
+      audio.setAttribute('data-listener-added', 'true');
+      audio.addEventListener('play', function() {
+        stopAllOtherAudio(this);
+      });
+    }
+  });
+}
+
+// Наблюдаем за появлением новых аудио
+const observer = new MutationObserver(() => {
+  addAudioListeners();
+});
+observer.observe(chat, { childList: true, subtree: true });
+
+addAudioListeners();
 
 // === ЗАПИСЬ АУДИО С ЗАГРУЗКОЙ В SUPABASE ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
@@ -473,29 +507,6 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
-  // === ОСТАНАВЛИВАЕМ ДРУГИЕ АУДИО ПРИ ЗАПУСКЕ НОВОГО ===
-// Функция для остановки всех аудио кроме текущего
-function stopAllOtherAudio(currentAudio) {
-  const allAudios = document.querySelectorAll('audio');
-  allAudios.forEach(audio => {
-    if (audio !== currentAudio && !audio.paused) {
-      audio.pause();
-      audio.currentTime = 0;
-      // Находим кнопку воспроизведения для этого аудио и меняем её обратно на ▶
-      const playBtn = audio.closest('.message')?.querySelector('div[style*="36px"]');
-      if (playBtn && playBtn.textContent === "❚❚") {
-        playBtn.textContent = "▶";
-      }
-    }
-  });
-}
-
-// Перехватываем событие воспроизведения на всех аудио
-document.addEventListener('play', function(e) {
-  if (e.target.tagName === 'AUDIO') {
-    stopAllOtherAudio(e.target);
-  }
-}, true);
 </script>
 </body>
 </html>
