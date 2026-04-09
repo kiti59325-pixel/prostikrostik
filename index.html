@@ -44,117 +44,6 @@
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
   .message-text { margin-top: 5px; }
 
-  /* Эмодзи-пикер в стиле Telegram */
-  .emoji-picker {
-    position: fixed;
-    bottom: 80px;
-    left: 10px;
-    width: 350px;
-    max-width: calc(100vw - 20px);
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-    overflow: hidden;
-  }
-  body.dark .emoji-picker {
-    background: #1e293b;
-    border: 1px solid #334155;
-  }
-  
-  /* Поиск */
-  .emoji-search {
-    padding: 10px;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  body.dark .emoji-search {
-    border-bottom-color: #334155;
-  }
-  .emoji-search input {
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 10px;
-    background: #f1f5f9;
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-  }
-  body.dark .emoji-search input {
-    background: #0f172a;
-    color: white;
-  }
-  
-  /* Категории */
-  .emoji-categories {
-    display: flex;
-    gap: 5px;
-    padding: 8px 10px;
-    border-bottom: 1px solid #e2e8f0;
-    overflow-x: auto;
-  }
-  body.dark .emoji-categories {
-    border-bottom-color: #334155;
-  }
-  .emoji-category-btn {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 5px 8px;
-    border-radius: 10px;
-    transition: 0.2s;
-    margin: 0;
-    opacity: 0.7;
-  }
-  .emoji-category-btn:hover, .emoji-category-btn.active {
-    opacity: 1;
-    background: rgba(0,0,0,0.05);
-  }
-  body.dark .emoji-category-btn:hover, body.dark .emoji-category-btn.active {
-    background: rgba(255,255,255,0.1);
-  }
-  
-  /* Сетка эмодзи */
-  .emoji-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 5px;
-    padding: 10px;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-  .emoji-grid button {
-    background: transparent;
-    border: none;
-    font-size: 26px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 10px;
-    transition: 0.15s;
-    margin: 0;
-  }
-  .emoji-grid button:hover {
-    background: rgba(0,0,0,0.08);
-    transform: scale(1.1);
-  }
-  body.dark .emoji-grid button:hover {
-    background: rgba(255,255,255,0.1);
-  }
-  
-  @media (max-width: 600px) {
-    .emoji-grid {
-      grid-template-columns: repeat(6, 1fr);
-    }
-    .emoji-picker {
-      width: calc(100vw - 20px);
-      left: 10px;
-      right: 10px;
-    }
-  }
-
   .input-wrapper {
     display: flex;
     gap: 8px;
@@ -186,14 +75,52 @@
 
   button { border-radius: 12px; cursor: pointer; }
 
-  body.dark #chat::-webkit-scrollbar { width: 8px; }
-  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
-  body.light #chat::-webkit-scrollbar { width: 8px; }
-  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
+  /* Простая панель эмодзи */
+  .simple-emoji-picker {
+    position: fixed;
+    bottom: 80px;
+    left: 10px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    padding: 12px;
+    display: none;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    z-index: 1000;
+    max-width: 350px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  body.dark .simple-emoji-picker {
+    background: #1e293b;
+    border: 1px solid #475569;
+  }
+  .simple-emoji-picker button {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: 0.1s;
+    margin: 0;
+  }
+  .simple-emoji-picker button:hover {
+    background: rgba(0,0,0,0.1);
+    transform: scale(1.1);
+  }
+  body.dark .simple-emoji-picker button:hover {
+    background: rgba(255,255,255,0.1);
+  }
 
   @media (max-width: 600px) {
+    .simple-emoji-picker {
+      grid-template-columns: repeat(6, 1fr);
+      max-width: calc(100vw - 20px);
+      left: 10px;
+      right: 10px;
+    }
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
     #chat { height: calc(100vh - 110px); }
@@ -277,7 +204,6 @@ let currentlyPlayingAudio = null;
 let currentlyPlayingPlayBtn = null;
 let allAudioItems = [];
 
-// === Функция остановки всех аудио ===
 function stopAllAudio() {
   if (currentlyPlayingAudio) {
     currentlyPlayingAudio.pause();
@@ -290,7 +216,6 @@ function stopAllAudio() {
   }
 }
 
-// === Функция поиска следующего аудио ===
 function findNextAudio(currentMsgIndex) {
   let nextAudioItem = null;
   let hasTextBetween = false;
@@ -305,7 +230,6 @@ function findNextAudio(currentMsgIndex) {
           break;
         }
       }
-      
       if (!hasTextBetween) {
         nextAudioItem = item;
         break;
@@ -314,11 +238,9 @@ function findNextAudio(currentMsgIndex) {
       }
     }
   }
-  
   return nextAudioItem;
 }
 
-// === Авторизация ===
 async function login() { 
   const provider = new GoogleAuthProvider(); 
   await signInWithPopup(auth, provider); 
@@ -337,7 +259,6 @@ onAuthStateChanged(auth, (user) => {
   renderMessages();
 });
 
-// === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
@@ -359,7 +280,6 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// === Чат ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
@@ -378,7 +298,6 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if (data.isAudio) {
@@ -507,14 +426,11 @@ function renderMessages() {
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
         audio.currentTime = 0;
-        
         if (currentlyPlayingAudio === audio) {
           currentlyPlayingAudio = null;
           currentlyPlayingPlayBtn = null;
         }
-        
         const nextAudioItem = findNextAudio(msgIndex);
-        
         if (nextAudioItem) {
           setTimeout(() => {
             stopAllAudio();
@@ -562,7 +478,6 @@ function renderMessages() {
     }
     chat.appendChild(div);
   });
-  
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -621,17 +536,9 @@ setInterval(() => {
 async function uploadToSupabase(audioBlob) {
   const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webm`;
   const filePath = `${fileName}`;
-  
-  const { error } = await supabase.storage
-    .from('voice-messages')
-    .upload(filePath, audioBlob, { contentType: 'audio/webm' });
-  
+  const { error } = await supabase.storage.from('voice-messages').upload(filePath, audioBlob, { contentType: 'audio/webm' });
   if (error) throw error;
-  
-  const { data: urlData } = supabase.storage
-    .from('voice-messages')
-    .getPublicUrl(filePath);
-  
+  const { data: urlData } = supabase.storage.from('voice-messages').getPublicUrl(filePath);
   return urlData.publicUrl;
 }
 
@@ -691,14 +598,46 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 });
 
-// === ЭМОДЗИ-ПИКЕР В СТИЛЕ TELEGRAM ===
+// === ПРОСТАЯ ПАНЕЛЬ СМАЙЛИКОВ ===
 const emojiBtn = document.getElementById('emojiBtn');
 const emojiPicker = document.createElement('div');
-emojiPicker.className = 'emoji-picker';
+emojiPicker.className = 'simple-emoji-picker';
 
-// Категории эмодзи
-const categories = {
-  '😀': ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠'],
-  '❤️': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💘', '💝', '💌', '💋', '👄', '🫀', '🫁', '🧠'],
-  '👋': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦵', '🦿', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋'],
-  '🐱': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷
+const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🙈', '🙉', '🙊', '💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪'];
+
+emojis.forEach(emoji => {
+  const btn = document.createElement('button');
+  btn.textContent = emoji;
+  btn.onclick = () => {
+    messageInput.value += emoji;
+    messageInput.focus();
+    emojiPicker.style.display = 'none';
+    messageInput.dispatchEvent(new Event('input'));
+  };
+  emojiPicker.appendChild(btn);
+});
+
+document.body.appendChild(emojiPicker);
+
+emojiBtn.onclick = (e) => {
+  e.stopPropagation();
+  emojiPicker.style.display = emojiPicker.style.display === 'grid' ? 'none' : 'grid';
+};
+
+document.addEventListener('click', (e) => {
+  if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+    emojiPicker.style.display = 'none';
+  }
+});
+
+function positionEmojiPicker() {
+  const rect = emojiBtn.getBoundingClientRect();
+  emojiPicker.style.position = 'fixed';
+  emojiPicker.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+  emojiPicker.style.left = rect.left + 'px';
+}
+
+emojiBtn.addEventListener('click', positionEmojiPicker);
+</script>
+</body>
+</html>
