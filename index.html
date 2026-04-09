@@ -638,6 +638,46 @@ document.addEventListener('ended', function(e) {
     
     window.playNextAudio(audio);
   }
+  // === ПРОСТОЙ КОСТЫЛЬ ДЛЯ АВТОВОСПРОИЗВЕДЕНИЯ ===
+setInterval(() => {
+  const allAudios = document.querySelectorAll('audio');
+  let playingAudio = null;
+  
+  // Находим играющее аудио
+  for (let audio of allAudios) {
+    if (!audio.paused && audio.currentTime > 0 && audio.duration - audio.currentTime < 0.5) {
+      playingAudio = audio;
+      break;
+    }
+  }
+  
+  // Если аудио почти закончилось (менее 0.5 секунд)
+  if (playingAudio && playingAudio.duration - playingAudio.currentTime < 0.3 && playingAudio.duration - playingAudio.currentTime > 0) {
+    console.log("🎵 Аудио почти закончилось, ищем следующее");
+    
+    // Ищем следующее сообщение
+    let nextMsg = playingAudio.closest('.message').nextElementSibling;
+    let hasTextBetween = false;
+    
+    while (nextMsg) {
+      const nextAudio = nextMsg.querySelector('audio');
+      const hasText = nextMsg.innerText.trim().length > 0 && !nextAudio;
+      
+      if (nextAudio && !hasTextBetween) {
+        console.log("✅ Запускаем следующее голосовое");
+        const nextPlayBtn = nextMsg.querySelector('div[style*="36px"]');
+        setTimeout(() => {
+          nextAudio.play();
+          if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
+        }, 100);
+        break;
+      }
+      
+      if (hasText) hasTextBetween = true;
+      nextMsg = nextMsg.nextElementSibling;
+    }
+  }
+}, 100);
 }, true);
 </script>
 </body>
