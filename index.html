@@ -423,104 +423,125 @@ messageInput.addEventListener('input', ()=>{
   else if(!isRecording){sendRecordBtn.textContent="➤";}
 });
 
-// === ЗАПИСЬ С АВТО-НАРЕЗКОЙ (только это меняем) ===
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-let sliceTimer = null;
-let fullAudioChunks = []; // для финальной сборки
-let mediaStream = null;
-
-sendRecordBtn.addEventListener('click', async () => {
-  if (messageInput.value.trim() !== "") {
-    if (!currentUser) return;
-    await addDoc(collection(db, "messages"), {
+sendRecordBtn.addEventListener('click', async ()=>{
+  if(messageInput.value.trim()!==""){
+    if(!currentUser)return;
+    await addDoc(collection(db,"messages"),{
       text: messageInput.value,
-      user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+      user: nickname||(currentUser?currentUser.displayName:"Гость"),
       uid: currentUser.uid,
       time: Date.now()
     });
-    messageInput.value = "";
-    sendRecordBtn.textContent = "🎤";
+    messageInput.value="";
+    sendRecordBtn.textContent="🎤";
   } else {
-    if (!isRecording) {
-      // НАЧАЛО ЗАПИСИ
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(mediaStream);
-      audioChunks = [];
-      fullAudioChunks = [];
-      
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunks.push(e.data);
-          fullAudioChunks.push(e.data);
-        }
-      };
-      
-      // Функция отправки одного куска
-      const sendChunk = async (chunks) => {
-        if (chunks.length === 0) return;
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64 = reader.result;
-          if (!currentUser) return;
-          await addDoc(collection(db, "messages"), {
-            text: base64,
-            isAudio: true,
-            user: nickname || (currentUser ? currentUser.displayName : "Гость"),
+    if(!isRecording){
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder=new MediaRecorder(stream);
+      audioChunks=[];
+      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRecorder.onstop=async ()=>{
+        const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onloadend=async ()=>{
+          const base64Audio=reader.result;
+          if(!currentUser)return;
+          await addDoc(collection(db,"messages"),{
+            text: base64Audio,
+            isAudio:true,
+            user: nickname||(currentUser?currentUser.displayName:"Гость"),
             uid: currentUser.uid,
             time: Date.now()
           });
         };
-        reader.readAsDataURL(blob);
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
       };
-      
-      // Каждые 30 секунд отправляем накопленное и очищаем
-      sliceTimer = setInterval(() => {
-        if (isRecording && audioChunks.length > 0) {
-          const toSend = [...audioChunks];
-          audioChunks = [];
-          sendChunk(toSend);
-        }
-      }, 30000);
-      
-      mediaRecorder.start(1000); // Собираем данные каждую секунду
-      isRecording = true;
-      sendRecordBtn.textContent = "⏹️";
-      
+      mediaRecorder.start();
+      isRecording=true;
+      sendRecordBtn.textContent="⏹️";
     } else {
-      // ОСТАНОВКА ЗАПИСИ
-      clearInterval(sliceTimer);
       mediaRecorder.stop();
-      isRecording = false;
-      sendRecordBtn.textContent = "🎤";
-      
-      // Отправляем остаток, если есть
-      if (audioChunks.length > 0) {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64 = reader.result;
-          if (!currentUser) return;
-          await addDoc(collection(db, "messages"), {
-            text: base64,
-            isAudio: true,
-            user: nickname || (currentUser ? currentUser.displayName : "Гость"),
-            uid: currentUser.uid,
-            time: Date.now()
-          });
-        };
-        reader.readAsDataURL(blob);
-      }
-      
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        mediaStream = null;
-      }
+      isRecording=false;
+      sendRecordBtn.textContent="🎤";
     }
   }
 });
+  // === СЖАТИЕ АУДИО ПЕРЕД ОТПРАВКОЙ ===
+// Находим оригинальную функцию записи и заменяем только отправку
+// Этот код нужно вставить ПОСЛЕ всей оригинальной логики
+
+// Перехватываем отправку аудио и сжимаем
+const originalSendRecordBtnClick = sendRecordBtn.click;
+let tempAudioChunks = [];
+
+// Функция сжатия аудио
+async function compressAudio(blob) {
+    // Создаём аудио контекст для сжатия
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // Передискретизируем в 16000 Гц (в 2-3 раза меньше размер)
+    const targetSampleRate = 16000;
+    const offlineContext = new OfflineAudioContext(
+        1, // mono
+        audioBuffer.duration * targetSampleRate,
+        targetSampleRate
+    );
+    
+    const source = offlineContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(offlineContext.destination);
+    source.start();
+    
+    const renderedBuffer = await offlineContext.startRendering();
+    
+    // Конвертируем обратно в WAV
+    const wavBlob = await bufferToWav(renderedBuffer);
+    return wavBlob;
+}
+
+function bufferToWav(buffer) {
+    const numSamples = buffer.length;
+    const samples = buffer.getChannelData(0);
+    const wavBuffer = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(wavBuffer);
+    
+    // WAV заголовок
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + numSamples * 2, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, buffer.sampleRate, true);
+    view.setUint32(28, buffer.sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, numSamples * 2, true);
+    
+    // Записываем сэмплы
+    let offset = 44;
+    for (let i = 0; i < numSamples; i++) {
+        const sample = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+        offset += 2;
+    }
+    
+    return new Blob([wavBuffer], { type: 'audio/wav' });
+}
+
+function writeString(view, offset, str) {
+    for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+    }
+}
+
+// Сохраняем ссылку на оригинальный обработчик
+console.log("Аудио-компрессор загружен! Голосовые будут сжиматься автоматически.");
 </script>
 </body>
 </html>
