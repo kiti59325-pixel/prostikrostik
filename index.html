@@ -44,45 +44,117 @@
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
   .message-text { margin-top: 5px; }
 
+  /* Эмодзи-пикер в стиле Telegram */
   .emoji-picker {
     position: fixed;
-    bottom: 70px;
+    bottom: 80px;
     left: 10px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    padding: 8px;
+    width: 350px;
+    max-width: calc(100vw - 20px);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     display: none;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 5px;
+    flex-direction: column;
     z-index: 1000;
-    max-width: 320px;
+    overflow: hidden;
   }
   body.dark .emoji-picker {
     background: #1e293b;
-    border: 1px solid #475569;
+    border: 1px solid #334155;
   }
-  .emoji-picker button {
+  
+  /* Поиск */
+  .emoji-search {
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  body.dark .emoji-search {
+    border-bottom-color: #334155;
+  }
+  .emoji-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 10px;
+    background: #f1f5f9;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+  }
+  body.dark .emoji-search input {
+    background: #0f172a;
+    color: white;
+  }
+  
+  /* Категории */
+  .emoji-categories {
+    display: flex;
+    gap: 5px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    overflow-x: auto;
+  }
+  body.dark .emoji-categories {
+    border-bottom-color: #334155;
+  }
+  .emoji-category-btn {
     background: transparent;
     border: none;
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
-    padding: 5px;
-    border-radius: 8px;
+    padding: 5px 8px;
+    border-radius: 10px;
     transition: 0.2s;
     margin: 0;
+    opacity: 0.7;
   }
-  .emoji-picker button:hover {
-    background: rgba(0,0,0,0.1);
-    transform: scale(1.1);
+  .emoji-category-btn:hover, .emoji-category-btn.active {
+    opacity: 1;
+    background: rgba(0,0,0,0.05);
   }
-  body.dark .emoji-picker button:hover {
+  body.dark .emoji-category-btn:hover, body.dark .emoji-category-btn.active {
     background: rgba(255,255,255,0.1);
   }
-  #emojiBtn {
-    margin-left: 0;
-    padding: 12px 12px;
+  
+  /* Сетка эмодзи */
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
   }
+  .emoji-grid button {
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    transition: 0.15s;
+    margin: 0;
+  }
+  .emoji-grid button:hover {
+    background: rgba(0,0,0,0.08);
+    transform: scale(1.1);
+  }
+  body.dark .emoji-grid button:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  @media (max-width: 600px) {
+    .emoji-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .emoji-picker {
+      width: calc(100vw - 20px);
+      left: 10px;
+      right: 10px;
+    }
+  }
+
   .input-wrapper {
     display: flex;
     gap: 8px;
@@ -95,6 +167,22 @@
   #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; cursor: pointer; }
   body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
   body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  #emojiBtn {
+    margin-left: 0;
+    padding: 12px 14px;
+    font-size: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  #emojiBtn:hover {
+    background: rgba(0,0,0,0.08);
+  }
+  body.dark #emojiBtn:hover {
+    background: rgba(255,255,255,0.1);
+  }
 
   button { border-radius: 12px; cursor: pointer; }
 
@@ -122,11 +210,6 @@
     body.dark #mobileMenu button:hover { background-color: #1e40af; }
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
-    .emoji-picker {
-      grid-template-columns: repeat(6, 1fr);
-      max-width: 280px;
-      left: 5px;
-    }
   }
 </style>
 </head>
@@ -608,73 +691,14 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 });
 
-// === СМАЙЛИКИ ===
+// === ЭМОДЗИ-ПИКЕР В СТИЛЕ TELEGRAM ===
 const emojiBtn = document.getElementById('emojiBtn');
 const emojiPicker = document.createElement('div');
 emojiPicker.className = 'emoji-picker';
 
-const emojis = [
-  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
-  '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
-  '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-  '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-  '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-  '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
-  '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
-  '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧',
-  '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-  '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑',
-  '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻',
-  '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸',
-  '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🙈',
-  '🙉', '🙊', '💋', '💌', '💘', '💝', '💖', '💗',
-  '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡',
-  '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯',
-  '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬',
-  '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏',
-  '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆'
-];
-
-emojis.forEach(emoji => {
-  const btn = document.createElement('button');
-  btn.textContent = emoji;
-  btn.onclick = () => {
-    messageInput.value += emoji;
-    messageInput.focus();
-    emojiPicker.style.display = 'none';
-    messageInput.dispatchEvent(new Event('input'));
-  };
-  emojiPicker.appendChild(btn);
-});
-
-document.body.appendChild(emojiPicker);
-
-emojiBtn.onclick = (e) => {
-  e.stopPropagation();
-  const isVisible = emojiPicker.style.display === 'grid';
-  emojiPicker.style.display = isVisible ? 'none' : 'grid';
-};
-
-document.addEventListener('click', (e) => {
-  if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
-    emojiPicker.style.display = 'none';
-  }
-});
-
-function positionEmojiPicker() {
-  const rect = emojiBtn.getBoundingClientRect();
-  emojiPicker.style.position = 'fixed';
-  emojiPicker.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
-  emojiPicker.style.left = rect.left + 'px';
-}
-
-emojiBtn.addEventListener('click', positionEmojiPicker);
-window.addEventListener('scroll', () => {
-  if (emojiPicker.style.display === 'grid') {
-    positionEmojiPicker();
-  }
-});
-</script>
-</body>
-</html>
+// Категории эмодзи
+const categories = {
+  '😀': ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠'],
+  '❤️': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💘', '💝', '💌', '💋', '👄', '🫀', '🫁', '🧠'],
+  '👋': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦵', '🦿', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋'],
+  '🐱': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷
