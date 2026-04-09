@@ -155,8 +155,6 @@ document.body.classList.add(theme);
 // === Глобальные переменные ===
 let currentlyPlayingAudio = null;
 let currentlyPlayingPlayBtn = null;
-let allAudioElements = []; // массив всех аудио элементов в порядке появления
-let allAudioMessages = []; // массив данных сообщений для проверки текста
 
 function debugLog(msg) {
   const debugDiv = document.getElementById('debugPanel');
@@ -175,6 +173,40 @@ function stopAllAudio() {
     currentlyPlayingAudio = null;
     currentlyPlayingPlayBtn = null;
   }
+}
+
+// === Функция поиска следующего голосового сообщения ===
+function findNextVoiceMessage(currentMessageDiv) {
+  debugLog("🔍 Ищем следующее голосовое...");
+  
+  let nextElement = currentMessageDiv.nextElementSibling;
+  let hasTextBetween = false;
+  
+  while (nextElement) {
+    // Ищем аудио в следующем сообщении
+    const nextAudio = nextElement.querySelector('audio');
+    // Проверяем, есть ли текстовое сообщение (не аудио и есть текст)
+    const textDiv = nextElement.querySelector('.message-text');
+    const isTextMessage = textDiv && textDiv.textContent.trim().length > 0;
+    
+    debugLog(`  Проверяем: hasAudio=${!!nextAudio}, isText=${isTextMessage}`);
+    
+    if (nextAudio && !hasTextBetween) {
+      debugLog(`✅ Нашли следующее голосовое!`);
+      return nextAudio;
+    }
+    
+    if (isTextMessage) {
+      hasTextBetween = true;
+      debugLog(`📝 Нашли текстовое сообщение: "${textDiv.textContent.substring(0,30)}" — автовоспроизведение отменяется`);
+      return null;
+    }
+    
+    nextElement = nextElement.nextElementSibling;
+  }
+  
+  debugLog(`❌ Следующее голосовое не найдено`);
+  return null;
 }
 
 // === Авторизация ===
@@ -229,11 +261,8 @@ onSnapshot(q, snapshot => {
 
 function renderMessages() {
   chat.innerHTML = "";
-  allAudioElements = [];
-  allAudioMessages = [];
-  let audioIndex = 0;
   
-  messagesCache.forEach((docObj, msgIndex) => {
+  messagesCache.forEach((docObj) => {
     const data = docObj.data;
     const isMe = currentUser && data.uid === currentUser.uid;
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
@@ -243,14 +272,6 @@ function renderMessages() {
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if (data.isAudio) {
-      // Сохраняем информацию об аудио сообщении
-      allAudioMessages.push({
-        index: audioIndex,
-        msgIndex: msgIndex,
-        hasTextBetween: false,
-        data: data
-      });
-      
       const wrapper = document.createElement("div");
       wrapper.style.display = "flex";
       wrapper.style.flexDirection = "column";
@@ -267,7 +288,6 @@ function renderMessages() {
       const audio = document.createElement("audio");
       audio.src = data.text;
       audio.preload = "metadata";
-      audio.setAttribute('data-audio-index', audioIndex);
 
       let rate = parseFloat(localStorage.getItem("audioSpeed")) || 1;
       audio.playbackRate = rate;
@@ -339,7 +359,7 @@ function renderMessages() {
           playBtn.textContent = "❚❚";
           currentlyPlayingAudio = audio;
           currentlyPlayingPlayBtn = playBtn;
-          debugLog(`▶ Воспроизведение аудио #${audioIndex}`);
+          debugLog(`▶ Воспроизведение начато`);
         } else {
           audio.pause();
           playBtn.textContent = "▶";
@@ -347,7 +367,7 @@ function renderMessages() {
             currentlyPlayingAudio = null;
             currentlyPlayingPlayBtn = null;
           }
-          debugLog(`⏸ Остановлено аудио #${audioIndex}`);
+          debugLog(`⏸ Воспроизведение остановлено`);
         }
       };
 
@@ -368,7 +388,7 @@ function renderMessages() {
 
       // === АВТОВОСПРОИЗВЕДЕНИЕ ===
       audio.addEventListener("ended", () => {
-        debugLog(`🎬 Аудио #${audioIndex} закончилось! Ищем следующее...`);
+        debugLog(`🎬 Аудио закончилось!`);
         
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
@@ -379,59 +399,22 @@ function renderMessages() {
           currentlyPlayingPlayBtn = null;
         }
         
-        // Ищем следующее аудио в массиве allAudioElements
-        let nextAudioIndex = -1;
-        let hasTextBetween = false;
+        // Ищем следующее голосовое
+        const nextAudio = findNextVoiceMessage(div);
         
-        // Проверяем сообщения между текущим аудио и следующим
-        const currentAudioMsgIndex = allAudioMessages[audioIndex].msgIndex;
-        
-        for (let i = currentAudioMsgIndex + 1; i < messagesCache.length; i++) {
-          const nextMsg = messagesCache[i];
-          const isAudio = nextMsg.data.isAudio;
-          const isText = !isAudio && nextMsg.data.text && nextMsg.data.text.trim().length > 0;
-          
-          debugLog(`  Проверяем сообщение ${i}: isAudio=${isAudio}, isText=${isText}, текст="${nextMsg.data.text?.substring(0,20) || ''}"`);
-          
-          if (isAudio) {
-            if (!hasTextBetween) {
-              // Нашли следующее аудио, находим его индекс в allAudioElements
-              for (let j = 0; j < allAudioMessages.length; j++) {
-                if (allAudioMessages[j].msgIndex === i) {
-                  nextAudioIndex = allAudioMessages[j].index;
-                  break;
-                }
-              }
-              debugLog(`✅ Нашли следующее аудио #${nextAudioIndex} на позиции ${i}!`);
-              break;
-            } else {
-              debugLog(`⏸ Есть текст между, автовоспроизведение отменяется`);
-              break;
-            }
-          }
-          
-          if (isText) {
-            hasTextBetween = true;
-            debugLog(`📝 Нашли текст: "${nextMsg.data.text.substring(0,30)}"`);
-          }
-        }
-        
-        if (nextAudioIndex !== -1 && allAudioElements[nextAudioIndex]) {
-          const nextAudio = allAudioElements[nextAudioIndex];
+        if (nextAudio) {
           const nextMessageDiv = nextAudio.closest('.message');
           const nextPlayBtn = nextMessageDiv?.querySelector('div[style*="36px"]');
           
-          debugLog(`▶ Запускаем следующее аудио #${nextAudioIndex} через 0.3 сек`);
+          debugLog(`▶ Запускаем следующее через 0.3 сек`);
           setTimeout(() => {
             stopAllAudio();
             nextAudio.play();
             if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
             currentlyPlayingAudio = nextAudio;
             currentlyPlayingPlayBtn = nextPlayBtn;
-            debugLog(`▶ Следующее аудио #${nextAudioIndex} запущено!`);
+            debugLog(`▶ Следующее голосовое запущено!`);
           }, 300);
-        } else {
-          debugLog(`❌ Следующее аудио не найдено (hasTextBetween=${hasTextBetween})`);
         }
       });
 
@@ -455,11 +438,6 @@ function renderMessages() {
       wrapper.appendChild(topRow);
       wrapper.appendChild(bottomRow);
       div.appendChild(wrapper);
-      
-      // Сохраняем аудио элемент
-      allAudioElements.push(audio);
-      audioIndex++;
-      
     } else { 
       const textSpan = document.createElement("div");
       textSpan.className = "message-text";
@@ -478,7 +456,7 @@ function renderMessages() {
   });
   
   chat.scrollTop = chat.scrollHeight;
-  debugLog(`📊 Загружено ${allAudioElements.length} аудио сообщений`);
+  debugLog(`📊 Загружено сообщений: ${messagesCache.length}`);
 }
 
 async function deleteMessage(id){ 
