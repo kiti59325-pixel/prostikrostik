@@ -422,7 +422,12 @@ messageInput.addEventListener('input', ()=>{
   if(messageInput.value.trim()===""&&!isRecording){sendRecordBtn.textContent="🎤";}
   else if(!isRecording){sendRecordBtn.textContent="➤";}
 });
+// === ОГРАНИЧЕНИЕ ЗАПИСИ 30 СЕКУНДАМИ ===
+const MAX_RECORDING_TIME = 30000; // 30 секунд
+let recordingTimeout = null;
 
+// Переопределяем кнопку записи (вставь этот блок ПОСЛЕ того, как определена sendRecordBtn)
+// Найди в коде оригинальный обработчик и просто добавь эти строки ВНУТРЬ него
 sendRecordBtn.addEventListener('click', async ()=>{
   if(messageInput.value.trim()!==""){
     if(!currentUser)return;
@@ -432,12 +437,6 @@ sendRecordBtn.addEventListener('click', async ()=>{
       uid: currentUser.uid,
       time: Date.now()
     });
-    // === ОГРАНИЧЕНИЕ ЗАПИСИ 30 СЕКУНДАМИ ===
-const MAX_RECORDING_TIME = 30000; // 30 секунд
-let recordingTimeout = null;
-
-// Переопределяем кнопку записи (вставь этот блок ПОСЛЕ того, как определена sendRecordBtn)
-// Найди в коде оригинальный обработчик и просто добавь эти строки ВНУТРЬ него
     messageInput.value="";
     sendRecordBtn.textContent="🎤";
   } else {
@@ -473,6 +472,37 @@ let recordingTimeout = null;
     }
   }
 });
+  // === АВТО-ОСТАНОВКА ЧЕРЕЗ 30 СЕКУНД ===
+const originalStartRecording = sendRecordBtn.click;
+let recordTimer = null;
+
+// Ждём когда загрузится страница
+setTimeout(() => {
+    const originalAddListener = sendRecordBtn.addEventListener;
+    let isRec = false;
+    
+    // Отслеживаем состояние записи через интервал
+    setInterval(() => {
+        const btnText = sendRecordBtn.textContent;
+        const isRecordingNow = (btnText === "⏹️");
+        
+        if (isRecordingNow && !isRec) {
+            // Только начали запись — ставим таймер на 30 секунд
+            isRec = true;
+            if (recordTimer) clearTimeout(recordTimer);
+            recordTimer = setTimeout(() => {
+                // Через 30 секунд нажимаем кнопку снова (останавливаем)
+                if (sendRecordBtn.textContent === "⏹️") {
+                    sendRecordBtn.click();
+                }
+                isRec = false;
+            }, 30000);
+        } else if (!isRecordingNow) {
+            isRec = false;
+            if (recordTimer) clearTimeout(recordTimer);
+        }
+    }, 100);
+}, 1000);
 </script>
 </body>
 </html>
