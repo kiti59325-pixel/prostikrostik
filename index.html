@@ -51,20 +51,6 @@
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
-  .auto-play-toggle {
-    font-size: 12px;
-    padding: 4px 8px;
-    margin-left: 10px;
-    border-radius: 20px;
-    background: #4caf50;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  .auto-play-toggle.off {
-    background: #666;
-  }
-
   body.dark #chat::-webkit-scrollbar { width: 8px; }
   body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
   body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
@@ -108,7 +94,6 @@
   <button onclick="login()">Войти через Google</button>
   <button onclick="logout()">Выйти</button>
   <div id="userInfo"></div>
-  <button id="autoPlayToggle" class="auto-play-toggle" onclick="toggleAutoPlay()">⏯ Авто-плей вкл</button>
 </div>
 
 <div id="mobileMenu">
@@ -154,7 +139,6 @@ document.body.classList.add(theme);
 // === Глобальные переменные ===
 let currentlyPlayingAudio = null;
 let currentlyPlayingPlayBtn = null;
-let autoPlayEnabled = true;
 
 // === Функция остановки всех аудио ===
 function stopAllAudio() {
@@ -171,7 +155,7 @@ function stopAllAudio() {
   }
 }
 
-// === Автовоспроизведение ===
+// === Функция поиска следующего голосового (без текстовых между) ===
 function findNextVoiceMessage(currentAudioElement) {
   const currentMessage = currentAudioElement.closest('.message');
   if (!currentMessage) return null;
@@ -181,7 +165,8 @@ function findNextVoiceMessage(currentAudioElement) {
   
   while (nextMessage) {
     const hasAudio = nextMessage.querySelector('audio');
-    const hasText = nextMessage.innerText.trim().length > 0 && !hasAudio;
+    const textContent = nextMessage.innerText.trim();
+    const hasText = textContent.length > 0 && textContent !== "▶" && textContent !== "❚❚" && !hasAudio;
     
     if (hasAudio) {
       if (!foundTextBetween) {
@@ -199,49 +184,23 @@ function findNextVoiceMessage(currentAudioElement) {
   return null;
 }
 
-function setupAutoPlay(audio, playBtn, progressBar) {
-  audio.addEventListener('ended', () => {
-    playBtn.textContent = "▶";
-    progressBar.style.width = "0%";
-    audio.currentTime = 0;
+// === Функция воспроизведения следующего ===
+function playNextAudio(currentAudio) {
+  const nextAudio = findNextVoiceMessage(currentAudio);
+  if (nextAudio) {
+    const nextMessage = nextAudio.closest('.message');
+    const nextPlayBtn = nextMessage.querySelector('div[style*="36px"]');
+    const nextProgressBar = nextMessage.querySelector('div[style*="height: 5px"] div');
     
-    if (currentlyPlayingAudio === audio) {
-      currentlyPlayingAudio = null;
-      currentlyPlayingPlayBtn = null;
-    }
-    
-    if (autoPlayEnabled) {
-      const nextAudio = findNextVoiceMessage(audio);
-      if (nextAudio) {
-        const nextMessage = nextAudio.closest('.message');
-        const nextPlayBtn = nextMessage.querySelector('div[style*="36px"]');
-        const nextProgressBar = nextMessage.querySelector('div[style*="height: 5px"] div');
-        
-        setTimeout(() => {
-          stopAllAudio();
-          nextAudio.play();
-          if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
-          currentlyPlayingAudio = nextAudio;
-          currentlyPlayingPlayBtn = nextPlayBtn;
-          setupAutoPlay(nextAudio, nextPlayBtn, nextProgressBar);
-        }, 300);
-      }
-    }
-  });
-}
-
-function toggleAutoPlay() {
-  autoPlayEnabled = !autoPlayEnabled;
-  const btn = document.getElementById('autoPlayToggle');
-  if (autoPlayEnabled) {
-    btn.textContent = "⏯ Авто-плей вкл";
-    btn.classList.remove('off');
-  } else {
-    btn.textContent = "⏸ Авто-плей выкл";
-    btn.classList.add('off');
+    setTimeout(() => {
+      stopAllAudio();
+      nextAudio.play().catch(e => console.log("Автовоспроизведение заблокировано браузером"));
+      if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
+      currentlyPlayingAudio = nextAudio;
+      currentlyPlayingPlayBtn = nextPlayBtn;
+    }, 200);
   }
 }
-window.toggleAutoPlay = toggleAutoPlay;
 
 // === Авторизация ===
 async function login() { 
@@ -416,8 +375,20 @@ function renderMessages() {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-      // Настраиваем автовоспроизведение
-      setupAutoPlay(audio, playBtn, progressBar);
+      // === АВТОВОСПРОИЗВЕДЕНИЕ СЛЕДУЮЩЕГО ===
+      audio.addEventListener("ended", () => {
+        playBtn.textContent = "▶";
+        progressBar.style.width = "0%";
+        audio.currentTime = 0;
+        
+        if (currentlyPlayingAudio === audio) {
+          currentlyPlayingAudio = null;
+          currentlyPlayingPlayBtn = null;
+        }
+        
+        // Запускаем следующее голосовое
+        playNextAudio(audio);
+      });
 
       progressWrap.onclick = (e)=>{
         const rect=progressWrap.getBoundingClientRect();
@@ -579,10 +550,6 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
-
-// Инициализация кнопки авто-плей
-document.getElementById('autoPlayToggle').classList.add('off');
-toggleAutoPlay();
 </script>
 </body>
 </html>
