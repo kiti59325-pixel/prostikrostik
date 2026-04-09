@@ -431,13 +431,13 @@ sendRecordBtn.addEventListener('click', async ()=>{
       user: nickname||(currentUser?currentUser.displayName:"Гость"),
       uid: currentUser.uid,
       time: Date.now()
-      // === ОГРАНИЧЕНИЕ ЗАПИСИ 30 СЕКУНДАМИ ===
+    });
+    // === ОГРАНИЧЕНИЕ ЗАПИСИ 30 СЕКУНДАМИ ===
 const MAX_RECORDING_TIME = 30000; // 30 секунд
 let recordingTimeout = null;
 
 // Переопределяем кнопку записи (вставь этот блок ПОСЛЕ того, как определена sendRecordBtn)
 // Найди в коде оригинальный обработчик и просто добавь эти строки ВНУТРЬ него
-    });
     messageInput.value="";
     sendRecordBtn.textContent="🎤";
   } else {
