@@ -374,6 +374,18 @@ messageInput.addEventListener('input', ()=>{
   }
 });
 
+// Запрещаем ввод текста во время записи
+setInterval(() => {
+  if (isRecording) {
+    messageInput.disabled = true;
+    messageInput.style.opacity = "0.5";
+    if (messageInput.value !== "") messageInput.value = "";
+  } else {
+    messageInput.disabled = false;
+    messageInput.style.opacity = "1";
+  }
+}, 100);
+
 async function uploadToSupabase(audioBlob) {
   const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webm`;
   const filePath = `${fileName}`;
@@ -412,6 +424,8 @@ sendRecordBtn.addEventListener('click', async ()=>{
         mediaRecorder.onstop=async ()=>{
           const audioBlob=new Blob(audioChunks,{type:'audio/webm'});
           sendRecordBtn.textContent = "⏳";
+          sendRecordBtn.disabled = true;
+          sendRecordBtn.style.opacity = "0.5";
           try {
             const audioUrl = await uploadToSupabase(audioBlob);
             if(!currentUser)return;
@@ -427,6 +441,8 @@ sendRecordBtn.addEventListener('click', async ()=>{
             alert("Ошибка отправки голосового. Проверь настройки Storage в Supabase.");
           } finally {
             sendRecordBtn.textContent="🎤";
+            sendRecordBtn.disabled = false;
+            sendRecordBtn.style.opacity = "1";
             stream.getTracks().forEach(track => track.stop());
           }
         };
@@ -442,17 +458,6 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
-  // Запрещаем ввод текста во время записи
-setInterval(() => {
-  if (isRecording) {
-    messageInput.disabled = true;
-    messageInput.style.opacity = "0.5";
-    if (messageInput.value !== "") messageInput.value = "";
-  } else {
-    messageInput.disabled = false;
-    messageInput.style.opacity = "1";
-  }
-}, 100);
 </script>
 </body>
 </html>
