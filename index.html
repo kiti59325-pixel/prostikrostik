@@ -126,7 +126,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// === Supabase (для хранения аудио) ===
+// === Supabase ===
 const SUPABASE_URL = 'https://wwimmalpgkfrfgrlumgw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3aW1tYWxwZ2tmcmZncmx1bWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODAxMzksImV4cCI6MjA5MTI1NjEzOX0.hYymJY-OrDRr7Nv3OE9Tk0hgcOKhzXPyYrij4JGoitg';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -136,7 +136,6 @@ let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
-// === Авторизация ===
 async function login() { 
   const provider = new GoogleAuthProvider(); 
   await signInWithPopup(auth, provider); 
@@ -155,7 +154,6 @@ onAuthStateChanged(auth, (user) => {
   renderMessages();
 });
 
-// === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
@@ -177,7 +175,6 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// === Чат ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
@@ -313,6 +310,11 @@ function renderMessages() {
         const rect=progressWrap.getBoundingClientRect();
         const percent=(e.clientX-rect.left)/rect.width;
         audio.currentTime=percent*audio.duration;
+        // Если аудио было на паузе и пользователь кликнул на прогресс-бар — запускаем
+        if (audio.paused) {
+          audio.play();
+          playBtn.textContent="❚❚";
+        }
       };
 
       topRow.appendChild(playBtn);
@@ -365,44 +367,38 @@ document.addEventListener('click',function(event){
   if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
 });
 
-// === ЖЁСТКИЙ ЗАПРЕТ НА ОДНОВРЕМЕННОЕ ВОСПРОИЗВЕДЕНИЕ ===
-function stopAllAudiosExcept(currentAudio) {
-  document.querySelectorAll('audio').forEach(audio => {
-    if (audio !== currentAudio && !audio.paused) {
-      audio.pause();
-      audio.currentTime = 0;
-      
-      const messageDiv = audio.closest('.message');
-      if (messageDiv) {
-        const playBtn = messageDiv.querySelector('div[style*="36px"]');
-        if (playBtn) playBtn.textContent = "▶";
-        const progressBar = messageDiv.querySelector('div[style*="height: 5px"] div');
-        if (progressBar) progressBar.style.width = "0%";
-      }
+// ========== ГЛАВНОЕ: ПРИНУДИТЕЛЬНАЯ ОСТАНОВКА ВСЕХ АУДИО ==========
+setInterval(() => {
+  const allAudios = document.querySelectorAll('audio');
+  let playingCount = 0;
+  let firstPlaying = null;
+  
+  // Считаем играющие аудио
+  allAudios.forEach(audio => {
+    if (!audio.paused && audio.currentTime > 0) {
+      playingCount++;
+      if (!firstPlaying) firstPlaying = audio;
     }
   });
-}
-
-document.addEventListener('play', function(e) {
-  if (e.target.tagName === 'AUDIO') {
-    stopAllAudiosExcept(e.target);
-  }
-}, true);
-
-document.addEventListener('mousedown', function(e) {
-  const progressBar = e.target.closest('div[style*="height: 5px"]');
-  if (progressBar) {
-    const messageDiv = progressBar.closest('.message');
-    if (messageDiv) {
-      const audio = messageDiv.querySelector('audio');
-      if (audio) {
-        setTimeout(() => {
-          stopAllAudiosExcept(audio);
-        }, 10);
+  
+  // Если больше одного — останавливаем все, кроме первого
+  if (playingCount > 1 && firstPlaying) {
+    allAudios.forEach(audio => {
+      if (audio !== firstPlaying && !audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+        // Сбрасываем кнопку
+        const msgDiv = audio.closest('.message');
+        if (msgDiv) {
+          const btn = msgDiv.querySelector('div[style*="36px"]');
+          if (btn) btn.textContent = "▶";
+          const bar = msgDiv.querySelector('div[style*="height: 5px"] div');
+          if (bar) bar.style.width = "0%";
+        }
       }
-    }
+    });
   }
-}, true);
+}, 50);
 
 // === ЗАПИСЬ АУДИО ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
