@@ -136,6 +136,27 @@ let nickname = localStorage.getItem("nickname") || "";
 let theme = localStorage.getItem("theme") || "dark";
 document.body.classList.add(theme);
 
+// === Глобальная переменная для текущего играющего аудио ===
+let currentlyPlayingAudio = null;
+let currentlyPlayingPlayBtn = null;
+
+// === Функция остановки всех аудио ===
+function stopAllAudio() {
+  if (currentlyPlayingAudio) {
+    currentlyPlayingAudio.pause();
+    currentlyPlayingAudio.currentTime = 0;
+    if (currentlyPlayingPlayBtn) {
+      currentlyPlayingPlayBtn.textContent = "▶";
+    }
+    // Сбрасываем прогресс-бар
+    const progressBar = currentlyPlayingPlayBtn?.closest('.message')?.querySelector('div[style*="height: 5px"] div');
+    if (progressBar) progressBar.style.width = "0%";
+    currentlyPlayingAudio = null;
+    currentlyPlayingPlayBtn = null;
+  }
+}
+
+// === Авторизация ===
 async function login() { 
   const provider = new GoogleAuthProvider(); 
   await signInWithPopup(auth, provider); 
@@ -154,6 +175,7 @@ onAuthStateChanged(auth, (user) => {
   renderMessages();
 });
 
+// === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
@@ -175,6 +197,7 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
+// === Чат ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
@@ -274,16 +297,26 @@ function renderMessages() {
         document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
       };
 
-      playBtn.onclick = ()=>{
-        if(audio.paused){ 
-          audio.play(); 
-          playBtn.textContent="❚❚"; 
-        }
-        else { 
-          audio.pause(); 
-          playBtn.textContent="▶"; 
+      // ========== КНОПКА ВОСПРОИЗВЕДЕНИЯ С БЛОКИРОВКОЙ ==========
+      playBtn.onclick = () => {
+        if (audio.paused) {
+          // Останавливаем текущее играющее аудио
+          stopAllAudio();
+          // Запускаем новое
+          audio.play();
+          playBtn.textContent = "❚❚";
+          currentlyPlayingAudio = audio;
+          currentlyPlayingPlayBtn = playBtn;
+        } else {
+          audio.pause();
+          playBtn.textContent = "▶";
+          if (currentlyPlayingAudio === audio) {
+            currentlyPlayingAudio = null;
+            currentlyPlayingPlayBtn = null;
+          }
         }
       };
+      // ========================================================
 
       audio.addEventListener("timeupdate", ()=>{
         if(!audio.duration)return;
@@ -304,16 +337,23 @@ function renderMessages() {
         playBtn.textContent="▶";
         progressBar.style.width="0%";
         audio.currentTime=0;
+        if (currentlyPlayingAudio === audio) {
+          currentlyPlayingAudio = null;
+          currentlyPlayingPlayBtn = null;
+        }
       });
 
       progressWrap.onclick = (e)=>{
         const rect=progressWrap.getBoundingClientRect();
         const percent=(e.clientX-rect.left)/rect.width;
         audio.currentTime=percent*audio.duration;
-        // Если аудио было на паузе и пользователь кликнул на прогресс-бар — запускаем
+        // Если аудио было на паузе — запускаем через нашу логику
         if (audio.paused) {
+          stopAllAudio();
           audio.play();
-          playBtn.textContent="❚❚";
+          playBtn.textContent = "❚❚";
+          currentlyPlayingAudio = audio;
+          currentlyPlayingPlayBtn = playBtn;
         }
       };
 
@@ -366,39 +406,6 @@ document.addEventListener('click',function(event){
   const btn=document.getElementById('mobileMenuBtn');
   if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
 });
-
-// ========== ГЛАВНОЕ: ПРИНУДИТЕЛЬНАЯ ОСТАНОВКА ВСЕХ АУДИО ==========
-setInterval(() => {
-  const allAudios = document.querySelectorAll('audio');
-  let playingCount = 0;
-  let firstPlaying = null;
-  
-  // Считаем играющие аудио
-  allAudios.forEach(audio => {
-    if (!audio.paused && audio.currentTime > 0) {
-      playingCount++;
-      if (!firstPlaying) firstPlaying = audio;
-    }
-  });
-  
-  // Если больше одного — останавливаем все, кроме первого
-  if (playingCount > 1 && firstPlaying) {
-    allAudios.forEach(audio => {
-      if (audio !== firstPlaying && !audio.paused) {
-        audio.pause();
-        audio.currentTime = 0;
-        // Сбрасываем кнопку
-        const msgDiv = audio.closest('.message');
-        if (msgDiv) {
-          const btn = msgDiv.querySelector('div[style*="36px"]');
-          if (btn) btn.textContent = "▶";
-          const bar = msgDiv.querySelector('div[style*="height: 5px"] div');
-          if (bar) bar.style.width = "0%";
-        }
-      }
-    });
-  }
-}, 50);
 
 // === ЗАПИСЬ АУДИО ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
