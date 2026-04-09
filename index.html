@@ -550,6 +550,95 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
+  // === ОТЛАДКА АВТОВОСПРОИЗВЕДЕНИЯ ===
+// Переопределяем функцию findNextVoiceMessage с логированием
+window.findNextVoiceMessage = function(currentAudioElement) {
+  console.log("🔍 Ищем следующее голосовое...");
+  const currentMessage = currentAudioElement.closest('.message');
+  if (!currentMessage) {
+    console.log("❌ Не найдено родительское сообщение");
+    return null;
+  }
+  
+  let nextMessage = currentMessage.nextElementSibling;
+  let foundTextBetween = false;
+  let step = 0;
+  
+  while (nextMessage && step < 20) {
+    step++;
+    const hasAudio = nextMessage.querySelector('audio');
+    const textContent = nextMessage.innerText.trim();
+    const hasText = textContent.length > 0 && textContent !== "▶" && textContent !== "❚❚" && !hasAudio;
+    
+    console.log(`  Шаг ${step}: hasAudio=${!!hasAudio}, hasText=${hasText}, текст="${textContent.substring(0,20)}"`);
+    
+    if (hasAudio) {
+      if (!foundTextBetween) {
+        console.log("✅ Найдено следующее голосовое!");
+        return nextMessage.querySelector('audio');
+      } else {
+        console.log("⏸ Найдено текстовое сообщение между, останавливаем");
+        return null;
+      }
+    }
+    
+    if (hasText) {
+      foundTextBetween = true;
+      console.log("📝 Найдено текстовое сообщение");
+    }
+    
+    nextMessage = nextMessage.nextElementSibling;
+  }
+  
+  console.log("❌ Следующее голосовое не найдено");
+  return null;
+};
+
+// Переопределяем playNextAudio с логированием
+window.playNextAudio = function(currentAudio) {
+  console.log("🎵 playNextAudio вызван");
+  const nextAudio = window.findNextVoiceMessage(currentAudio);
+  if (nextAudio) {
+    console.log("▶ Запускаем следующее аудио");
+    const nextMessage = nextAudio.closest('.message');
+    const nextPlayBtn = nextMessage.querySelector('div[style*="36px"]');
+    
+    setTimeout(() => {
+      stopAllAudio();
+      nextAudio.play().then(() => {
+        console.log("✅ Следующее аудио запущено");
+        if (nextPlayBtn) nextPlayBtn.textContent = "❚❚";
+        currentlyPlayingAudio = nextAudio;
+        currentlyPlayingPlayBtn = nextPlayBtn;
+      }).catch(e => {
+        console.log("❌ Ошибка автовоспроизведения:", e);
+      });
+    }, 200);
+  } else {
+    console.log("⏸ Нет следующего голосового для воспроизведения");
+  }
+};
+
+// Перехватываем событие ended на всех аудио
+document.addEventListener('ended', function(e) {
+  if (e.target.tagName === 'AUDIO') {
+    console.log("🎬 Аудио закончилось, запускаем поиск следующего");
+    const audio = e.target;
+    const playBtn = audio.closest('.message')?.querySelector('div[style*="36px"]');
+    const progressBar = audio.closest('.message')?.querySelector('div[style*="height: 5px"] div');
+    
+    if (playBtn) playBtn.textContent = "▶";
+    if (progressBar) progressBar.style.width = "0%";
+    audio.currentTime = 0;
+    
+    if (currentlyPlayingAudio === audio) {
+      currentlyPlayingAudio = null;
+      currentlyPlayingPlayBtn = null;
+    }
+    
+    window.playNextAudio(audio);
+  }
+}, true);
 </script>
 </body>
 </html>
