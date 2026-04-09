@@ -44,13 +44,15 @@
   .name { font-size: 11px; opacity: 0.7; }
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
 
-  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; }
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; gap: 8px; }
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
   #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; }
   body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
   body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
 
-  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+  button { cursor: pointer; }
+  
+  .login-panel { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
   @media (max-width: 600px) {
     #userPanel { display: none; }
@@ -61,7 +63,7 @@
     body.light #mobileMenuBtn { color: black; }
     body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; border-radius: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
+    #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
     #mobileMenu button { display: block; margin: 0 auto 8px auto; width: 90%; border-radius: 12px; padding: 10px 15px; font-weight: 500; letter-spacing: 0.2px; transition: 0.2s; border: none; }
     body.dark #mobileMenu button { background-color: #273c73; color: white; }
     body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
@@ -81,15 +83,19 @@
 <div id="userPanel">
   <input id="nickname" placeholder="Придумай ник..." />
   <button onclick="setNickname()">Сохранить ник</button>
-  <button onclick="login()">Войти через Google</button>
-  <button onclick="logout()">Выйти</button>
+  <div class="login-panel">
+    <input type="email" id="loginEmail" placeholder="Email" style="flex:2; min-width:120px;" />
+    <button onclick="loginWithEmail()">Войти</button>
+    <button onclick="logout()">Выйти</button>
+  </div>
   <div id="userInfo"></div>
 </div>
 
 <div id="mobileMenu">
   <input id="mobileNickname" placeholder="Придумай ник..." />
   <button onclick="setNicknameMobile()">Сохранить ник</button>
-  <button onclick="login()">Войти через Google</button>
+  <input type="email" id="mobileLoginEmail" placeholder="Email" />
+  <button onclick="loginWithEmailMobile()">Войти</button>
   <button onclick="logout()">Выйти</button>
 </div>
 
@@ -101,12 +107,11 @@
 </div>
 
 <script type="module">
-// ========== SUPABASE (вместо Firebase) ==========
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// ⚠️ ЗАМЕНИ ЭТИ ДАННЫЕ НА СВОИ (из Project Settings → API) ⚠️
-const SUPABASE_URL = 'https://dsqdfmabexngmnuhpait.supabase.co'  // ВСТАВЬ СВОЙ URL
-const SUPABASE_ANON_KEY = 'sb_publishable_A3vgFzPN5yMExCUAfZdJfw_a0mhxCTt'  // ВСТАВЬ СВОЙ KEY
+// ⚠️ ВСТАВЬ СВОИ ДАННЫЕ (из Project Settings → API) ⚠️
+const SUPABASE_URL = 'https://ТВОЙ_ПРОЕКТ.supabase.co'  // ЗАМЕНИ!
+const SUPABASE_ANON_KEY = 'ТВОЙ_ANON_KEY'  // ЗАМЕНИ!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -115,17 +120,53 @@ let nickname = localStorage.getItem("nickname") || ""
 let theme = localStorage.getItem("theme") || "dark"
 document.body.classList.add(theme)
 
-// === Google авторизация через Supabase ===
-async function login() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
+// === ВХОД ПО EMAIL (без подтверждения — сразу) ===
+async function loginWithEmail() {
+  const email = document.getElementById("loginEmail").value
+  if (!email) {
+    alert("Введи email")
+    return
+  }
+  
+  // Пробуем войти. Если пользователь не существует — создаётся автоматически
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email: email,
     options: {
-      redirectTo: window.location.origin
+      shouldCreateUser: true,
     }
   })
-  if (error) console.error("Ошибка входа:", error)
+  
+  if (error) {
+    alert("Ошибка: " + error.message)
+  } else {
+    // Если всё хорошо — ждём авторизации через onAuthStateChange
+    alert("Проверь почту! Пришло письмо со ссылкой для входа.")
+  }
 }
-window.login = login
+window.loginWithEmail = loginWithEmail
+
+async function loginWithEmailMobile() {
+  const email = document.getElementById("mobileLoginEmail").value
+  if (!email) {
+    alert("Введи email")
+    return
+  }
+  
+  const { error } = await supabase.auth.signInWithOtp({
+    email: email,
+    options: {
+      shouldCreateUser: true,
+    }
+  })
+  
+  if (error) {
+    alert("Ошибка: " + error.message)
+  } else {
+    alert("Проверь почту!")
+    document.getElementById("mobileMenu").style.display = "none"
+  }
+}
+window.loginWithEmailMobile = loginWithEmailMobile
 
 async function logout() {
   await supabase.auth.signOut()
@@ -139,8 +180,12 @@ window.logout = logout
 supabase.auth.onAuthStateChange((event, session) => {
   if (session?.user) {
     currentUser = session.user
-    if (!nickname) nickname = currentUser.user_metadata?.full_name || currentUser.email
+    if (!nickname) nickname = currentUser.email?.split('@')[0] || "Гость"
     document.getElementById("userInfo").innerText = "Ты: " + nickname
+    document.getElementById("loginEmail").value = ""
+    document.getElementById("mobileLoginEmail").value = ""
+    // Перезагружаем сообщения после входа
+    loadMessages()
   } else {
     currentUser = null
     document.getElementById("userInfo").innerText = "Не вошёл"
@@ -151,7 +196,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 // === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname")
-  nickname = input.value.trim() || (currentUser ? (currentUser.user_metadata?.full_name || "Гость") : "Гость")
+  nickname = input.value.trim() || (currentUser ? currentUser.email?.split('@')[0] || "Гость" : "Гость")
   document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"
   input.value = ""
   localStorage.setItem("nickname", nickname)
@@ -161,7 +206,7 @@ window.setNickname = setNickname
 
 function setNicknameMobile() {
   const input = document.getElementById("mobileNickname")
-  nickname = input.value.trim() || (currentUser ? (currentUser.user_metadata?.full_name || "Гость") : "Гость")
+  nickname = input.value.trim() || (currentUser ? currentUser.email?.split('@')[0] || "Гость" : "Гость")
   document.getElementById("userInfo").innerText = currentUser ? "Ты: " + nickname : "Не вошёл"
   input.value = ""
   localStorage.setItem("nickname", nickname)
@@ -174,7 +219,6 @@ window.setNicknameMobile = setNicknameMobile
 const chat = document.getElementById("chat")
 let messagesCache = []
 
-// Загрузка сообщений
 async function loadMessages() {
   const { data, error } = await supabase
     .from('messages')
@@ -189,7 +233,7 @@ async function loadMessages() {
   renderMessages()
 }
 
-// Подписка на новые сообщения в реальном времени
+// Подписка на новые сообщения
 supabase
   .channel('messages-channel')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
@@ -197,10 +241,9 @@ supabase
   })
   .subscribe()
 
-// Отправка текстового сообщения
 async function sendTextMessage(text) {
   if (!currentUser) {
-    alert("Сначала войдите через Google")
+    alert("Сначала войди по email")
     return false
   }
   
@@ -209,7 +252,7 @@ async function sendTextMessage(text) {
     .insert({
       text: text,
       is_audio: false,
-      user_name: nickname || currentUser.user_metadata?.full_name || "Гость",
+      user_name: nickname || currentUser.email?.split('@')[0] || "Гость",
       user_id: currentUser.id
     })
   
@@ -217,90 +260,76 @@ async function sendTextMessage(text) {
   return !error
 }
 
-// Отправка аудио (загружаем файл в Storage)
 async function sendAudioMessage(audioBlob) {
   if (!currentUser) {
-    alert("Сначала войдите через Google")
+    alert("Сначала войди по email")
     return false
   }
   
-  // Генерируем уникальное имя файла
   const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webm`
   const filePath = `${currentUser.id}/${fileName}`
   
-  // Загружаем в Storage
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from('audio-messages')
-    .upload(filePath, audioBlob, {
-      contentType: 'audio/webm'
-    })
+    .upload(filePath, audioBlob, { contentType: 'audio/webm' })
   
   if (uploadError) {
-    console.error("Ошибка загрузки аудио:", uploadError)
+    console.error("Ошибка загрузки:", uploadError)
+    alert("Ошибка загрузки аудио. Проверь настройки Storage в Supabase")
     return false
   }
   
-  // Получаем публичную ссылку
   const { data: urlData } = supabase.storage
     .from('audio-messages')
     .getPublicUrl(filePath)
   
-  // Сохраняем ссылку в таблицу messages
   const { error } = await supabase
     .from('messages')
     .insert({
       text: urlData.publicUrl,
       is_audio: true,
       audio_url: urlData.publicUrl,
-      user_name: nickname || currentUser.user_metadata?.full_name || "Гость",
+      user_name: nickname || currentUser.email?.split('@')[0] || "Гость",
       user_id: currentUser.id
     })
   
-  if (error) console.error("Ошибка сохранения ссылки:", error)
+  if (error) console.error("Ошибка сохранения:", error)
   return !error
 }
 
-// Удаление сообщения
 async function deleteMessage(id, userId, isAudio, audioUrl) {
-  // Можно удалять только свои сообщения
   if (userId !== currentUser?.id) return
   
-  // Если это аудио — удаляем файл из Storage
   if (isAudio && audioUrl) {
-    // Извлекаем путь из URL
     const path = audioUrl.split('/audio-messages/')[1]
     if (path) {
       await supabase.storage.from('audio-messages').remove([path])
     }
   }
   
-  // Удаляем запись из базы
   await supabase.from('messages').delete().eq('id', id)
   loadMessages()
 }
 window.deleteMessage = deleteMessage
 
-// === Отрисовка сообщений ===
 function renderMessages() {
   chat.innerHTML = ""
   
   messagesCache.forEach(msg => {
     const isMe = currentUser && msg.user_id === currentUser.id
-    const displayName = isMe ? nickname || currentUser?.user_metadata?.full_name || "Гость" : msg.user_name
+    const displayName = isMe ? nickname || currentUser?.email?.split('@')[0] || "Гость" : msg.user_name
     
     const div = document.createElement("div")
     div.className = "message " + (isMe ? "me" : "other")
     div.innerHTML = `<div class="name">${displayName}</div>`
     
     if (msg.is_audio) {
-      // Аудио сообщение
       const audio = document.createElement("audio")
       audio.src = msg.text
       audio.controls = true
       audio.style.maxWidth = "250px"
       div.appendChild(audio)
     } else {
-      // Текстовое сообщение
       div.insertAdjacentHTML('beforeend', msg.text)
     }
     
@@ -318,7 +347,7 @@ function renderMessages() {
   chat.scrollTop = chat.scrollHeight
 }
 
-// === Запись аудио ===
+// === ЗАПИСЬ АУДИО ===
 const sendRecordBtn = document.getElementById('sendRecordBtn')
 const messageInput = document.getElementById('messageInput')
 
@@ -327,7 +356,6 @@ let audioChunks = []
 let isRecording = false
 
 sendRecordBtn.addEventListener('click', async () => {
-  // Если есть текст — отправляем текст
   if (messageInput.value.trim() !== "") {
     await sendTextMessage(messageInput.value)
     messageInput.value = ""
@@ -335,7 +363,6 @@ sendRecordBtn.addEventListener('click', async () => {
     return
   }
   
-  // Если не записываем — начинаем запись
   if (!isRecording) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -354,18 +381,16 @@ sendRecordBtn.addEventListener('click', async () => {
       isRecording = true
       sendRecordBtn.textContent = "⏹️"
     } catch (err) {
-      console.error("Ошибка доступа к микрофону:", err)
       alert("Нет доступа к микрофону")
     }
   } else {
-    // Останавливаем запись
     mediaRecorder.stop()
     isRecording = false
     sendRecordBtn.textContent = "🎤"
   }
 })
 
-// === Тема и мобильное меню ===
+// === ТЕМА ===
 function toggleTheme() {
   document.body.classList.toggle("dark")
   document.body.classList.toggle("light")
@@ -387,14 +412,14 @@ document.addEventListener('click', function(event) {
   }
 })
 
-// Загружаем сообщения при старте
+// Загрузка при старте
 loadMessages()
 
-// Восстанавливаем сессию при загрузке
+// Восстановление сессии
 supabase.auth.getSession().then(({ data: { session } }) => {
   if (session?.user) {
     currentUser = session.user
-    if (!nickname) nickname = currentUser.user_metadata?.full_name || currentUser.email
+    if (!nickname) nickname = currentUser.email?.split('@')[0] || "Гость"
     document.getElementById("userInfo").innerText = "Ты: " + nickname
     renderMessages()
   }
