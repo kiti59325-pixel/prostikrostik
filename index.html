@@ -76,52 +76,7 @@
 
   button { border-radius: 12px; cursor: pointer; }
 
-  /* Простой эмодзи-пикер */
-  .simple-emoji-picker {
-    position: fixed;
-    bottom: 80px;
-    left: 10px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    padding: 12px;
-    display: none;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 8px;
-    z-index: 1000;
-    max-width: 350px;
-    max-height: 350px;
-    overflow-y: auto;
-  }
-  body.dark .simple-emoji-picker {
-    background: #1e293b;
-    border: 1px solid #475569;
-  }
-  .simple-emoji-picker button {
-    background: transparent;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 12px;
-    transition: 0.1s;
-    margin: 0;
-  }
-  .simple-emoji-picker button:hover {
-    background: rgba(0,0,0,0.1);
-    transform: scale(1.1);
-  }
-  body.dark .simple-emoji-picker button:hover {
-    background: rgba(255,255,255,0.1);
-  }
-
   @media (max-width: 600px) {
-    .simple-emoji-picker {
-      grid-template-columns: repeat(6, 1fr);
-      max-width: calc(100vw - 20px);
-      left: 10px;
-      right: 10px;
-    }
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
     #chat { height: calc(100vh - 110px); }
@@ -140,6 +95,9 @@
     body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
   }
 </style>
+<!-- Подключаем Emoji Mart (лучший эмодзи-пикер) -->
+<link rel="stylesheet" href="https://unpkg.com/emoji-mart/css/emoji-mart.css">
+<script src="https://unpkg.com/emoji-mart/dist/index.js"></script>
 </head>
 <body>
 
@@ -599,62 +557,66 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 });
 
-// === ПРОСТОЙ РАБОЧИЙ ЭМОДЗИ-ПИКЕР ===
+// === ЭМОДЗИ-ПИКЕР КАК В TELEGRAM ===
 const emojiBtn = document.getElementById('emojiBtn');
-const emojiPicker = document.createElement('div');
-emojiPicker.className = 'simple-emoji-picker';
+let emojiPicker = null;
+let isPickerVisible = false;
 
-// Все популярные смайлики (200+ штук)
-const emojis = [
-  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-  '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-  '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
-  '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-  '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻',
-  '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🙈',
-  '🙉', '🙊', '💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡',
-  '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬',
-  '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆',
-  '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️',
-  '💅', '🤳', '💪', '🦾', '🦵', '🦿', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅',
-  '👄', '💋', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💔', '❤️‍🔥', '❤️‍🩹', '💖', '💗',
-  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈',
-  '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝',
-  '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍'
-];
-
-emojis.forEach(emoji => {
-  const btn = document.createElement('button');
-  btn.textContent = emoji;
-  btn.onclick = () => {
-    messageInput.value += emoji;
-    messageInput.focus();
-    emojiPicker.style.display = 'none';
-    messageInput.dispatchEvent(new Event('input'));
-  };
-  emojiPicker.appendChild(btn);
-});
-
-document.body.appendChild(emojiPicker);
-
-emojiBtn.onclick = (e) => {
+emojiBtn.addEventListener('click', async (e) => {
   e.stopPropagation();
-  const isVisible = emojiPicker.style.display === 'grid';
-  emojiPicker.style.display = isVisible ? 'none' : 'grid';
   
-  // Позиционируем пикер над кнопкой
-  if (!isVisible) {
-    const rect = emojiBtn.getBoundingClientRect();
+  if (!emojiPicker) {
+    // Создаём пикер
+    emojiPicker = document.createElement('div');
+    emojiPicker.className = 'emoji-mart';
     emojiPicker.style.position = 'fixed';
+    emojiPicker.style.bottom = '80px';
+    emojiPicker.style.left = '10px';
+    emojiPicker.style.zIndex = '1000';
+    
+    // Создаём компонент Emoji Mart
+    const picker = new window.EmojiMart.Picker({
+      data: await window.EmojiMart.Data,
+      onEmojiSelect: (emoji) => {
+        messageInput.value += emoji.native;
+        messageInput.focus();
+        messageInput.dispatchEvent(new Event('input'));
+        emojiPicker.style.display = 'none';
+        isPickerVisible = false;
+      },
+      theme: document.body.classList.contains('dark') ? 'dark' : 'light',
+      previewPosition: 'none',
+      skinTonePosition: 'none'
+    });
+    
+    emojiPicker.appendChild(picker);
+    document.body.appendChild(emojiPicker);
+  }
+  
+  if (isPickerVisible) {
+    emojiPicker.style.display = 'none';
+    isPickerVisible = false;
+  } else {
+    emojiPicker.style.display = 'block';
+    isPickerVisible = true;
+    
+    // Обновляем позицию
+    const rect = emojiBtn.getBoundingClientRect();
     emojiPicker.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
     emojiPicker.style.left = rect.left + 'px';
+    
+    // Обновляем тему
+    if (emojiPicker.firstChild && emojiPicker.firstChild.updateTheme) {
+      emojiPicker.firstChild.updateTheme(document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
   }
-};
+});
 
+// Закрываем пикер при клике вне его
 document.addEventListener('click', (e) => {
-  if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+  if (emojiPicker && isPickerVisible && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
     emojiPicker.style.display = 'none';
+    isPickerVisible = false;
   }
 });
 </script>
