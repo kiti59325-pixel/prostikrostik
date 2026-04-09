@@ -339,20 +339,46 @@ function renderMessages() {
         else { audio.pause(); playBtn.textContent="▶"; }
       };
 
+      if(!audio.duration || !isFinite(audio.duration)) return;
+
       audio.addEventListener("timeupdate", ()=>{
-        if(!audio.duration)return;
-        const percent=(audio.currentTime/audio.duration)*100;
+  const percent=(audio.currentTime/audio.duration)*100;
         progressBar.style.width = percent+"%";
         const min=Math.floor(audio.currentTime/60);
         const sec=Math.floor(audio.currentTime%60);
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-      audio.addEventListener("loadedmetadata", ()=>{
-        const min=Math.floor(audio.duration/60);
-        const sec=Math.floor(audio.duration%60);
-        timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
-      });
+      audio.addEventListener("loadedmetadata", () => {
+  fixDuration();
+});
+
+function fixDuration() {
+  if (audio.duration && isFinite(audio.duration) && audio.duration > 0) {
+    updateTime(audio.duration);
+  } else {
+    // магический фикс для webm
+    audio.currentTime = 999999;
+
+    audio.addEventListener("timeupdate", function handler() {
+      audio.removeEventListener("timeupdate", handler);
+
+      if (audio.duration && isFinite(audio.duration)) {
+        updateTime(audio.duration);
+      } else {
+        timeLabel.textContent = "0:00";
+      }
+
+      audio.currentTime = 0;
+    });
+  }
+}
+
+function updateTime(time) {
+  const min = Math.floor(time / 60);
+  const sec = Math.floor(time % 60);
+  timeLabel.textContent = `${min}:${sec.toString().padStart(2,"0")}`;
+}
 
       audio.addEventListener("ended", ()=>{
         playBtn.textContent="▶";
@@ -457,7 +483,7 @@ sendRecordBtn.addEventListener('click', async ()=>{
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
-      mediaRecorder.start();
+      mediaRecorder.start(30000);
       isRecording=true;
       sendRecordBtn.textContent="⏹️";
     } else {
