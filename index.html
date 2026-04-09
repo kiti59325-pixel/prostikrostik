@@ -473,6 +473,29 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
+  // === ОСТАНАВЛИВАЕМ ДРУГИЕ АУДИО ПРИ ЗАПУСКЕ НОВОГО ===
+// Функция для остановки всех аудио кроме текущего
+function stopAllOtherAudio(currentAudio) {
+  const allAudios = document.querySelectorAll('audio');
+  allAudios.forEach(audio => {
+    if (audio !== currentAudio && !audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      // Находим кнопку воспроизведения для этого аудио и меняем её обратно на ▶
+      const playBtn = audio.closest('.message')?.querySelector('div[style*="36px"]');
+      if (playBtn && playBtn.textContent === "❚❚") {
+        playBtn.textContent = "▶";
+      }
+    }
+  });
+}
+
+// Перехватываем событие воспроизведения на всех аудио
+document.addEventListener('play', function(e) {
+  if (e.target.tagName === 'AUDIO') {
+    stopAllOtherAudio(e.target);
+  }
+}, true);
 </script>
 </body>
 </html>
