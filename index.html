@@ -277,8 +277,23 @@ function renderMessages() {
         document.querySelectorAll(".speed-label").forEach(el=>el.textContent=rate+"x");
       };
 
+      // ========== ИСПРАВЛЕННАЯ КНОПКА — ОСТАНАВЛИВАЕТ ДРУГИЕ АУДИО ==========
       playBtn.onclick = ()=>{
         if(audio.paused){ 
+          // Останавливаем ВСЕ другие аудио
+          document.querySelectorAll('audio').forEach(otherAudio => {
+            if (otherAudio !== audio && !otherAudio.paused) {
+              otherAudio.pause();
+              otherAudio.currentTime = 0;
+              const otherMessage = otherAudio.closest('.message');
+              if (otherMessage) {
+                const otherPlayBtn = otherMessage.querySelector('div[style*="36px"]');
+                if (otherPlayBtn) otherPlayBtn.textContent = "▶";
+                const otherProgressBar = otherMessage.querySelector('div[style*="height: 5px"] div');
+                if (otherProgressBar) otherProgressBar.style.width = "0%";
+              }
+            }
+          });
           audio.play(); 
           playBtn.textContent="❚❚"; 
         }
@@ -287,6 +302,7 @@ function renderMessages() {
           playBtn.textContent="▶"; 
         }
       };
+      // ======================================================================
 
       audio.addEventListener("timeupdate", ()=>{
         if(!audio.duration)return;
@@ -336,9 +352,6 @@ function renderMessages() {
     chat.appendChild(div);
   });
   chat.scrollTop = chat.scrollHeight;
-  
-  // Добавляем слушатели на новые аудио
-  addAudioListeners();
 }
 
 async function deleteMessage(id){ 
@@ -367,46 +380,6 @@ document.addEventListener('click',function(event){
   const btn=document.getElementById('mobileMenuBtn');
   if(menu.style.display==='flex'&&!menu.contains(event.target)&&event.target!==btn){menu.style.display='none';}
 });
-
-// === ЗАПРЕЩАЕМ ОДНОВРЕМЕННОЕ ВОСПРОИЗВЕДЕНИЕ НЕСКОЛЬКИХ АУДИО ===
-function stopAllOtherAudio(currentAudio) {
-  document.querySelectorAll('audio').forEach(audio => {
-    if (audio !== currentAudio && !audio.paused) {
-      audio.pause();
-      const messageDiv = audio.closest('.message');
-      if (messageDiv) {
-        const playBtn = messageDiv.querySelector('div[style*="36px"]');
-        if (playBtn && playBtn.textContent === "❚❚") {
-          playBtn.textContent = "▶";
-        }
-        const progressBar = messageDiv.querySelector('div[style*="height: 5px"] div');
-        if (progressBar) {
-          progressBar.style.width = "0%";
-        }
-      }
-      audio.currentTime = 0;
-    }
-  });
-}
-
-function addAudioListeners() {
-  document.querySelectorAll('audio').forEach(audio => {
-    if (!audio.hasAttribute('data-listener-added')) {
-      audio.setAttribute('data-listener-added', 'true');
-      audio.addEventListener('play', function() {
-        stopAllOtherAudio(this);
-      });
-    }
-  });
-}
-
-// Наблюдаем за появлением новых аудио
-const observer = new MutationObserver(() => {
-  addAudioListeners();
-});
-observer.observe(chat, { childList: true, subtree: true });
-
-addAudioListeners();
 
 // === ЗАПИСЬ АУДИО С ЗАГРУЗКОЙ В SUPABASE ===
 const sendRecordBtn = document.getElementById('sendRecordBtn');
