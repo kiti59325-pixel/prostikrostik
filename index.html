@@ -49,7 +49,6 @@
     gap: 8px;
     flex: 1;
     align-items: center;
-    position: relative;
   }
 
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; gap: 8px; }
@@ -76,110 +75,49 @@
 
   button { border-radius: 12px; cursor: pointer; }
 
-  /* Стили для панели эмодзи */
-  .emoji-panel {
+  /* Простая панель смайликов */
+  .simple-emoji-panel {
     position: fixed;
     bottom: 80px;
     left: 10px;
-    width: 350px;
-    max-width: calc(100vw - 20px);
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    z-index: 1000;
+    padding: 12px;
     display: none;
-    flex-direction: column;
-    overflow: hidden;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    z-index: 1000;
+    max-width: 350px;
+    max-height: 300px;
+    overflow-y: auto;
   }
-  body.dark .emoji-panel {
+  body.dark .simple-emoji-panel {
     background: #1e293b;
     border: 1px solid #475569;
   }
-  
-  .emoji-categories {
-    display: flex;
-    gap: 4px;
-    padding: 10px;
-    border-bottom: 1px solid #e2e8f0;
-    overflow-x: auto;
-    background: inherit;
-  }
-  body.dark .emoji-categories {
-    border-bottom-color: #334155;
-  }
-  .emoji-cat-btn {
+  .simple-emoji-panel button {
     background: transparent;
     border: none;
-    font-size: 22px;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 12px;
-    transition: 0.2s;
-    margin: 0;
-    opacity: 0.7;
-  }
-  .emoji-cat-btn:hover, .emoji-cat-btn.active {
-    opacity: 1;
-    background: rgba(0,0,0,0.08);
-  }
-  body.dark .emoji-cat-btn:hover, body.dark .emoji-cat-btn.active {
-    background: rgba(255,255,255,0.1);
-  }
-  
-  .emoji-search {
-    padding: 8px 10px;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  body.dark .emoji-search {
-    border-bottom-color: #334155;
-  }
-  .emoji-search input {
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 10px;
-    background: #f1f5f9;
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-  }
-  body.dark .emoji-search input {
-    background: #0f172a;
-    color: white;
-  }
-  
-  .emoji-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 6px;
-    padding: 12px;
-    max-height: 350px;
-    overflow-y: auto;
-  }
-  .emoji-grid button {
-    background: transparent;
-    border: none;
-    font-size: 26px;
+    font-size: 28px;
     cursor: pointer;
     padding: 8px;
-    border-radius: 10px;
+    border-radius: 12px;
     transition: 0.1s;
     margin: 0;
   }
-  .emoji-grid button:hover {
-    background: rgba(0,0,0,0.08);
+  .simple-emoji-panel button:hover {
+    background: rgba(0,0,0,0.1);
     transform: scale(1.1);
   }
-  body.dark .emoji-grid button:hover {
+  body.dark .simple-emoji-panel button:hover {
     background: rgba(255,255,255,0.1);
   }
-  
+
   @media (max-width: 600px) {
-    .emoji-grid {
+    .simple-emoji-panel {
       grid-template-columns: repeat(6, 1fr);
-    }
-    .emoji-panel {
-      width: calc(100vw - 20px);
+      max-width: calc(100vw - 20px);
       left: 10px;
       right: 10px;
     }
@@ -236,8 +174,6 @@
   </div>
   <button id="sendRecordBtn">🎤</button>
 </div>
-
-<div id="emojiPanel" class="emoji-panel"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -662,14 +598,54 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 });
 
-// === ЭМОДЗИ-ПАНЕЛЬ (своя, без библиотек) ===
+// === ПРОСТАЯ ПАНЕЛЬ СМАЙЛИКОВ (100% РАБОТАЕТ) ===
 const emojiBtn = document.getElementById('emojiBtn');
-const emojiPanel = document.getElementById('emojiPanel');
-let isPanelOpen = false;
+const emojiPanel = document.createElement('div');
+emojiPanel.className = 'simple-emoji-panel';
 
-// Все популярные смайлики по категориям
-const emojiData = {
-  '😀': ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃'],
-  '❤️': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💘', '💝', '💌', '💋'],
-  '🐶': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🐙', '🦑', '🦐', '🦞', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🐈', '🐓', '🦃', '🦚', '🦜', '🦢', '🕊️', '🐇', '🦝', '🦡', '🐁', '🐀', '🐿️', '🦔'],
-  '🍎': ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️',
+// 100 самых популярных смайликов
+const emojis = [
+  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+  '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+  '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
+  '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
+  '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻',
+  '💀', '☠️', '👽', '👾', '🤖', '🎃', '❤️', '🧡', '💛', '💚', '💙', '💜'
+];
+
+emojis.forEach(emoji => {
+  const btn = document.createElement('button');
+  btn.textContent = emoji;
+  btn.onclick = () => {
+    messageInput.value += emoji;
+    messageInput.focus();
+    messageInput.dispatchEvent(new Event('input'));
+    emojiPanel.style.display = 'none';
+  };
+  emojiPanel.appendChild(btn);
+});
+
+document.body.appendChild(emojiPanel);
+
+emojiBtn.onclick = (e) => {
+  e.stopPropagation();
+  const isVisible = emojiPanel.style.display === 'grid';
+  emojiPanel.style.display = isVisible ? 'none' : 'grid';
+  
+  if (!isVisible) {
+    const rect = emojiBtn.getBoundingClientRect();
+    emojiPanel.style.position = 'fixed';
+    emojiPanel.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+    emojiPanel.style.left = rect.left + 'px';
+  }
+};
+
+document.addEventListener('click', (e) => {
+  if (!emojiPanel.contains(e.target) && e.target !== emojiBtn) {
+    emojiPanel.style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
