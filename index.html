@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
+<!-- Подключаем эмодзи-пикер -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <style>
   body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
@@ -49,8 +51,48 @@
   #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; cursor: pointer; }
   body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
   body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  #emojiBtn {
+    margin-left: 0;
+    padding: 12px 14px;
+    font-size: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  #emojiBtn:hover {
+    background: rgba(0,0,0,0.08);
+  }
+  body.dark #emojiBtn:hover {
+    background: rgba(255,255,255,0.1);
+  }
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+
+  /* Стили для эмодзи-пикера */
+  emoji-picker {
+    --background: white;
+    --border-radius: 16px;
+    --category-button-color: #666;
+    position: fixed;
+    bottom: 80px;
+    left: 10px;
+    width: 350px;
+    max-width: calc(100vw - 20px);
+    height: 400px;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border-radius: 16px;
+  }
+  body.dark emoji-picker {
+    --background: #1e293b;
+    --border-color: #334155;
+    --button-hover-background-color: #334155;
+    --input-border-color: #475569;
+    --input-background-color: #0f172a;
+    --category-button-color: #aaa;
+  }
 
   body.dark #chat::-webkit-scrollbar { width: 8px; }
   body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
@@ -60,6 +102,11 @@
   body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
 
   @media (max-width: 600px) {
+    emoji-picker {
+      left: 10px;
+      right: 10px;
+      width: auto;
+    }
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
     #chat { height: calc(100vh - 110px); }
@@ -107,9 +154,12 @@
 <div id="chat"></div>
 
 <div id="inputArea">
+  <button id="emojiBtn">😊</button>
   <input id="messageInput" placeholder="Сообщение..." />
   <button id="sendRecordBtn">🎤</button>
 </div>
+
+<emoji-picker id="emojiPicker" style="display: none;"></emoji-picker>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -177,11 +227,9 @@ function findNextAudio(currentMsgIndex) {
       }
     }
   }
-  
   return nextAudioItem;
 }
 
-// === Авторизация ===
 async function login() { 
   const provider = new GoogleAuthProvider(); 
   await signInWithPopup(auth, provider); 
@@ -200,7 +248,6 @@ onAuthStateChanged(auth, (user) => {
   renderMessages();
 });
 
-// === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
@@ -222,7 +269,6 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// === Чат ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
 let messagesCache = [];
@@ -366,7 +412,6 @@ function renderMessages() {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
-      // === АВТОВОСПРОИЗВЕДЕНИЕ ===
       audio.addEventListener("ended", () => {
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
@@ -554,6 +599,38 @@ sendRecordBtn.addEventListener('click', async ()=>{
     }
   }
 });
+
+// === ЭМОДЗИ-ПИКЕР ===
+const emojiBtn = document.getElementById('emojiBtn');
+const emojiPicker = document.getElementById('emojiPicker');
+
+if (emojiBtn && emojiPicker) {
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = emojiPicker.style.display === 'block';
+        if (!isVisible) {
+            const rect = emojiBtn.getBoundingClientRect();
+            emojiPicker.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+            emojiPicker.style.left = rect.left + 'px';
+            const isDark = document.body.classList.contains('dark');
+            emojiPicker.setAttribute('theme', isDark ? 'dark' : 'light');
+        }
+        emojiPicker.style.display = isVisible ? 'none' : 'block';
+    });
+
+    emojiPicker.addEventListener('emoji-click', (event) => {
+        messageInput.value += event.detail.unicode;
+        messageInput.dispatchEvent(new Event('input'));
+        messageInput.focus();
+        emojiPicker.style.display = 'none';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+            emojiPicker.style.display = 'none';
+        }
+    });
+}
 </script>
 </body>
 </html>
