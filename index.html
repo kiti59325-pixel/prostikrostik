@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <style>
   body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
@@ -49,6 +50,7 @@
     gap: 8px;
     flex: 1;
     align-items: center;
+    position: relative;
   }
 
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; gap: 8px; }
@@ -75,51 +77,36 @@
 
   button { border-radius: 12px; cursor: pointer; }
 
-  /* Простая панель смайликов */
-  .simple-emoji-panel {
+  /* Стили для эмодзи-пикера */
+  emoji-picker {
+    --background: white;
+    --border-radius: 16px;
+    --category-button-color: #666;
+    --category-button-size: 32px;
+    --font-size: 14px;
     position: fixed;
     bottom: 80px;
     left: 10px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    padding: 12px;
-    display: none;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 8px;
+    width: 350px;
+    max-width: calc(100vw - 20px);
+    height: 400px;
     z-index: 1000;
-    max-width: 350px;
-    max-height: 300px;
-    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
-  body.dark .simple-emoji-panel {
-    background: #1e293b;
-    border: 1px solid #475569;
+  body.dark emoji-picker {
+    --background: #1e293b;
+    --border-color: #334155;
+    --button-hover-background-color: #334155;
+    --input-border-color: #475569;
+    --input-background-color: #0f172a;
+    --category-button-color: #aaa;
   }
-  .simple-emoji-panel button {
-    background: transparent;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 12px;
-    transition: 0.1s;
-    margin: 0;
-  }
-  .simple-emoji-panel button:hover {
-    background: rgba(0,0,0,0.1);
-    transform: scale(1.1);
-  }
-  body.dark .simple-emoji-panel button:hover {
-    background: rgba(255,255,255,0.1);
-  }
-
+  
   @media (max-width: 600px) {
-    .simple-emoji-panel {
-      grid-template-columns: repeat(6, 1fr);
-      max-width: calc(100vw - 20px);
+    emoji-picker {
       left: 10px;
       right: 10px;
+      width: auto;
     }
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
@@ -174,6 +161,8 @@
   </div>
   <button id="sendRecordBtn">🎤</button>
 </div>
+
+<emoji-picker id="emojiPicker" style="display: none;"></emoji-picker>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -598,54 +587,42 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 });
 
-// === ПРОСТАЯ ПАНЕЛЬ СМАЙЛИКОВ (100% РАБОТАЕТ) ===
-const emojiBtn = document.getElementById('emojiBtn');
-const emojiPanel = document.createElement('div');
-emojiPanel.className = 'simple-emoji-panel';
+// === ЭМОДЗИ-ПИКЕР ===
+const emojiButton = document.getElementById('emojiBtn');
+const emojiPicker = document.getElementById('emojiPicker');
 
-// 100 самых популярных смайликов
-const emojis = [
-  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
-  '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
-  '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
-  '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
-  '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-  '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻',
-  '💀', '☠️', '👽', '👾', '🤖', '🎃', '❤️', '🧡', '💛', '💚', '💙', '💜'
-];
+if (emojiButton && emojiPicker) {
+    const togglePicker = () => {
+        const isVisible = emojiPicker.style.display === 'block';
+        if (!isVisible) {
+            const buttonRect = emojiButton.getBoundingClientRect();
+            emojiPicker.style.bottom = `${window.innerHeight - buttonRect.top + 10}px`;
+            emojiPicker.style.left = `${buttonRect.left}px`;
+            // Обновляем тему пикера
+            const isDark = document.body.classList.contains('dark');
+            emojiPicker.setAttribute('theme', isDark ? 'dark' : 'light');
+        }
+        emojiPicker.style.display = isVisible ? 'none' : 'block';
+    };
 
-emojis.forEach(emoji => {
-  const btn = document.createElement('button');
-  btn.textContent = emoji;
-  btn.onclick = () => {
-    messageInput.value += emoji;
-    messageInput.focus();
-    messageInput.dispatchEvent(new Event('input'));
-    emojiPanel.style.display = 'none';
-  };
-  emojiPanel.appendChild(btn);
-});
+    emojiButton.addEventListener('click', togglePicker);
 
-document.body.appendChild(emojiPanel);
+    emojiPicker.addEventListener('emoji-click', (event) => {
+        const emoji = event.detail.unicode;
+        if (messageInput) {
+            messageInput.value += emoji;
+            messageInput.dispatchEvent(new Event('input'));
+            messageInput.focus();
+        }
+        emojiPicker.style.display = 'none';
+    });
 
-emojiBtn.onclick = (e) => {
-  e.stopPropagation();
-  const isVisible = emojiPanel.style.display === 'grid';
-  emojiPanel.style.display = isVisible ? 'none' : 'grid';
-  
-  if (!isVisible) {
-    const rect = emojiBtn.getBoundingClientRect();
-    emojiPanel.style.position = 'fixed';
-    emojiPanel.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
-    emojiPanel.style.left = rect.left + 'px';
-  }
-};
-
-document.addEventListener('click', (e) => {
-  if (!emojiPanel.contains(e.target) && e.target !== emojiBtn) {
-    emojiPanel.style.display = 'none';
-  }
-});
+    document.addEventListener('click', (event) => {
+        if (emojiPicker && !emojiPicker.contains(event.target) && event.target !== emojiButton) {
+            emojiPicker.style.display = 'none';
+        }
+    });
+}
 </script>
 </body>
 </html>
