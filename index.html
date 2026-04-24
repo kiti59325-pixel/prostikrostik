@@ -4,38 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ПростикРостик</title>
-<!-- Подключаем эмодзи-пикер -->
-<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 <style>
-  body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
+  * {
+    box-sizing: border-box;
+  }
+  
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
   body.light { background: #f8fafc; color: black; }
 
-  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+  header { padding: 15px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; position: relative; flex-shrink: 0; }
   body.dark header { background: #1e293b; color: white; }
-  body.light header { background: #f1f5f9; color: black; }
+  body.light header { background: #ffffff; color: black; border-bottom: 1px solid #e9ecef; }
 
   #headerButtons { display: flex; gap: 10px; align-items: center; }
-  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; }
-  #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; }
+  #themeBtn { border-radius: 50%; background-color: transparent; font-size: 18px; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; border: none; outline: none; box-shadow: none; cursor: pointer; color: inherit; }
+  #mobileMenuBtn { display: none; border: none; background: transparent; font-size: 24px; cursor: pointer; color: inherit; }
 
-  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  #userPanel { position: sticky; top: 0; z-index: 100; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-shrink: 0; }
   body.dark #userPanel { background-color: #1e293b; }
-  body.light #userPanel { background-color: #f1f5f9; }
+  body.light #userPanel { background-color: #ffffff; border-bottom: 1px solid #e9ecef; box-shadow: none; }
   #userPanel button { border-radius: 12px; padding: 10px 15px; border: none; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; color: inherit; transition: 0.2s; }
   body.dark #userPanel button { background-color: #273c73; color: white; }
-  body.light #userPanel button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-  body.light #userPanel button:hover { background-color: #a5d0ff; color: #1f2937; }
-  body.dark #userPanel button:hover { background-color: #1e40af; color: white; }
+  body.light #userPanel button { background-color: #f0f2f5; color: #1f2937; }
+  body.light #userPanel button:hover { background-color: #e4e6e9; }
+  body.dark #userPanel button:hover { background-color: #1e40af; }
 
-  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-  body.light #nickname { background-color: white; color: black; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  #nickname { background-color: inherit; color: inherit; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; }
+  body.dark #nickname { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
+  body.light #nickname { background-color: #f0f2f5; color: black; border: none; }
 
   #mobileMenu { display: none; position: absolute; top: 60px; right: 10px; background: inherit; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 200; flex-direction: column; gap: 8px; min-width: 180px; }
   #mobileMenu input, #mobileMenu button { width: 100%; }
 
-  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+  #chat { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; min-height: 0; }
   .message { max-width: 60%; width: fit-content; padding: 10px; margin: 5px; border-radius: 12px; position: relative; word-wrap: break-word; }
   .me { align-self: flex-end; background: #273c73; color: white; }
   body.dark .other { background: #334155; color: white; }
@@ -46,11 +48,11 @@
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
   .message-text { margin-top: 5px; }
 
-  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; gap: 8px; }
-  input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
+  #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; gap: 8px; flex-shrink: 0; }
+  input { flex: 1; padding: 10px; border-radius: 25px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
   #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; cursor: pointer; }
-  body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
-  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  body.light #messageInput, body.light #sendRecordBtn { background-color: #f0f2f5; color: black; }
+  body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); }
   #emojiBtn {
     margin-left: 0;
     padding: 12px 14px;
@@ -68,44 +70,133 @@
     background: rgba(255,255,255,0.1);
   }
 
-  button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
+  button { border-radius: 12px; cursor: pointer; }
 
-  /* Стили для эмодзи-пикера */
-  emoji-picker {
-    --background: white;
-    --border-radius: 16px;
-    --category-button-color: #666;
+  /* === КРАСИВАЯ ПАНЕЛЬ СМАЙЛИКОВ КАК В TELEGRAM === */
+  .telegram-emoji-panel {
     position: fixed;
     bottom: 80px;
     left: 10px;
-    width: 350px;
+    width: 370px;
     max-width: calc(100vw - 20px);
-    height: 400px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.15);
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    border-radius: 16px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
-  body.dark emoji-picker {
-    --background: #1e293b;
-    --border-color: #334155;
-    --button-hover-background-color: #334155;
-    --input-border-color: #475569;
-    --input-background-color: #0f172a;
-    --category-button-color: #aaa;
+  body.dark .telegram-emoji-panel {
+    background: #1e293b;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.4);
   }
-
-  body.dark #chat::-webkit-scrollbar { width: 8px; }
-  body.dark #chat::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-  body.dark #chat::-webkit-scrollbar-thumb { background-color: #273c73; border-radius: 4px; border: 2px solid #1e293b; }
-  body.light #chat::-webkit-scrollbar { width: 8px; }
-  body.light #chat::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-  body.light #chat::-webkit-scrollbar-thumb { background-color: #93c5fd; border-radius: 4px; border: 2px solid #e2e8f0; }
-
+  
+  /* Поиск */
+  .telegram-emoji-search {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  body.dark .telegram-emoji-search {
+    border-bottom-color: #334155;
+  }
+  .telegram-emoji-search input {
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 12px;
+    background: #f0f2f5;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+  }
+  body.dark .telegram-emoji-search input {
+    background: #0f172a;
+    color: white;
+  }
+  
+  /* Категории */
+  .telegram-emoji-categories {
+    display: flex;
+    gap: 4px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9ecef;
+    overflow-x: auto;
+    background: inherit;
+  }
+  body.dark .telegram-emoji-categories {
+    border-bottom-color: #334155;
+  }
+  .telegram-emoji-cat-btn {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: 0.2s;
+    margin: 0;
+    opacity: 0.7;
+  }
+  .telegram-emoji-cat-btn:hover, .telegram-emoji-cat-btn.active {
+    opacity: 1;
+    background: rgba(0,0,0,0.08);
+  }
+  body.dark .telegram-emoji-cat-btn:hover, body.dark .telegram-emoji-cat-btn.active {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  /* Сетка смайликов */
+  .telegram-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    padding: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .telegram-emoji-grid button {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: 0.1s;
+    margin: 0;
+  }
+  .telegram-emoji-grid button:hover {
+    background: rgba(0,0,0,0.08);
+    transform: scale(1.1);
+  }
+  body.dark .telegram-emoji-grid button:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  /* Красивый скроллбар */
+  .telegram-emoji-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+  .telegram-emoji-grid::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .telegram-emoji-grid::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  body.dark .telegram-emoji-grid::-webkit-scrollbar-thumb {
+    background: #475569;
+  }
+  
   @media (max-width: 600px) {
-    emoji-picker {
+    .telegram-emoji-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .telegram-emoji-panel {
+      width: calc(100vw - 20px);
       left: 10px;
       right: 10px;
-      width: auto;
     }
     #userPanel { display: none; }
     #mobileMenuBtn { display: flex; }
@@ -114,15 +205,15 @@
     body.dark #mobileMenuBtn { color: white; }
     body.light #mobileMenuBtn { color: black; }
     body.dark #mobileMenu { background-color: #1f2a44; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    body.light #mobileMenu { background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    body.light #mobileMenu { background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e9ecef; }
     #mobileMenu input { box-sizing: border-box; width: 100%; margin-bottom: 10px; border-radius: 10px; padding: 10px; background-color: inherit; color: inherit; border: 1px solid #ccc; }
     body.dark #mobileMenu input { border: 1px solid rgba(255,255,255,0.2); }
-    body.light #mobileMenu input { border: 1px solid #d1d5db; }
+    body.light #mobileMenu input { border: 1px solid #e9ecef; background: #f0f2f5; }
     #mobileMenu button { display: block; margin: 0 auto 8px auto; width: 90%; border-radius: 12px; padding: 10px 15px; font-weight: 500; letter-spacing: 0.2px; transition: 0.2s; border: none; }
     body.dark #mobileMenu button { background-color: #273c73; color: white; }
     body.dark #mobileMenu button:hover { background-color: #1e40af; }
-    body.light #mobileMenu button { background-color: #c7e0ff; color: #1f2937; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-    body.light #mobileMenu button:hover { background-color: #a5d0ff; color: #1f2937; }
+    body.light #mobileMenu button { background-color: #f0f2f5; color: #1f2937; }
+    body.light #mobileMenu button:hover { background-color: #e4e6e9; }
   }
 </style>
 </head>
@@ -159,7 +250,7 @@
   <button id="sendRecordBtn">🎤</button>
 </div>
 
-<emoji-picker id="emojiPicker" style="display: none;"></emoji-picker>
+<div id="emojiPanel" class="telegram-emoji-panel"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -190,7 +281,6 @@ let currentlyPlayingAudio = null;
 let currentlyPlayingPlayBtn = null;
 let allAudioItems = [];
 
-// === Функция остановки всех аудио ===
 function stopAllAudio() {
   if (currentlyPlayingAudio) {
     currentlyPlayingAudio.pause();
@@ -203,7 +293,6 @@ function stopAllAudio() {
   }
 }
 
-// === Функция поиска следующего аудио ===
 function findNextAudio(currentMsgIndex) {
   let nextAudioItem = null;
   let hasTextBetween = false;
@@ -218,7 +307,6 @@ function findNextAudio(currentMsgIndex) {
           break;
         }
       }
-      
       if (!hasTextBetween) {
         nextAudioItem = item;
         break;
@@ -287,7 +375,6 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if (data.isAudio) {
@@ -416,14 +503,11 @@ function renderMessages() {
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
         audio.currentTime = 0;
-        
         if (currentlyPlayingAudio === audio) {
           currentlyPlayingAudio = null;
           currentlyPlayingPlayBtn = null;
         }
-        
         const nextAudioItem = findNextAudio(msgIndex);
-        
         if (nextAudioItem) {
           setTimeout(() => {
             stopAllAudio();
@@ -471,7 +555,6 @@ function renderMessages() {
     }
     chat.appendChild(div);
   });
-  
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -600,37 +683,110 @@ sendRecordBtn.addEventListener('click', async ()=>{
   }
 });
 
-// === ЭМОДЗИ-ПИКЕР ===
+// === КРАСИВАЯ ПАНЕЛЬ СМАЙЛИКОВ ===
 const emojiBtn = document.getElementById('emojiBtn');
-const emojiPicker = document.getElementById('emojiPicker');
+const emojiPanel = document.getElementById('emojiPanel');
+let isPanelOpen = false;
+let currentCategory = '😀';
+let searchQuery = '';
 
-if (emojiBtn && emojiPicker) {
-    emojiBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = emojiPicker.style.display === 'block';
-        if (!isVisible) {
-            const rect = emojiBtn.getBoundingClientRect();
-            emojiPicker.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
-            emojiPicker.style.left = rect.left + 'px';
-            const isDark = document.body.classList.contains('dark');
-            emojiPicker.setAttribute('theme', isDark ? 'dark' : 'light');
-        }
-        emojiPicker.style.display = isVisible ? 'none' : 'block';
-    });
+// Все смайлики по категориям (350+ самых популярных)
+const emojiData = {
+  '😀': ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃'],
+  '❤️': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💘', '💝', '💌', '💋', '👄', '🫀', '🫁', '🧠'],
+  '🐶': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🐙', '🦑', '🦐', '🦞', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🦬', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛', '🪶', '🐓', '🦃', '🦤', '🦚', '🦜', '🦢', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦫', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔'],
+  '🍕': ['🍕', '🍔', '🍟', '🌭', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🧂', '🥤', '🧃', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥢', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴'],
+  '⚽': ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '🛹', '🛼', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤾', '🏌️', '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚵', '🚴', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰']
+};
 
-    emojiPicker.addEventListener('emoji-click', (event) => {
-        messageInput.value += event.detail.unicode;
-        messageInput.dispatchEvent(new Event('input'));
-        messageInput.focus();
-        emojiPicker.style.display = 'none';
-    });
+// Создаём панель поиска
+const searchDiv = document.createElement('div');
+searchDiv.className = 'telegram-emoji-search';
+const searchInput = document.createElement('input');
+searchInput.type = 'text';
+searchInput.placeholder = 'Поиск смайликов...';
+searchInput.oninput = (e) => {
+  searchQuery = e.target.value.toLowerCase();
+  updateEmojiGrid();
+};
+searchDiv.appendChild(searchInput);
+emojiPanel.appendChild(searchDiv);
 
-    document.addEventListener('click', (e) => {
-        if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
-            emojiPicker.style.display = 'none';
-        }
-    });
+// Создаём панель категорий
+const categoriesDiv = document.createElement('div');
+categoriesDiv.className = 'telegram-emoji-categories';
+for (const [cat, emojis] of Object.entries(emojiData)) {
+  const btn = document.createElement('button');
+  btn.textContent = cat;
+  btn.className = 'telegram-emoji-cat-btn';
+  if (cat === currentCategory) btn.classList.add('active');
+  btn.onclick = () => {
+    currentCategory = cat;
+    searchQuery = '';
+    searchInput.value = '';
+    updateEmojiGrid();
+    document.querySelectorAll('.telegram-emoji-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+  categoriesDiv.appendChild(btn);
 }
+emojiPanel.appendChild(categoriesDiv);
+
+// Создаём сетку смайликов
+const emojiGrid = document.createElement('div');
+emojiGrid.className = 'telegram-emoji-grid';
+emojiPanel.appendChild(emojiGrid);
+
+function updateEmojiGrid() {
+  emojiGrid.innerHTML = '';
+  let emojisToShow = [];
+  
+  if (searchQuery) {
+    for (const [cat, emojis] of Object.entries(emojiData)) {
+      emojisToShow.push(...emojis.filter(e => e === searchQuery || e.includes(searchQuery)));
+    }
+  } else {
+    emojisToShow = emojiData[currentCategory];
+  }
+  
+  emojisToShow.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.textContent = emoji;
+    btn.onclick = () => {
+      messageInput.value += emoji;
+      messageInput.dispatchEvent(new Event('input'));
+      messageInput.focus();
+      emojiPanel.style.display = 'none';
+      isPanelOpen = false;
+    };
+    emojiGrid.appendChild(btn);
+  });
+}
+
+updateEmojiGrid();
+
+// Открытие/закрытие панели
+emojiBtn.onclick = (e) => {
+  e.stopPropagation();
+  if (isPanelOpen) {
+    emojiPanel.style.display = 'none';
+    isPanelOpen = false;
+  } else {
+    const rect = emojiBtn.getBoundingClientRect();
+    emojiPanel.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+    emojiPanel.style.left = rect.left + 'px';
+    emojiPanel.style.display = 'flex';
+    isPanelOpen = true;
+  }
+};
+
+// Закрытие при клике вне
+document.addEventListener('click', (e) => {
+  if (isPanelOpen && !emojiPanel.contains(e.target) && e.target !== emojiBtn) {
+    emojiPanel.style.display = 'none';
+    isPanelOpen = false;
+  }
+});
 </script>
 </body>
 </html>
