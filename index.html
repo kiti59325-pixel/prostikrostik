@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ПростикРостик - Реакции</title>
+<title>ПростикРостик</title>
 <style>
   body { margin: 0; font-family: Arial; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; }
   body.dark { background: #0f172a; color: white; }
@@ -44,98 +44,11 @@
   .delete-btn { position: absolute; top: 2px; right: 6px; cursor: pointer; font-size: 12px; opacity: 0.6; }
   .message-text { margin-top: 5px; }
 
-  /* Реакции */
-  .reactions {
-    display: flex;
-    gap: 4px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-  .reaction {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: rgba(0,0,0,0.05);
-    padding: 2px 6px;
-    border-radius: 20px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: 0.1s;
-  }
-  body.dark .reaction {
-    background: rgba(255,255,255,0.1);
-  }
-  .reaction:hover {
-    background: rgba(0,0,0,0.1);
-  }
-  body.dark .reaction:hover {
-    background: rgba(255,255,255,0.2);
-  }
-  .reaction.active {
-    background: #3b82f6;
-    color: white;
-  }
-  body.dark .reaction.active {
-    background: #3b82f6;
-  }
-  
-  /* Панель выбора реакции */
-  .reaction-picker {
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    background: white;
-    border-radius: 30px;
-    padding: 6px 10px;
-    display: flex;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 100;
-    margin-bottom: 5px;
-  }
-  body.dark .reaction-picker {
-    background: #1e293b;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .reaction-picker button {
-    background: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    transition: 0.1s;
-    margin: 0;
-  }
-  .reaction-picker button:hover {
-    transform: scale(1.2);
-    background: rgba(0,0,0,0.05);
-  }
-  body.dark .reaction-picker button:hover {
-    background: rgba(255,255,255,0.1);
-  }
-
   #inputArea { display: flex; padding: 10px; justify-content: center; background: transparent; gap: 8px; }
   input { flex: 1; padding: 10px; border-radius: 10px; border: none; outline: none; background-color: inherit; color: inherit; font-size: 14px; }
   #messageInput, #sendRecordBtn { border-radius: 25px; border: none; outline: none; padding: 12px 16px; font-size: 14px; transition: 0.2s; cursor: pointer; }
   body.light #messageInput, body.light #sendRecordBtn { background-color: white; color: black; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
   body.dark #messageInput, body.dark #sendRecordBtn { background-color: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
-  #emojiBtn {
-    margin-left: 0;
-    padding: 12px 14px;
-    font-size: 20px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: 0.2s;
-  }
-  #emojiBtn:hover {
-    background: rgba(0,0,0,0.08);
-  }
-  body.dark #emojiBtn:hover {
-    background: rgba(255,255,255,0.1);
-  }
 
   button { margin-left: 10px; border-radius: 12px; cursor: pointer; }
 
@@ -200,7 +113,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -227,6 +140,7 @@ let currentlyPlayingAudio = null;
 let currentlyPlayingPlayBtn = null;
 let allAudioItems = [];
 
+// === Функция остановки всех аудио ===
 function stopAllAudio() {
   if (currentlyPlayingAudio) {
     currentlyPlayingAudio.pause();
@@ -239,6 +153,7 @@ function stopAllAudio() {
   }
 }
 
+// === Функция поиска следующего аудио ===
 function findNextAudio(currentMsgIndex) {
   let nextAudioItem = null;
   let hasTextBetween = false;
@@ -253,6 +168,7 @@ function findNextAudio(currentMsgIndex) {
           break;
         }
       }
+      
       if (!hasTextBetween) {
         nextAudioItem = item;
         break;
@@ -261,9 +177,11 @@ function findNextAudio(currentMsgIndex) {
       }
     }
   }
+  
   return nextAudioItem;
 }
 
+// === Авторизация ===
 async function login() { 
   const provider = new GoogleAuthProvider(); 
   await signInWithPopup(auth, provider); 
@@ -282,6 +200,7 @@ onAuthStateChanged(auth, (user) => {
   renderMessages();
 });
 
+// === Ник ===
 function setNickname() {
   const input = document.getElementById("nickname");
   nickname = input.value.trim() || (currentUser ? currentUser.displayName : "Гость");
@@ -303,38 +222,6 @@ function setNicknameMobile() {
 }
 window.setNicknameMobile = setNicknameMobile;
 
-// === Реакции ===
-async function addReaction(messageId, emoji) {
-  if (!currentUser) return;
-  const messageRef = doc(db, "messages", messageId);
-  await updateDoc(messageRef, {
-    [`reactions.${emoji}`]: arrayUnion(currentUser.uid)
-  });
-}
-window.addReaction = addReaction;
-
-async function removeReaction(messageId, emoji) {
-  if (!currentUser) return;
-  const messageRef = doc(db, "messages", messageId);
-  await updateDoc(messageRef, {
-    [`reactions.${emoji}`]: arrayRemove(currentUser.uid)
-  });
-}
-window.removeReaction = removeReaction;
-
-async function toggleReaction(messageId, emoji) {
-  if (!currentUser) return;
-  const messageRef = doc(db, "messages", messageId);
-  const message = messagesCache.find(m => m.id === messageId);
-  const users = message?.data?.reactions?.[emoji] || [];
-  if (users.includes(currentUser.uid)) {
-    await removeReaction(messageId, emoji);
-  } else {
-    await addReaction(messageId, emoji);
-  }
-}
-window.toggleReaction = toggleReaction;
-
 // === Чат ===
 const chat = document.getElementById("chat");
 const q = query(collection(db, "messages"), orderBy("time"));
@@ -354,7 +241,7 @@ function renderMessages() {
     const displayName = isMe ? nickname || (currentUser ? currentUser.displayName : "Гость") : data.user;
     const div = document.createElement("div");
     div.className = "message " + (isMe ? "me" : "other");
-    div.setAttribute("data-message-id", docObj.id);
+    
     div.innerHTML = `<div class="name">${displayName}</div>`;
 
     if (data.isAudio) {
@@ -479,15 +366,19 @@ function renderMessages() {
         timeLabel.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
       });
 
+      // === АВТОВОСПРОИЗВЕДЕНИЕ ===
       audio.addEventListener("ended", () => {
         playBtn.textContent = "▶";
         progressBar.style.width = "0%";
         audio.currentTime = 0;
+        
         if (currentlyPlayingAudio === audio) {
           currentlyPlayingAudio = null;
           currentlyPlayingPlayBtn = null;
         }
+        
         const nextAudioItem = findNextAudio(msgIndex);
+        
         if (nextAudioItem) {
           setTimeout(() => {
             stopAllAudio();
@@ -525,30 +416,6 @@ function renderMessages() {
       textSpan.textContent = data.text;
       div.appendChild(textSpan);
     }
-    
-    // === Реакции ===
-    const reactions = data.reactions || {};
-    const reactionEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-    const reactionsDiv = document.createElement("div");
-    reactionsDiv.className = "reactions";
-    
-    reactionEmojis.forEach(emoji => {
-      const users = reactions[emoji] || [];
-      const count = users.length;
-      const isActive = users.includes(currentUser?.uid);
-      const reactionSpan = document.createElement("span");
-      reactionSpan.className = "reaction" + (isActive ? " active" : "");
-      reactionSpan.innerHTML = `${emoji}<span style="font-size:11px">${count || ''}</span>`;
-      reactionSpan.onclick = (e) => {
-        e.stopPropagation();
-        toggleReaction(docObj.id, emoji);
-      };
-      if (count > 0) reactionsDiv.appendChild(reactionSpan);
-    });
-    
-    if (reactionsDiv.children.length > 0) {
-      div.appendChild(reactionsDiv);
-    }
 
     if(isMe){ 
       const delBtn=document.createElement("span"); 
@@ -559,6 +426,7 @@ function renderMessages() {
     }
     chat.appendChild(div);
   });
+  
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -638,8 +506,7 @@ sendRecordBtn.addEventListener('click', async ()=>{
       text: messageInput.value,
       user: nickname||(currentUser?currentUser.displayName:"Гость"),
       uid: currentUser.uid,
-      time: Date.now(),
-      reactions: {}
+      time: Date.now()
     });
     messageInput.value="";
     sendRecordBtn.textContent="🎤";
@@ -663,8 +530,7 @@ sendRecordBtn.addEventListener('click', async ()=>{
               isAudio:true,
               user: nickname||(currentUser?currentUser.displayName:"Гость"),
               uid: currentUser.uid,
-              time: Date.now(),
-              reactions: {}
+              time: Date.now()
             });
           } catch(err) {
             console.error(err);
